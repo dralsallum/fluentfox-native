@@ -1,30 +1,20 @@
 import React, { useEffect } from "react";
-import styled from "styled-components/native";
-import { StatusBar } from "react-native";
-import { Slot, SplashScreen, Stack } from "expo-router";
-import { Link } from "expo-router";
+import { SplashScreen, Stack } from "expo-router";
 import { useFonts } from "expo-font";
-
-SplashScreen.preventAutoHideAsync();
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
 
 const RooyLayout = () => {
-  const [fontsLoaded, error] = useFonts({
-    "Poppins-Black": require("../assets/fonts/Poppins-Black.ttf"),
-  });
-
-  useEffect(() => {
-    if (error) throw error;
-    if (fontsLoaded) SplashScreen.hideAsync();
-  }, [fontsLoaded, error]);
-
-  if (!fontsLoaded && !error) return null;
-
   return (
-    <>
+    <Provider store={store}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="home/home" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(screens)" options={{ headerShown: false }} />
       </Stack>
-    </>
+    </Provider>
   );
 };
 

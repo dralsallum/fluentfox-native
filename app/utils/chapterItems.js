@@ -1,0 +1,136 @@
+const chapterItems = [
+  {
+    chapterId: 1,
+    lessonId: 1,
+    imgSrc:
+      "https://alsallum.s3.eu-north-1.amazonaws.com/welcomeimage1661254149_256.jpg",
+    mainText: "الترحيب بالاخرين",
+    subText: "تعلم التحية عند مقابلة الأشخاص",
+    url: "/train/1/test/1/chapter1",
+  },
+  {
+    chapterId: 1,
+    lessonId: 2,
+    imgSrc:
+      "https://alsallum.s3.eu-north-1.amazonaws.com/davidcover1661254508_256.jpg",
+    mainText: "تقديم نفسك",
+    subText: "قل اسمك",
+    url: "/train/1/test/1/chapter2",
+  },
+  {
+    chapterId: 1,
+    lessonId: 3,
+    imgSrc:
+      "https://alsallum.s3.eu-north-1.amazonaws.com/sogreat1661259325_256.jpg",
+    mainText: "توديع الغير",
+    subText: "كيف تودع الاخرين",
+    url: "/train/1/test/1/chapter3",
+  },
+  {
+    chapterId: 1,
+    lessonId: 4,
+    imgSrc:
+      "https://alsallum.s3.eu-north-1.amazonaws.com/european-man-woman-casual-wear-standing-back-back-with-arms-crossed-isolated-colorful-wall_171337-51292.jpg",
+    mainText: "طلب القهوة",
+    subText: "اطلب قهوتك ببساطة",
+    url: "/train/1/test/1/chapter4",
+  },
+  {
+    chapterId: 1,
+    lessonId: 5,
+    type: "checkpoint",
+    imgSrc: "https://alsallum.s3.eu-north-1.amazonaws.com/Diamond.png",
+    mainText: "نقطة التحقق",
+    subText: "اختبر مهاراتك للوصول إلى الفصل التالي",
+    url: "/between",
+  },
+  {
+    chapterId: 2,
+    lessonId: 1,
+    completed: false,
+    imgSrc: "https://alsallum.s3.eu-north-1.amazonaws.com/jack.jpeg",
+    mainText: "وصف الجنسية",
+    subText: "السؤال عن جنسية الآخرين والتعريف بجنسيتك",
+    url: "/train/1/test/1/chapter6",
+  },
+  {
+    imgSrc:
+      "https://alsallum.s3.eu-north-1.amazonaws.com/davidcover1661254508_256.jpg",
+    mainText: "قول أين تعيش",
+    subText: "تحدث عن المكان الذي تعيش فيه",
+    url: "/train/1/test/1/chapter7",
+    chapterId: 2,
+    lessonId: 2,
+  },
+  {
+    imgSrc:
+      "https://alsallum.s3.eu-north-1.amazonaws.com/sogreat1661259325_256.jpg",
+    mainText: "إعطاء جنسيتك",
+    subText: "تعلم كيفية القول من أي دولة أنت",
+    url: "/test/2/chapter8",
+    chapterId: 2,
+    lessonId: 3,
+  },
+  {
+    completed: false,
+    imgSrc:
+      "https://alsallum.s3.eu-north-1.amazonaws.com/european-man-woman-casual-wear-standing-back-back-with-arms-crossed-isolated-colorful-wall_171337-51292.jpg",
+    mainText: "إنهاء المحادثة",
+    subText: "تعلم كيفية إنهاء المحادثة",
+    url: "/test/2/chapter9",
+    chapterId: 2,
+    lessonId: 4,
+  },
+  {
+    type: "checkpoint",
+    imgSrc: "https://alsallum.s3.eu-north-1.amazonaws.com/Diamond.png",
+    mainText: "نقطة التحقق",
+    subText: "اختبر مهاراتك للوصول إلى الفصل التالي",
+    url: "/between",
+    chapterId: 2,
+    lessonId: 5,
+  },
+  {
+    imgSrc: "https://alsallum.s3.eu-north-1.amazonaws.com/pencil.webp",
+    mainText: "الفعل 'to be' (المفرد)",
+    subText: "ضمائر الفاعل المفردة والفعل 'to be'",
+    url: "/test/3/chapter11",
+    chapterId: 3,
+    lessonId: 1,
+  },
+  {
+    imgSrc: "https://alsallum.s3.eu-north-1.amazonaws.com/blackboard.webp",
+    mainText: "الفعل 'to be' (الجمع)",
+    subText: "ضمائر الفاعل الجمع والفعل 'to be'",
+    url: "/test/3/chapter12",
+    chapterId: 3,
+    lessonId: 2,
+  },
+  {
+    imgSrc: "https://alsallum.s3.eu-north-1.amazonaws.com/globe.webp",
+    mainText: "الأفعال العادية",
+    subText: "تحدث عن اللغات التي نعرفها باستخدام الفعل 'to speak'",
+    url: "/test/3/chapter13",
+    chapterId: 3,
+    lessonId: 3,
+  },
+  {
+    imgSrc: "https://alsallum.s3.eu-north-1.amazonaws.com/microscope.webp",
+    mainText: "أشكال الفعل المنفية",
+    subText: "كون صيغة النفي للأفعال العادية في الزمن الحاضر البسيط",
+    url: "/test/3/chapter14",
+    chapterId: 3,
+    lessonId: 4,
+  },
+  {
+    type: "checkpoint",
+    imgSrc: "https://alsallum.s3.eu-north-1.amazonaws.com/Diamond.png",
+    mainText: "نقطة التحقق",
+    subText: "اختبر مهاراتك للوصول إلى الفصل التالي",
+    url: "/between",
+    chapterId: 3,
+    lessonId: 5,
+  },
+];
+
+export default chapterItems;

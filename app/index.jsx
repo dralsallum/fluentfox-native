@@ -1,39 +1,51 @@
-import { Link } from "expo-router";
-import React from "react";
-import { Text, View, StyleSheet } from "react-native";
-import { StatusBar } from "react-native";
+import { Link, Redirect, router } from "expo-router";
+import React, { useState } from "react";
+import {
+  Text,
+  View,
+  StyleSheet,
+  ScrollView,
+  StatusBar,
+  SafeAreaView,
+  TouchableOpacity,
+} from "react-native";
 import styled from "styled-components/native";
 
-const App = () => {
+const Index = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleButtonPress = () => {
+    router.push("sign-in");
+  };
+  const handleButtonPress1 = () => {
+    router.push("/home/home");
+  };
+
   return (
     <SafeArea>
       <Container>
         <StatusBar barStyle="light-content" />
+        <Title>ابدا تعلم اللغة الانجليزية اليوم</Title>
         <Logo
           source={{
-            uri: "https://img.icons8.com/clouds/100/graduation-cap.png",
+            uri: "https://alsallum.s3.eu-north-1.amazonaws.com/header-hello.png",
           }}
           resizeMode="contain"
         />
-        <Title>ابدا تعلم اللغة الانجليزية اليوم</Title>
-        <FloatingIcons>
-          <FloatingIcon
-            source={{ uri: "https://img.icons8.com/clouds/100/000000/usa.png" }}
-          />
-          {/* Add more icons as needed */}
-        </FloatingIcons>
-        <Button onPress={() => console.log("Start Learning")}>
+        <Button onPress={handleButtonPress} isLoading={isLoading}>
           <ButtonText>ابدا رحلتك</ButtonText>
         </Button>
         <SubText onPress={() => console.log("Log in")}>
-          <Link href="/home">تملك حساب بالفعل؟ تسجيل الدخول</Link>
+          <ButtonSign onPress={handleButtonPress1}>
+            <TextSign>تملك حساب بالفعل؟ تسجيل الدخول</TextSign>
+          </ButtonSign>
         </SubText>
       </Container>
     </SafeArea>
   );
 };
 
-export default App;
+export default Index;
 
 // Styled Components
 const SafeArea = styled.SafeAreaView`
@@ -48,15 +60,14 @@ const Container = styled.View`
 `;
 
 const Logo = styled.Image`
-  height: 50px;
-  margin-bottom: 20px;
+  width: 250px;
+  height: 250px;
 `;
 
 const Title = styled.Text`
   color: #ffffff;
   text-align: center;
   font-size: 24px;
-  margin: 20px;
   padding: 0 30px;
 `;
 
@@ -64,7 +75,6 @@ const FloatingIcons = styled.View`
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
-  margin: 20px;
 `;
 
 const Button = styled.TouchableOpacity`
@@ -76,6 +86,13 @@ const Button = styled.TouchableOpacity`
   shadow-opacity: 0.25;
   shadow-radius: 3.84px;
   elevation: 5;
+  opacity: ${(props) => (props.isLoading ? 0.5 : 1)};
+`;
+const ButtonSign = styled.TouchableOpacity`
+  opacity: ${(props) => (props.isLoading ? 0.5 : 1)};
+`;
+const TextSign = styled.Text`
+  color: #fff;
 `;
 
 const ButtonText = styled.Text`

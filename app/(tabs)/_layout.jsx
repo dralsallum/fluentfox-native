@@ -1,7 +1,6 @@
 import { View, Text, Image } from "react-native";
-import { Tabs, Redirect } from "expo-router";
+import { Tabs } from "expo-router";
 import styled from "styled-components/native";
-
 import { icons } from "../../constants";
 
 const TabIcon = ({ icon, color, name, focused }) => {
@@ -12,42 +11,44 @@ const TabIcon = ({ icon, color, name, focused }) => {
         resizeMode="contain"
         style={{ tintColor: color }}
       />
-      <Text
-        className={`${focused ? "font-psemibold" : "font-pregular"} text-xs`}
-        style={{ color: color }}
-      >
+      <TabText focused={focused} style={{ color }}>
         {name}
-      </Text>
+      </TabText>
     </ViewBox>
   );
 };
 
-const TabsLayout = () => {
+const TabNavigator = () => {
   return (
     <>
       <Tabs
         screenOptions={{
           tabBarShowLabel: false,
-          tabBarActiveTintColor: "#FFA001",
-          tabBarInactiveTintColor: "#CDCDE0",
+          tabBarActiveTintColor: "#116eee", // Active tab icon and text color
+          tabBarInactiveTintColor: "#666e7e", // Inactive tab icon and text color
           tabBarStyle: {
-            backgroundColor: "#161622",
+            backgroundColor: "#ffffff", // Tab background color
             borderTopWidth: 1,
-            borderTopColor: "#232533",
+            borderTopColor: "#b2b2b2", // Border top color
             height: 84,
+            shadowColor: "#000", // Box shadow color
+            shadowOffset: { width: 0, height: -2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 3,
+            elevation: 4, // For Android box shadow
           },
         }}
       >
         <Tabs.Screen
-          name="home"
+          name="home/home"
           options={{
-            title: "Home",
+            title: "الرئيسية",
             headerShown: false,
             tabBarIcon: ({ color, focused }) => (
               <TabIcon
                 icon={icons.home}
                 color={color}
-                name="Home"
+                name="الرئيسية"
                 focused={focused}
               />
             ),
@@ -56,13 +57,13 @@ const TabsLayout = () => {
         <Tabs.Screen
           name="stories"
           options={{
-            title: "Stories",
+            title: "قصص",
             headerShown: false,
             tabBarIcon: ({ color, focused }) => (
               <TabIcon
                 icon={icons.stories}
                 color={color}
-                name="Stories"
+                name="قصص"
                 focused={focused}
               />
             ),
@@ -71,13 +72,13 @@ const TabsLayout = () => {
         <Tabs.Screen
           name="create"
           options={{
-            title: "Create",
+            title: "المفردات",
             headerShown: false,
             tabBarIcon: ({ color, focused }) => (
               <TabIcon
                 icon={icons.words}
                 color={color}
-                name="Create"
+                name="المفردات"
                 focused={focused}
               />
             ),
@@ -86,13 +87,13 @@ const TabsLayout = () => {
         <Tabs.Screen
           name="profile"
           options={{
-            title: "Profile",
+            title: "الملف الشخصي",
             headerShown: false,
             tabBarIcon: ({ color, focused }) => (
               <TabIcon
                 icon={icons.profile}
                 color={color}
-                name="Profile"
+                name="الملف الشخصي"
                 focused={focused}
               />
             ),
@@ -103,14 +104,22 @@ const TabsLayout = () => {
   );
 };
 
-export default TabsLayout;
+export default TabNavigator;
 
 const ViewBox = styled.View`
   justify-content: center;
   align-items: center;
-  gap: 2em;
+  gap: 2px;
 `;
+
 const ImageBox = styled.Image`
   width: 24px;
   height: 24px;
+`;
+
+const TabText = styled.Text`
+  font-size: 12px;
+  font-weight: ${({ focused }) => (focused ? "600" : "400")};
+  text-align: center;
+  writing-direction: rtl;
 `;

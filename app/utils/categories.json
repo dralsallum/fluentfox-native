@@ -1,0 +1,37 @@
+[
+  {
+    "title": "رحلة ميرا في أعماق البحر",
+    "subTitle": "مغامرة مثيرة تحت سطح المحيط",
+    "borderColor": "#106dee",
+    "locked": false,
+    "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/girlCat.webp"
+  },
+  {
+    "title": "تحدي البقاء على قمر أوروبا",
+    "subTitle": "البقاء في ظروف القمر الصعبة",
+    "borderColor": "#FF6347",
+    "locked": true,
+    "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/europe.webp"
+  },
+  {
+    "title": "أطول مبنى في المدينة",
+    "subTitle": "استكشاف الأعاجيب المعمارية الحديثة",
+    "borderColor": "#20B2AA",
+    "locked": true,
+    "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/building.webp"
+  },
+  {
+    "title": "قصة العصفور الطائر",
+    "subTitle": "حكاية عن الطيور وحرية الحركة",
+    "borderColor": "#FFD700",
+    "locked": true,
+    "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/boyBird.webp"
+  },
+  {
+    "title": "مغامرة في الفضاء",
+    "subTitle": "رحلة عبر النجوم والمجرات البعيدة",
+    "borderColor": "#9932CC",
+    "locked": true,
+    "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/space.webp"
+  }
+]
