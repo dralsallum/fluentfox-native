@@ -1,100 +1,136 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import styled from "styled-components/native";
-import { login } from "../redux/authSlice";
-import { useRouter } from "expo-router"; // Import useRouter for navigation
+import { login, userSelector } from "../redux/authSlice";
+import withAuthRedirect from "../redux/withAuthRedirect";
+import { Ionicons } from "@expo/vector-icons";
 
 const Container = styled.View`
   flex: 1;
   align-items: center;
   justify-content: center;
-  background-color: #ffffff;
+  background-color: #f0f2f5;
 `;
 
 const Form = styled.View`
   width: 90%;
   padding: 20px;
-  border-radius: 5px;
-  border: 1px solid lightgray;
+  border-radius: 15px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  elevation: 5;
 `;
 
 const Header = styled.Text`
-  font-size: 24px;
-  font-weight: 500;
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
   margin-bottom: 20px;
+  text-align: center;
 `;
 
-const SubHeader = styled.Text`
-  font-size: 16px;
-  margin-bottom: 5px;
+const InputContainer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  padding: 0 10px;
+  background-color: #f9f9f9;
 `;
 
 const Input = styled.TextInput`
+  flex: 1;
   height: 40px;
-  margin-bottom: 10px;
-  border: 1px solid gray;
-  padding-horizontal: 10px;
-  border-radius: 2px;
+  margin-left: 10px;
+  font-size: 16px;
 `;
 
 const Button = styled.TouchableOpacity`
   background-color: #2946b6;
-  border-radius: 4px;
+  border-radius: 25px;
   align-items: center;
   justify-content: center;
-  height: 40px;
-  margin-top: 10px;
+  height: 45px;
+  margin-top: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  elevation: 3;
 `;
 
 const ButtonText = styled.Text`
   color: white;
   font-size: 18px;
+  font-weight: bold;
+`;
+
+const ErrorText = styled.Text`
+  color: red;
+  margin-bottom: 10px;
+  text-align: center;
 `;
 
 const SignIn = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
-  const { user, error, loading } = useSelector((state) => state.auth);
-  const router = useRouter(); // Use router for navigation
+  const { isError, isFetching, errorMessage } = useSelector(userSelector);
 
   const handleLogin = () => {
-    dispatch(login({ username, password }));
+    if (username.trim() && password.trim()) {
+      dispatch(login({ username, password }));
+    } else {
+      console.log("Username or password is missing.");
+    }
   };
 
-  useEffect(() => {
-    if (user) {
-      router.push("/home/home");
-    }
-  }, [user]);
-
   return (
-    <Container>
-      <Form>
-        <Header>تسجيل دخول</Header>
-        {error && <Text style={{ color: "red" }}>{error}</Text>}
-        <SubHeader>اسم مستخدم</SubHeader>
-        <Input
-          placeholder="اسم المستخدم"
-          value={username}
-          onChangeText={setUsername}
-        />
-        <SubHeader>الرقم السري</SubHeader>
-        <Input
-          secureTextEntry
-          placeholder="الباسورد"
-          value={password}
-          onChangeText={setPassword}
-        />
-        <Button onPress={handleLogin} disabled={loading}>
-          <ButtonText>
-            {loading ? "جاري التحميل..." : "تسجيل الدخول"}
-          </ButtonText>
-        </Button>
-      </Form>
-    </Container>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 10 : 0}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <Container>
+          <Form>
+            <Header>تسجيل دخول</Header>
+            {isError && <ErrorText>{errorMessage}</ErrorText>}
+            <InputContainer>
+              <Ionicons name="person-outline" size={20} color="#888" />
+              <Input
+                placeholder="إيميل"
+                placeholderTextColor="#888"
+                value={username}
+                onChangeText={setUsername}
+              />
+            </InputContainer>
+            <InputContainer>
+              <Ionicons name="lock-closed-outline" size={20} color="#888" />
+              <Input
+                secureTextEntry
+                placeholder="باسورد"
+                placeholderTextColor="#888"
+                value={password}
+                onChangeText={setPassword}
+              />
+            </InputContainer>
+            <Button onPress={handleLogin} disabled={isFetching}>
+              {isFetching ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <ButtonText>تسجيل الدخول</ButtonText>
+              )}
+            </Button>
+          </Form>
+        </Container>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
-export default SignIn;
+export default withAuthRedirect(SignIn);

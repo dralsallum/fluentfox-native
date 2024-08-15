@@ -7,7 +7,12 @@ const ScreensLayout = () => {
   return (
     <>
       <Stack>
-        <Stack.Screen name="homeScreen" options={{ headerShown: false }} />
+        <Stack.Screen name="lesson/lesson" options={{ headerShown: false }} />
+        <Stack.Screen name="grammar" options={{ headerShown: false }} />
+        <Stack.Screen name="payment" options={{ headerShown: false }} />
+        <Stack.Screen name="notifications" options={{ headerShown: false }} />
+        <Stack.Screen name="listen" options={{ headerShown: false }} />
+        <Stack.Screen name="exercise" options={{ headerShown: false }} />
         <Stack.Screen
           name="vocabulary/vocabulary"
           options={{ headerShown: false }}

@@ -13,7 +13,8 @@ import playIcon from "../../../assets/icons/speaker.png";
 import shuffleIcon from "../../../assets/icons/shuffle.png";
 import americaIcon from "../../../assets/icons/america.png";
 import axios from "axios";
-import { useRoute } from "@react-navigation/native"; // Import useRoute hook
+import { useRoute } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 
 const Vocabulary = () => {
   const route = useRoute();
@@ -27,6 +28,7 @@ const Vocabulary = () => {
   const opacity = useRef(new Animated.Value(1)).current;
   const [isFlipped, setIsFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
   const [selectedSet, setSelectedSet] = useState(
     route.params?.set || "medical1"
   );
@@ -34,7 +36,7 @@ const Vocabulary = () => {
   useEffect(() => {
     const fetchVocabularyData = async () => {
       try {
-        setLoading(true); // Set loading to true before fetching
+        setLoading(true);
         const response = await axios.get(
           `https://quizeng-022517ad949b.herokuapp.com/api/vocabulary/${selectedSet}`
         );
@@ -42,7 +44,7 @@ const Vocabulary = () => {
       } catch (error) {
         console.error("Failed to fetch vocabulary data:", error);
       } finally {
-        setLoading(false); // Set loading to false after fetching
+        setLoading(false);
       }
     };
 
@@ -92,9 +94,10 @@ const Vocabulary = () => {
 
   const selectOption = (option) => {
     setSelectedOption(option.label);
-    setSelectedSet(option.value); // Update the selected set
+    setSelectedSet(option.value);
     toggleDropdown();
   };
+
   const renderCard = ({ item }) => (
     <Animated.View
       style={[{ transform: [{ translateX }], opacity }, styles.card]}
@@ -230,6 +233,12 @@ const Vocabulary = () => {
 
   return (
     <SafeArea>
+      <CroBut onPress={() => router.push("create")}>
+        <CrossIcon
+          source={require("../../../assets/icons/cross.png")}
+          resizeMode="contain"
+        />
+      </CroBut>
       <AllWr>
         <VocWra>
           <VocHead>
@@ -278,17 +287,20 @@ const Vocabulary = () => {
                 <DropdownText>{selectedOption}</DropdownText>
                 <DropdownIcon>&#9660;</DropdownIcon>
               </DropdownHeader>
-            </SelectContainer>
 
-            {visible && (
-              <OptionsContainer>
-                {options.map((option, index) => (
-                  <OptionItem key={index} onPress={() => selectOption(option)}>
-                    <OptionText>{option.label}</OptionText>
-                  </OptionItem>
-                ))}
-              </OptionsContainer>
-            )}
+              {visible && (
+                <OptionsContainer>
+                  {options.map((option, index) => (
+                    <OptionItem
+                      key={index}
+                      onPress={() => selectOption(option)}
+                    >
+                      <OptionText>{option.label}</OptionText>
+                    </OptionItem>
+                  ))}
+                </OptionsContainer>
+              )}
+            </SelectContainer>
             <VocFo>
               <VocFoTop>
                 {loading ? (
@@ -338,9 +350,6 @@ export const AllWr = styled.View`
   width: 95%;
   margin-left: auto;
   margin-right: auto;
-
-  @media screen and (max-width: 768px) {
-  }
 `;
 
 export const VocWra = styled.View`
@@ -372,6 +381,7 @@ export const VocMain = styled.View`
   shadow-opacity: 1;
   shadow-radius: 4px;
   elevation: 4;
+  z-index: 1;
 `;
 
 export const VocOn = styled.View`
@@ -449,9 +459,6 @@ export const VocTh = styled.Text`
   margin-bottom: 20px;
   flex-direction: column;
   gap: 0.5em;
-
-  @media screen and (max-width: 768px) {
-  }
 `;
 
 const DropdownHeader = styled.TouchableOpacity`
@@ -476,12 +483,14 @@ const DropdownIcon = styled.Text`
 `;
 
 const OptionsContainer = styled.View`
+  position: absolute;
+  top: 55px;
   width: 100%;
   background-color: #ffffff;
   border-radius: 5px;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.15);
   elevation: 5;
-  margin-top: 5px;
+  z-index: 999;
   padding: 10px;
 `;
 
@@ -497,7 +506,10 @@ const OptionText = styled.Text`
 const SelectContainer = styled.View`
   width: 80%;
   align-items: center;
+  position: relative;
+  z-index: 2;
 `;
+
 export const VocFo = styled.View`
   margin-top: 2rem;
   flex: 1;
@@ -507,12 +519,14 @@ export const VocFo = styled.View`
   user-select: none;
   position: relative;
 `;
+
 export const VocFoTop = styled.View`
   flex: 1;
   width: 100%;
   position: relative;
   margin-bottom: 30px;
 `;
+
 export const VocFroSu = styled.View`
   flex: 1;
   position: relative;
@@ -525,6 +539,7 @@ const FlipCard = styled.TouchableOpacity`
   width: 100%;
   height: 100%;
 `;
+
 export const FlipCardInner = styled.View`
   position: relative;
   width: 100%;
@@ -540,6 +555,7 @@ const CardContainer = styled.View`
   height: 185px;
   margin-top: 40px;
   margin-left: 11px;
+  z-index: 1;
 `;
 
 const FlipCardContainer = styled.TouchableOpacity`
@@ -678,7 +694,7 @@ const Card = styled(Animated.View)`
   elevation: 10;
   top: 50;
   left: 12;
-  z-index: 999;
+  z-index: 1;
 `;
 
 const CardTwoSp = styled.Text`
@@ -716,6 +732,11 @@ const VocMidBut = styled.TouchableOpacity`
   border-radius: 3px;
   margin: 0;
 `;
+const CroBut = styled.TouchableOpacity`
+  margin: 15px;
+  margin-left: auto;
+  margin-bottom: 10px;
+`;
 const VocFoBot = styled.View`
   flex-direction: row;
   font-size: 16px;
@@ -732,6 +753,11 @@ export const VocFoSpan = styled.Text`
   margin: 0 10px;
   min-width: 3.25em;
   text-align: center;
+`;
+
+const CrossIcon = styled.Image`
+  width: 24px;
+  height: 24px;
 `;
 
 const VocFoBut = styled.TouchableOpacity`

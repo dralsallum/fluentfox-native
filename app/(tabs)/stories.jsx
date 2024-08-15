@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import styled from "styled-components/native";
 import { SafeAreaView, ScrollView } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import categories from "../utils/categories.json"; // Import your JSON file
+import { router } from "expo-router";
+import categories from "../utils/categories.json";
 
 const Container = styled.View`
   flex: 1;
@@ -10,7 +11,7 @@ const Container = styled.View`
 `;
 
 const SegmentControl = styled.View`
-  flex-direction: row-reverse;
+  flex-direction: row;
   background-color: #e2e7ec;
   border-radius: 20px;
   margin: 10px 20px;
@@ -116,12 +117,6 @@ const EleCon = styled.View`
   gap: 5px;
 `;
 
-const ReCon = styled.View`
-  flex-direction: column;
-  justify-items: center;
-  gap: 5px;
-`;
-
 const BotText = styled.Text`
   color: #666e7e;
   font-weight: 600;
@@ -140,6 +135,8 @@ const IconImage = styled.Image`
 
 const Stories = () => {
   const [activeTab, setActiveTab] = useState("stories");
+  const data =
+    activeTab === "stories" ? categories.stories : categories.exercises;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -179,11 +176,16 @@ const Stories = () => {
           </BotCon>
         </BoxCon>
         <ScrollView>
-          {categories.map((category, index) => (
+          {data.map((category, index) => (
             <CategoryItemContainer
               key={index}
               borderColor={category.borderColor}
-              onPress={() => console.log(`${category.name} pressed`)}
+              onPress={() =>
+                router.push({
+                  pathname: category.navigateTo,
+                  params: { set: category.set },
+                })
+              }
             >
               <IconImage source={{ uri: category.icon }} />
               <CategoryTextContainer>

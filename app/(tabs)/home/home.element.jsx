@@ -152,8 +152,8 @@ export const SuperCon = styled.Image`
   width: 80px;
   height: 80px;
   position: absolute;
-  right: -4;
-  top: -10;
+  right: -4px;
+  top: -10px;
 `;
 
 export const QueTeHe = styled.Text`
@@ -297,8 +297,7 @@ export const QueChaPicSec = styled.View`
   width: 84px;
   height: 84px;
   padding: 3px;
-  background-color: ${({ completed }) =>
-    completed ? "#4c47e8" : "transparent"};
+  background-color: transparent;
 `;
 
 export const QueChaPic = styled.Image`
@@ -385,4 +384,69 @@ export const FinChaProSpa = styled.View`
   right: 0;
   transform: translateX(50%);
   bottom: 6px;
+`;
+
+export const StyledModal = styled.Modal``;
+
+export const ModalContainer = styled.View`
+  flex: 1;
+  justify-content: flex-end;
+  background-color: rgba(0, 0, 0, 0.5);
+`;
+
+export const ModalContent = styled.View`
+  background-color: white;
+  padding: 20px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+`;
+
+export const ModalHeader = styled.View`
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 15px;
+`;
+
+export const FlagIcon = styled.Image`
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+`;
+
+export const ModalTitle = styled.Text`
+  font-size: 18px;
+  font-weight: bold;
+`;
+
+export const LevelItem = styled.TouchableOpacity`
+  flex-direction: row;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom-width: 1px;
+  border-bottom-color: #f0f0f0;
+`;
+
+export const LevelIcon = styled.Image`
+  width: 40px;
+  height: 40px;
+  margin-right: 15px;
+`;
+
+export const LevelText = styled.Text`
+  font-size: 16px;
+`;
+
+export const CloseButton = styled.TouchableOpacity`
+  align-items: center;
+  margin-top: 20px;
+`;
+
+export const CloseButtonText = styled.Text`
+  font-size: 16px;
+  color: blue;
+`;
+export const CrossIcon = styled.Image`
+  width: 25;
+  height: 25;
+  margin-right: 15;
 `;

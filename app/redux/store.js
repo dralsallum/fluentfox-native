@@ -1,10 +1,12 @@
-// src/redux/store.js
-
 import { configureStore } from "@reduxjs/toolkit";
-import authReducer from "./authSlice";
+import userReducer from "./authSlice";
+import lessonsReducer from "./lessonsSlice"; // Import the lessons slice
 
 export const store = configureStore({
   reducer: {
-    auth: authReducer,
+    user: userReducer, // Register the user reducer
+    lessons: lessonsReducer, // Register the lessons reducer
   },
 });
+
+export default store;

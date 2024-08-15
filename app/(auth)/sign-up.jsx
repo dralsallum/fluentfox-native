@@ -1,119 +1,162 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   ActivityIndicator,
 } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components/native";
+import { register, clearState } from "../redux/authSlice";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
-// Styled Components for React Native
 const Container = styled.View`
   flex: 1;
   align-items: center;
   justify-content: center;
-  background-color: #ffffff;
+  background-color: #f0f2f5;
 `;
 
 const Form = styled.View`
   width: 90%;
   padding: 20px;
-  border-radius: 5px;
-  border: 1px solid lightgray;
+  border-radius: 15px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  elevation: 5;
 `;
 
 const Header = styled.Text`
-  font-size: 24px;
-  font-weight: 500;
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
   margin-bottom: 20px;
+  text-align: center;
 `;
 
-const SubHeader = styled.Text`
-  font-size: 16px;
-  margin-bottom: 5px;
+const InputContainer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  padding: 0 10px;
+  background-color: #f9f9f9;
 `;
 
 const Input = styled.TextInput`
+  flex: 1;
   height: 40px;
-  margin-bottom: 10px;
-  border: 1px solid gray;
-  padding-horizontal: 10px;
-  border-radius: 2px;
+  margin-left: 10px;
+  font-size: 16px;
 `;
 
 const Button = styled.TouchableOpacity`
   background-color: #2946b6;
-  border-radius: 4px;
+  border-radius: 25px;
   align-items: center;
   justify-content: center;
-  height: 40px;
-  margin-top: 10px;
+  height: 45px;
+  margin-top: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  elevation: 3;
 `;
 
 const ButtonText = styled.Text`
   color: white;
   font-size: 18px;
+  font-weight: bold;
+`;
+
+const ErrorText = styled.Text`
+  color: red;
+  margin-bottom: 10px;
+  text-align: center;
 `;
 
 const SignUp = () => {
-  const [inputs, setInputs] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [inputs, setInputs] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const { isFetching, isError, errorMessage, isSuccess } = useSelector(
+    (state) => state.user
+  );
 
   const handleChange = (name, value) => {
     setInputs((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async () => {
-    if (isLoading) return;
-
-    setIsLoading(true);
-    try {
-      // Simulate an API call
-      console.log("Submitting:", inputs);
-      setTimeout(() => {
-        setIsLoading(false);
-        alert("Logged In");
-      }, 2000);
-    } catch (error) {
-      setErrorMessage("An error occurred");
-      setIsLoading(false);
+  const handleSubmit = () => {
+    if (!inputs.username || !inputs.email || !inputs.password) {
+      alert("Please fill in all fields");
+      return;
     }
+    dispatch(register(inputs));
   };
 
+  useEffect(() => {
+    if (isSuccess) {
+      console.log("User registered successfully");
+      router.push("payment"); // Redirect to home after signup
+      dispatch(clearState()); // Reset state after successful registration
+    }
+  }, [isSuccess]);
+
   return (
-    <Container>
-      <Form>
-        <Header>تسجيل دخول</Header>
-        {errorMessage ? (
-          <Text style={{ color: "red" }}>{errorMessage}</Text>
-        ) : null}
-        <SubHeader>اسم مستخدم</SubHeader>
-        <Input
-          placeholder="اسم المستخدم"
-          onChangeText={(text) => handleChange("username", text)}
-        />
-        <SubHeader>ايميل</SubHeader>
-        <Input
-          placeholder="الايميل"
-          onChangeText={(text) => handleChange("email", text)}
-        />
-        <SubHeader>الرقم السري</SubHeader>
-        <Input
-          secureTextEntry
-          placeholder="الباسورد"
-          onChangeText={(text) => handleChange("password", text)}
-        />
-        <Button onPress={handleSubmit} disabled={isLoading}>
-          {isLoading ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <ButtonText>انشاء حساب جديد</ButtonText>
-          )}
-        </Button>
-      </Form>
-    </Container>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 10 : 0}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <Container>
+          <Form>
+            <Header>إنشاء حساب جديد</Header>
+            {isError && <ErrorText>{errorMessage}</ErrorText>}
+            <InputContainer>
+              <Ionicons name="person-outline" size={20} color="#888" />
+              <Input
+                placeholder="اسم المستخدم"
+                placeholderTextColor="#888"
+                value={inputs.username}
+                onChangeText={(text) => handleChange("username", text)}
+              />
+            </InputContainer>
+            <InputContainer>
+              <Ionicons name="mail-outline" size={20} color="#888" />
+              <Input
+                placeholder="الايميل"
+                placeholderTextColor="#888"
+                value={inputs.email}
+                onChangeText={(text) => handleChange("email", text)}
+              />
+            </InputContainer>
+            <InputContainer>
+              <Ionicons name="lock-closed-outline" size={20} color="#888" />
+              <Input
+                secureTextEntry
+                placeholder="باسورد"
+                placeholderTextColor="#888"
+                value={inputs.password}
+                onChangeText={(text) => handleChange("password", text)}
+              />
+            </InputContainer>
+            <Button onPress={handleSubmit} disabled={isFetching}>
+              {isFetching ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <ButtonText>انشاء حساب جديد</ButtonText>
+              )}
+            </Button>
+          </Form>
+        </Container>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

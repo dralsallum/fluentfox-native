@@ -15,10 +15,10 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleButtonPress = () => {
-    router.push("sign-in");
+    router.push("onboarding");
   };
   const handleButtonPress1 = () => {
-    router.push("/home/home");
+    router.push("home/home");
   };
 
   return (
@@ -27,9 +27,7 @@ const Index = () => {
         <StatusBar barStyle="light-content" />
         <Title>ابدا تعلم اللغة الانجليزية اليوم</Title>
         <Logo
-          source={{
-            uri: "https://alsallum.s3.eu-north-1.amazonaws.com/header-hello.png",
-          }}
+          source={require("../assets/images/banner.png")}
           resizeMode="contain"
         />
         <Button onPress={handleButtonPress} isLoading={isLoading}>
@@ -60,8 +58,8 @@ const Container = styled.View`
 `;
 
 const Logo = styled.Image`
-  width: 250px;
-  height: 250px;
+  width: 300px;
+  height: 300px;
 `;
 
 const Title = styled.Text`
@@ -105,11 +103,4 @@ const SubText = styled.Text`
   color: #ffffff;
   font-size: 16px;
   margin-bottom: 20px;
-`;
-
-const FloatingIcon = styled.Image`
-  width: 50px;
-  height: 50px;
-  margin: 5px;
-  border-radius: 25px;
 `;

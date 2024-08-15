@@ -1,51 +1,41 @@
 {
   "vocabularyLevels": [
     {
-      "key": "المستوى الأول",
+      "key": "المستوى الاول",
       "color": "#FF6347",
       "value": 1,
       "words": [
         {
-          "text": "مرحبا!",
-          "subText": "تحية عامة",
+          "text": "Hello!",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary/vocabulary",
           "set": "set1"
         },
         {
-          "text": "صباح الخير",
-          "subText": "تحية صباحية",
+          "text": "Good morning",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary/vocabulary",
-          "set": "set2"
+          "set": "medical1"
         },
         {
-          "text": "وداعاً",
-          "subText": "توديع",
+          "text": "Goodbye",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary/vocabulary",
-          "set": "set3"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
-          "text": "شكراً",
-          "subText": "تعبير عن الامتنان",
+          "text": "Thank you",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary/vocabulary",
-          "set": "set4"
+          "navigateTo": "vocabulary"
         },
         {
-          "text": "من فضلك",
-          "subText": "طلب شيء بأدب",
+          "text": "Please",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary/vocabulary",
-          "set": "set5"
+          "navigateTo": "vocabulary"
         },
         {
-          "text": "نعم",
-          "subText": "تأكيد",
+          "text": "Yes",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary/vocabulary",
-          "set": "set6"
+          "navigateTo": "vocabulary"
         }
       ]
     },
@@ -55,39 +45,32 @@
       "value": 2,
       "words": [
         {
-          "text": "أراك لاحقاً",
-          "subText": "توديع غير رسمي",
+          "text": "See you",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary/vocabulary",
-          "set": "set7"
+          "navigateTo": "vocabulary"
         },
         {
-          "text": "أهلاً وسهلاً",
-          "subText": "ترحيب",
+          "text": "Welcome",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "عذراً",
-          "subText": "طلب السماح",
+          "text": "Sorry",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "عفواً",
-          "subText": "استئذان للمرور",
+          "text": "Excuse me",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "هل يمكنني مساعدتك؟",
-          "subText": "عرض المساعدة",
+          "text": "Can I help you?",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "سررت بلقائك",
-          "subText": "تحية بعد التعارف",
+          "text": "Nice to meet you",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         }
@@ -99,38 +82,32 @@
       "value": 3,
       "words": [
         {
-          "text": "كيف حالك؟",
-          "subText": "استفسار عن الحال",
+          "text": "How are you?",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "أنا بخير",
-          "subText": "رد على التحية",
+          "text": "I'm fine",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "وأنت؟",
-          "subText": "رد السؤال",
+          "text": "And you?",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "ما الجديد؟",
-          "subText": "استفسار عن الأخبار",
+          "text": "What's up?",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "لا شيء جديد",
-          "subText": "رد على الاستفسار",
+          "text": "Nothing much",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "كل شيء على ما يرام",
-          "subText": "تأكيد الحال الجيد",
+          "text": "All good",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         }
@@ -142,38 +119,32 @@
       "value": 4,
       "words": [
         {
-          "text": "مرحبا!",
-          "subText": "تحية عامة",
+          "text": "Hello!",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "صباح الخير",
-          "subText": "تحية صباحية",
+          "text": "Good morning",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "وداعاً",
-          "subText": "توديع",
+          "text": "Goodbye",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "شكراً",
-          "subText": "تعبير عن الامتنان",
+          "text": "Thank you",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "من فضلك",
-          "subText": "طلب شيء بأدب",
+          "text": "Please",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "نعم",
-          "subText": "تأكيد",
+          "text": "Yes",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         }
@@ -185,38 +156,32 @@
       "value": 5,
       "words": [
         {
-          "text": "أراك لاحقاً",
-          "subText": "توديع غير رسمي",
+          "text": "See you",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "أهلاً وسهلاً",
-          "subText": "ترحيب",
+          "text": "Welcome",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "عذراً",
-          "subText": "طلب السماح",
+          "text": "Sorry",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "عفواً",
-          "subText": "استئذان للمرور",
+          "text": "Excuse me",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "هل يمكنني مساعدتك؟",
-          "subText": "عرض المساعدة",
+          "text": "Can I help you?",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "سررت بلقائك",
-          "subText": "تحية بعد التعارف",
+          "text": "Nice to meet you",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         }
@@ -228,38 +193,32 @@
       "value": 6,
       "words": [
         {
-          "text": "كيف حالك؟",
-          "subText": "استفسار عن الحال",
+          "text": "How are you?",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "أنا بخير",
-          "subText": "رد على التحية",
+          "text": "I'm fine",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "وأنت؟",
-          "subText": "رد السؤال",
+          "text": "And you?",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "ما الجديد؟",
-          "subText": "استفسار عن الأخبار",
+          "text": "What's up?",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "لا شيء جديد",
-          "subText": "رد على الاستفسار",
+          "text": "Nothing much",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "كل شيء على ما يرام",
-          "subText": "تأكيد الحال الجيد",
+          "text": "All good",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         }
@@ -268,43 +227,40 @@
   ],
   "grammarLevels": [
     {
-      "key": "المستوى الأول",
+      "key": "المستوى الاول",
       "color": "#FF6347",
       "value": 1,
       "words": [
         {
-          "text": "Lesson 1: Introduction",
-          "subText": "Basic introductions and greetings",
+          "text": "Hello!",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar",
+          "set": "set1"
         },
         {
-          "text": "Lesson 2: Morning Greetings",
-          "subText": "How to greet in the morning",
+          "text": "Good morning",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar",
+          "set": "set2"
         },
         {
-          "text": "Lesson 3: Farewells",
-          "subText": "Saying goodbye",
+          "text": "Goodbye",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar",
+          "set": "set3"
         },
         {
-          "text": "Lesson 4: Expressing Gratitude",
-          "subText": "Ways to say thank you",
+          "text": "Thank you",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 5: Polite Requests",
-          "subText": "How to ask politely",
+          "text": "Please",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 6: Affirmations",
-          "subText": "Saying yes",
+          "text": "Yes",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         }
@@ -316,38 +272,32 @@
       "value": 2,
       "words": [
         {
-          "text": "Lesson 7: Informal Farewells",
-          "subText": "Casual ways to say goodbye",
+          "text": "See you",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 8: Welcoming",
-          "subText": "How to welcome someone",
+          "text": "Welcome",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 9: Apologies",
-          "subText": "How to say sorry",
+          "text": "Sorry",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 10: Excusing",
-          "subText": "How to excuse yourself",
+          "text": "Excuse me",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 11: Offering Help",
-          "subText": "How to offer assistance",
+          "text": "Can I help you?",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 12: Meeting Someone",
-          "subText": "Phrases after introductions",
+          "text": "Nice to meet you",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         }
@@ -359,38 +309,32 @@
       "value": 3,
       "words": [
         {
-          "text": "Lesson 13: Asking About Well-being",
-          "subText": "Inquiring about someone's health",
+          "text": "How are you?",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 14: Responding to Greetings",
-          "subText": "Replying to how are you",
+          "text": "I'm fine",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 15: Returning a Question",
-          "subText": "Asking in return",
+          "text": "And you?",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 16: Inquiring About News",
-          "subText": "Asking about updates",
+          "text": "What's up?",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 17: Responding to Inquiries",
-          "subText": "Replying to news inquiries",
+          "text": "Nothing much",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 18: Confirming Well-being",
-          "subText": "Confirming good state",
+          "text": "All good",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         }
@@ -402,38 +346,32 @@
       "value": 4,
       "words": [
         {
-          "text": "Lesson 19: General Greetings",
-          "subText": "Saying hello",
+          "text": "Hello!",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 20: Morning Greetings",
-          "subText": "Greetings in the morning",
+          "text": "Good morning",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 21: Farewells",
-          "subText": "Saying goodbye",
+          "text": "Goodbye",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 22: Gratitude Expressions",
-          "subText": "Saying thank you",
+          "text": "Thank you",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 23: Polite Requests",
-          "subText": "How to request",
+          "text": "Please",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 24: Affirmations",
-          "subText": "Saying yes",
+          "text": "Yes",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         }
@@ -445,38 +383,32 @@
       "value": 5,
       "words": [
         {
-          "text": "Lesson 25: Informal Goodbyes",
-          "subText": "Casual farewells",
+          "text": "See you",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 26: Welcoming Phrases",
-          "subText": "Phrases for welcoming",
+          "text": "Welcome",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 27: Apologies",
-          "subText": "Saying sorry",
+          "text": "Sorry",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 28: Excusing",
-          "subText": "Excuse me",
+          "text": "Excuse me",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 29: Offering Assistance",
-          "subText": "Helping someone",
+          "text": "Can I help you?",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 30: Post-Introduction",
-          "subText": "Meeting someone",
+          "text": "Nice to meet you",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         }
@@ -488,38 +420,32 @@
       "value": 6,
       "words": [
         {
-          "text": "Lesson 31: Asking About Health",
-          "subText": "How are you?",
+          "text": "How are you?",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 32: Responding to Greetings",
-          "subText": "I'm fine",
+          "text": "I'm fine",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 33: Returning the Question",
-          "subText": "And you?",
+          "text": "And you?",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 34: Asking for Updates",
-          "subText": "What's new?",
+          "text": "What's up?",
           "imagePath": "../../assets/images/superhero.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 35: Responding to Updates",
-          "subText": "Nothing new",
+          "text": "Nothing much",
           "imagePath": "../../assets/images/empty.png",
           "navigateTo": "vocabulary"
         },
         {
-          "text": "Lesson 36: Confirming Well-being",
-          "subText": "All is well",
+          "text": "All good",
           "imagePath": "../../assets/images/profile.png",
           "navigateTo": "vocabulary"
         }

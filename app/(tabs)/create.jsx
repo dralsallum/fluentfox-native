@@ -148,6 +148,7 @@ const GrammarContent = ({ selectedLevel, onCardPress }) => (
           subText={word.subText}
           imagePath={word.imagePath}
           navigateTo={word.navigateTo}
+          set={word.set}
         />
       ))}
     </SavedWords>
