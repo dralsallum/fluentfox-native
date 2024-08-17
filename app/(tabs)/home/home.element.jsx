@@ -25,7 +25,7 @@ export const QueCon = styled.View`
 
 export const QueSubCon = styled.View`
   background-color: white;
-  padding: 20px;
+  padding: 10px 20px;
   width: 100%;
   border-radius: 10px;
 `;

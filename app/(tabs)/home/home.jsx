@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import { TouchableOpacity, StyleSheet } from "react-native";
+import { TouchableOpacity, StyleSheet, Text } from "react-native";
 import { router } from "expo-router";
-import styled from "styled-components/native";
 import chapterItems from "../../utils/chapterItems";
 import {
   QueChaIteEle,
@@ -69,40 +68,29 @@ import {
   LevelIcon,
   LevelText,
 } from "./home.element";
-
-const AccessButton = styled.TouchableOpacity`
-  background-color: #007bff;
-  padding: 10px;
-  border-radius: 5px;
-  margin: 10px;
-`;
-
-const AccessButtonText = styled.Text`
-  color: white;
-  text-align: center;
-`;
+import Navbar from "../../components/navigation/navbar";
 
 const filterChaptersByLevel = (level) => {
   switch (level) {
-    case "Beginner A1":
+    case "مبتدى أ ١":
       return chapterItems.filter(
-        (item) => item.chapterId === 1 || item.chapterId === 2
+        (item) => item.chapterId >= 1 && item.chapterId <= 5
       );
     case "Elementary A2":
       return chapterItems.filter(
-        (item) => item.chapterId === 3 || item.chapterId === 4
+        (item) => item.chapterId >= 6 && item.chapterId <= 10
       );
     case "Intermediate B1":
       return chapterItems.filter(
-        (item) => item.chapterId === 5 || item.chapterId === 6
+        (item) => item.chapterId >= 11 && item.chapterId <= 15
       );
     case "Upper Intermediate B2":
       return chapterItems.filter(
-        (item) => item.chapterId === 7 || item.chapterId === 8
+        (item) => item.chapterId >= 16 && item.chapterId <= 20
       );
     case "Advanced C1":
       return chapterItems.filter(
-        (item) => item.chapterId === 9 || item.chapterId === 10
+        (item) => item.chapterId >= 21 && item.chapterId <= 25
       );
     default:
       return [];
@@ -117,7 +105,6 @@ const ChapterItem = ({
   lessonId,
   set,
   isUnlocked,
-  completed,
 }) => {
   const handlePress = () => {
     if (isUnlocked && set) {
@@ -210,7 +197,7 @@ const Chapter = ({ chapterNumber, chapterItems }) => {
 
 const Home = () => {
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedLevel, setSelectedLevel] = useState("Beginner A1"); // Default level
+  const [selectedLevel, setSelectedLevel] = useState("مبتدى أ ١"); // Default level
 
   const handleToggleModal = () => {
     setModalVisible(!modalVisible);
@@ -232,6 +219,7 @@ const Home = () => {
 
   return (
     <SafeArea>
+      <Navbar />
       <QueMa>
         <QueWra>
           <QueCon>
@@ -320,9 +308,9 @@ const Home = () => {
               </TouchableOpacity>
               <ModalTitle>Complete English</ModalTitle>
             </ModalHeader>
-            <LevelItem onPress={() => handleSelectLevel("Beginner A1")}>
+            <LevelItem onPress={() => handleSelectLevel("مبتدى أ ١")}>
               <LevelIcon source={require("../../../assets/icons/chat.png")} />
-              <LevelText>Beginner A1 - Chapters 1 & 2</LevelText>
+              <LevelText>مبتدى أ ١ - الوحدة 1 - 5</LevelText>
             </LevelItem>
             <LevelItem onPress={() => handleSelectLevel("Elementary A2")}>
               <LevelIcon source={require("../../../assets/icons/chat.png")} />
