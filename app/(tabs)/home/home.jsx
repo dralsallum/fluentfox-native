@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { TouchableOpacity, StyleSheet, Text } from "react-native";
 import { router } from "expo-router";
+
 import chapterItems from "../../utils/chapterItems";
 import {
   QueChaIteEle,

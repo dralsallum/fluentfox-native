@@ -70,7 +70,7 @@ const ButtonContainer = styled.View`
 `;
 
 const Button = styled.TouchableOpacity`
-  background-color: #2497f2;
+  background-color: #2068ed;
   border-radius: 25px;
   padding: 15px 0;
   margin-bottom: 10px;
@@ -87,7 +87,7 @@ const ButtonSign = styled.TouchableOpacity`
   border-radius: 25px;
   padding: 15px 0;
   width: 100%;
-  border: 1px solid #2497f2;
+  border: 1px solid #2068ed;
   shadow-color: #000;
   shadow-opacity: 0.25;
   shadow-radius: 3.84px;
@@ -103,7 +103,7 @@ const ButtonText = styled.Text`
 `;
 
 const TextSign = styled.Text`
-  color: #2497f2;
+  color: #2068ed;
   font-size: 18px;
   font-weight: bold;
   text-align: center;

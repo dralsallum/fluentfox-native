@@ -1,5 +1,20 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
 import chapterItems from "../utils/chapterItems";
+
+export const fetchUserProgress = createAsyncThunk(
+  "lessons/fetchProgress",
+  async (userId, thunkAPI) => {
+    try {
+      const response = await axios.get(
+        `https://quizeng-022517ad949b.herokuapp.com/api/users/${userId}/progress`
+      );
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
+    }
+  }
+);
 
 const initialState = {
   unlockedSets: { 1: [1] }, // Start with only the first set of Chapter 1 unlocked
@@ -36,12 +51,24 @@ const lessonsSlice = createSlice({
       state.unlockedSets = { 1: [1] }; // Reset to the initial state
       state.xp = 0; // Reset XP to 0
     },
+    setProgress: (state, action) => {
+      state.unlockedSets = action.payload.unlockedSets;
+      state.xp = action.payload.xp;
+    },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(fetchUserProgress.fulfilled, (state, action) => {
+      state.xp = action.payload.xp;
+      // Logic to unlock the last accessed lessons
+      state.unlockedSets = action.payload.unlockedSets;
+    });
   },
 });
 
 // Selector to get the XP from the state
 export const xpSelector = (state) => state.lessons.xp;
 
-export const { unlockNextLesson, resetLessons } = lessonsSlice.actions;
+export const { unlockNextLesson, resetLessons, setProgress } =
+  lessonsSlice.actions;
 
 export default lessonsSlice.reducer;

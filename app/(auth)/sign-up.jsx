@@ -84,7 +84,7 @@ const SignUp = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { isFetching, isError, errorMessage, isSuccess } = useSelector(
-    (state) => state.user
+    (state) => state.user // Ensure this matches your slice name
   );
 
   const handleChange = (name, value) => {
@@ -101,8 +101,7 @@ const SignUp = () => {
 
   useEffect(() => {
     if (isSuccess) {
-      console.log("User registered successfully");
-      router.push("payment"); // Redirect to home after signup
+      router.push("payment"); // Redirect to payment after signup
       dispatch(clearState()); // Reset state after successful registration
     }
   }, [isSuccess]);

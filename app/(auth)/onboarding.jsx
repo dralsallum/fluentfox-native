@@ -272,8 +272,8 @@ const Onboarding = () => {
   useEffect(() => {
     if (isSuccess) {
       console.log("تم تسجيل المستخدم بنجاح");
-      setCurrentQuestionIndex(currentQuestionIndex + 1); // Move to the notification prompt
-      dispatch(clearState()); // Reset state after successful registration
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      dispatch(clearState());
     }
   }, [isSuccess]);
 
