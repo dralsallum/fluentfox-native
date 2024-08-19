@@ -1,7 +1,6 @@
-// src/redux/authSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import { fetchUserProgress } from "./lessonsSlice";
+import { fetchUnlockedSets } from "./lessonsSlice";
 
 // Thunk for user login
 export const login = createAsyncThunk(
@@ -12,7 +11,8 @@ export const login = createAsyncThunk(
         "https://quizeng-022517ad949b.herokuapp.com/api/auth/login",
         credentials
       );
-      thunkAPI.dispatch(fetchUserProgress(response.data._id));
+      // Dispatch fetchUnlockedSets after a successful login
+      thunkAPI.dispatch(fetchUnlockedSets(response.data._id));
       return response.data;
     } catch (error) {
       const message = error.response?.data?.message || error.message;
@@ -30,6 +30,8 @@ export const register = createAsyncThunk(
         "https://quizeng-022517ad949b.herokuapp.com/api/auth/register",
         userDetails
       );
+      // Dispatch fetchUnlockedSets after a successful registration
+      thunkAPI.dispatch(fetchUnlockedSets(response.data._id));
       return response.data;
     } catch (error) {
       const message = error.response?.data?.message || error.message;

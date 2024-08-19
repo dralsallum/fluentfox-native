@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components/native";
 import { TouchableOpacity, Modal, View, Text, ScrollView } from "react-native";
-import { signOut, userSelector } from "../../redux/authSlice";
+import { signOut, userSelector } from "../../redux/authSlice"; // Importing the signOut action and userSelector
 import { xpSelector } from "../../redux/lessonsSlice";
 import axios from "axios";
 
@@ -20,7 +20,7 @@ const NavbarContainer = styled.View`
   flex-direction: row;
   justify-content: space-around;
   align-items: center;
-  padding: 10px 15px;
+  padding: 10px 10px;
   background-color: #ffffff;
   border-bottom-width: 1px;
   border-bottom-color: #e0e0e0;
@@ -196,7 +196,7 @@ const Navbar = () => {
   const [profileModalVisible, setProfileModalVisible] = useState(false);
   const dispatch = useDispatch();
   const { currentUser } = useSelector(userSelector);
-  const streakCount = currentUser?.streakCount || 0;
+  const streakCount = 10;
   const xp = useSelector(xpSelector);
   const [notifications, setNotifications] = useState([]);
 
@@ -249,7 +249,7 @@ const Navbar = () => {
             <NavIcon source={item.icon} />
             {item.showBadge && (
               <NavBadge active={activeTab === item.id}>
-                {item.id === "Streak" ? streakCount : xp}
+                {item.id === "XP" ? xp : 0}
               </NavBadge>
             )}
           </NavItem>

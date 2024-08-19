@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchUnlockedSets } from "../../redux/lessonsSlice";
 import { TouchableOpacity, StyleSheet, Text } from "react-native";
 import { router } from "expo-router";
-
 import chapterItems from "../../utils/chapterItems";
 import {
   QueChaIteEle,
@@ -199,6 +199,15 @@ const Chapter = ({ chapterNumber, chapterItems }) => {
 const Home = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState("مبتدى أ ١"); // Default level
+  const unlockedSets = useSelector((state) => state.lessons.unlockedSets);
+  const userId = useSelector((state) => state.user.currentUser?._id);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (userId) {
+      dispatch(fetchUnlockedSets(userId));
+    }
+  }, [dispatch, userId]);
 
   const handleToggleModal = () => {
     setModalVisible(!modalVisible);
@@ -282,6 +291,7 @@ const Home = () => {
                         key={chapterId}
                         chapterNumber={parseInt(chapterId, 10)}
                         chapterItems={currentChapterItems}
+                        unlockedSets={unlockedSets}
                       />
                     );
                   })}

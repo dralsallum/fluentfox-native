@@ -4,7 +4,11 @@ import { Image, Modal, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import { useRoute } from "@react-navigation/native";
-import { unlockNextLesson } from "../../redux/lessonsSlice";
+import {
+  fetchUnlockedSets,
+  unlockNextLesson,
+  updateUnlockedSets,
+} from "../../redux/lessonsSlice";
 import { useDispatch } from "react-redux";
 import * as Speech from "expo-speech";
 import {
@@ -320,8 +324,9 @@ const Lesson = () => {
   };
 
   const handleFinished = () => {
-    setResultModalVisible(false);
     dispatch(unlockNextLesson());
+    dispatch(updateUnlockedSets());
+    setResultModalVisible(false);
     router.push("home/home");
   };
 
