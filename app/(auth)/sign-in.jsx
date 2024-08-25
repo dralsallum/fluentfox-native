@@ -103,7 +103,7 @@ const SignIn = () => {
             <InputContainer>
               <Ionicons name="person-outline" size={20} color="#888" />
               <Input
-                placeholder="إيميل"
+                placeholder="اسم المستخدم"
                 placeholderTextColor="#888"
                 value={username}
                 onChangeText={setUsername}

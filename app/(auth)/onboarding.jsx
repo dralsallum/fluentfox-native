@@ -155,10 +155,10 @@ const questions = [
     subText:
       "اختر المدة الزمنية التي يمكنك تخصيصها يوميًا لتعلم اللغة الإنجليزية.",
     options: [
-      { text: "5 دقائق/يوم", icon: require("../../assets/images/clap.png") },
-      { text: "10 دقائق/يوم", icon: require("../../assets/images/clap.png") },
-      { text: "15 دقيقة/يوم", icon: require("../../assets/images/clap.png") },
-      { text: "20 دقيقة/يوم", icon: require("../../assets/images/clap.png") },
+      { text: "5 دقائق/يوم", icon: require("../../assets/icons/clock.png") },
+      { text: "10 دقائق/يوم", icon: require("../../assets/icons/clock.png") },
+      { text: "15 دقيقة/يوم", icon: require("../../assets/icons/clock.png") },
+      { text: "20 دقيقة/يوم", icon: require("../../assets/icons/clock.png") },
     ],
     image: require("../../assets/images/goal.png"),
   },
@@ -168,27 +168,27 @@ const questions = [
     options: [
       {
         text: "العائلة والمجتمع",
-        icon: require("../../assets/images/clap.png"),
+        icon: require("../../assets/icons/family.png"),
       },
       {
         text: "تحدي نفسي",
-        icon: require("../../assets/images/clap.png"),
+        icon: require("../../assets/icons/challenge.png"),
       },
-      { text: "الثقافة", icon: require("../../assets/images/clap.png") },
-      { text: "السفر", icon: require("../../assets/images/clap.png") },
-      { text: "العمل", icon: require("../../assets/images/clap.png") },
-      { text: "المدرسة", icon: require("../../assets/images/clap.png") },
-      { text: "أخرى", icon: require("../../assets/images/clap.png") },
+      { text: "الثقافة", icon: require("../../assets/icons/education.png") },
+      { text: "السفر", icon: require("../../assets/icons/travel.png") },
+      { text: "العمل", icon: require("../../assets/icons/working.png") },
+      { text: "المدرسة", icon: require("../../assets/icons/school.png") },
+      { text: "أخرى", icon: require("../../assets/icons/other.png") },
     ],
   },
   {
-    question: "مرحبًا، [اسم المستخدم]، كم تعرف من اللغة الإنجليزية؟",
+    question: "مرحبًا، كم تعرف من اللغة الإنجليزية؟",
     subText: "حدد مستوى إتقانك الحالي للغة الإنجليزية.",
     options: [
-      { text: "أنا مبتدئ", icon: require("../../assets/images/clap.png") },
+      { text: "أنا مبتدئ", icon: require("../../assets/icons/beginner.png") },
       {
         text: "أعرف بعض الإنجليزية",
-        icon: require("../../assets/images/clap.png"),
+        icon: require("../../assets/icons/expert.png"),
       },
     ],
     image: require("../../assets/images/goal.png"),

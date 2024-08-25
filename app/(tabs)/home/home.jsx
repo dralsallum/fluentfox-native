@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchUnlockedSets } from "../../redux/lessonsSlice";
-import { TouchableOpacity, StyleSheet, Text } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import { router } from "expo-router";
 import chapterItems from "../../utils/chapterItems";
+import CustomLoadingIndicator from "../../components/LoadingIndicator";
 import {
   QueChaIteEle,
   QueChaItePar,
@@ -68,28 +69,39 @@ import {
   LevelItem,
   LevelIcon,
   LevelText,
+  LoadingAll,
+  StyledSecModal,
+  ModalSecContainer,
+  CrownIcon,
+  ModalText,
+  PrimaryButton,
+  PrimaryButtonText,
+  SecondaryButton,
+  SecondaryButtonText,
+  ModalSecHeader,
 } from "./home.element";
 import Navbar from "../../components/navigation/navbar";
+import styled from "styled-components/native";
 
 const filterChaptersByLevel = (level) => {
   switch (level) {
-    case "مبتدى أ ١":
+    case "مبتدى أ١":
       return chapterItems.filter(
         (item) => item.chapterId >= 1 && item.chapterId <= 5
       );
-    case "Elementary A2":
+    case "ابتدائي أ٢":
       return chapterItems.filter(
         (item) => item.chapterId >= 6 && item.chapterId <= 10
       );
-    case "Intermediate B1":
+    case "متوسط ب١":
       return chapterItems.filter(
         (item) => item.chapterId >= 11 && item.chapterId <= 15
       );
-    case "Upper Intermediate B2":
+    case "فوق المتوسط ب٢":
       return chapterItems.filter(
         (item) => item.chapterId >= 16 && item.chapterId <= 20
       );
-    case "Advanced C1":
+    case "متقدم ج١":
       return chapterItems.filter(
         (item) => item.chapterId >= 21 && item.chapterId <= 25
       );
@@ -119,42 +131,50 @@ const ChapterItem = ({
       style={{ opacity: isUnlocked ? 1 : 0.5 }}
       disabled={!isUnlocked}
     >
-      <QueChaIteEle>
-        <QueChaItePar isUnlocked={isUnlocked}>
-          <QueChaPicCon>
-            <QueChaPicChiCon>
-              <QueChaPicSvg>
-                <QueChaPicDef>
-                  <QueChaPicLin>
-                    <QueChaPicSto />
-                  </QueChaPicLin>
-                </QueChaPicDef>
-                <QueChaPicCir />
-                <QueChaPicCir />
-              </QueChaPicSvg>
-            </QueChaPicChiCon>
-          </QueChaPicCon>
-          <QueChaPicSec>
-            <QueChaPic
-              source={{
-                uri: imgSrc,
-              }}
-              resizeMode="contain"
-            />
-          </QueChaPicSec>
-          <QueChaPicMai />
-        </QueChaItePar>
-        <QueChaIteSpa>
-          <QueChaIteParText>{mainText}</QueChaIteParText>
-          <QueChaIteSubPar>{subText}</QueChaIteSubPar>
-        </QueChaIteSpa>
+      <View style={{ position: "relative" }}>
+        <View>
+          <QueChaIteEle>
+            <QueChaItePar>
+              <QueChaPicCon>
+                <QueChaPicChiCon>
+                  <QueChaPicSvg>
+                    <QueChaPicDef>
+                      <QueChaPicLin>
+                        <QueChaPicSto />
+                      </QueChaPicLin>
+                    </QueChaPicDef>
+                    <QueChaPicCir />
+                    <QueChaPicCir />
+                  </QueChaPicSvg>
+                </QueChaPicChiCon>
+              </QueChaPicCon>
+
+              <QueChaPicSec>
+                <QueChaPic
+                  source={{
+                    uri: imgSrc,
+                  }}
+                  contentFit="contain"
+                  cachePolicy="memory"
+                />
+              </QueChaPicSec>
+
+              <QueChaPicMai />
+            </QueChaItePar>
+
+            <QueChaIteSpa>
+              <QueChaIteParText>{mainText}</QueChaIteParText>
+              <QueChaIteSubPar>{subText}</QueChaIteSubPar>
+            </QueChaIteSpa>
+          </QueChaIteEle>
+        </View>
 
         {lessonId !== 5 && (
           <QueChaPoiCon>
             <QueChaPoi />
           </QueChaPoiCon>
         )}
-      </QueChaIteEle>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -163,11 +183,21 @@ const Chapter = ({ chapterNumber, chapterItems }) => {
   const unlockedSets = useSelector((state) => state.lessons.unlockedSets); // Use Redux state
   const totalLessons = chapterItems.length;
   const completedLessonsCount = unlockedSets[chapterNumber]?.length || 0;
+  const lastUnlockedLessonId = unlockedSets[chapterNumber]?.slice(-1)[0];
 
   const progress = (completedLessonsCount / totalLessons) * 100;
+  const isCompleted = completedLessonsCount === totalLessons;
+  const nextChapterNumber = chapterNumber + 1;
+  const isNextChapterFirstLessonUnlocked =
+    unlockedSets[nextChapterNumber]?.includes(1);
 
   return (
-    <QueChaOneCon>
+    <QueChaOneCon
+      style={{
+        borderColor: isNextChapterFirstLessonUnlocked ? "#4c47e9" : "lightgray",
+      }}
+      completed={isCompleted}
+    >
       <QueChaOneHeaCon>
         <QueChaOneHea>الوحدة {chapterNumber}</QueChaOneHea>
         <QueChaOnePar>
@@ -190,6 +220,7 @@ const Chapter = ({ chapterNumber, chapterItems }) => {
           lessonId={item.lessonId}
           set={item.set}
           isUnlocked={unlockedSets[chapterNumber]?.includes(item.lessonId)}
+          isLastUnlocked={item.lessonId === lastUnlockedLessonId}
         />
       ))}
     </QueChaOneCon>
@@ -198,19 +229,31 @@ const Chapter = ({ chapterNumber, chapterItems }) => {
 
 const Home = () => {
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedLevel, setSelectedLevel] = useState("مبتدى أ ١"); // Default level
+  const [secondModalVisible, setSecondModalVisible] = useState(false);
+  const [selectedLevel, setSelectedLevel] = useState("مبتدى أ١"); // Default level
   const unlockedSets = useSelector((state) => state.lessons.unlockedSets);
   const userId = useSelector((state) => state.user.currentUser?._id);
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (userId) {
-      dispatch(fetchUnlockedSets(userId));
+      dispatch(fetchUnlockedSets(userId))
+        .then(() => setLoading(false))
+        .catch((err) => {
+          setError("Failed to load data. Please try again.");
+          setLoading(false);
+        });
     }
   }, [dispatch, userId]);
 
   const handleToggleModal = () => {
     setModalVisible(!modalVisible);
+  };
+
+  const handleToggleSecondModal = () => {
+    setSecondModalVisible(!secondModalVisible);
   };
 
   const handleSelectLevel = (level) => {
@@ -226,6 +269,14 @@ const Home = () => {
     acc[item.chapterId].push(item);
     return acc;
   }, {});
+
+  if (loading) {
+    return (
+      <LoadingAll>
+        <CustomLoadingIndicator />
+      </LoadingAll>
+    );
+  }
 
   return (
     <SafeArea>
@@ -245,7 +296,8 @@ const Home = () => {
                     <QueSubIcoCon>
                       <QueSubIco
                         source={require("../../../assets/icons/arrowDown.png")}
-                        resizeMode="contain"
+                        contentFit="contain"
+                        cachePolicy="memory"
                       />
                     </QueSubIcoCon>
                   </QueSubTitCon>
@@ -261,7 +313,8 @@ const Home = () => {
                           <QuenBanMa>
                             <SuperCon
                               source={require("../../../assets/images/superhero.png")}
-                              resizeMode="contain"
+                              contentFit="contain"
+                              cachePolicy="memory"
                             />
                             <QueBanSub>
                               <QueBanLa />
@@ -317,33 +370,55 @@ const Home = () => {
                   source={require("../../../assets/icons/cross.png")}
                 />
               </TouchableOpacity>
-              <ModalTitle>Complete English</ModalTitle>
+              <ModalTitle>إكمال الإنجليزية</ModalTitle>
             </ModalHeader>
-            <LevelItem onPress={() => handleSelectLevel("مبتدى أ ١")}>
+            <LevelItem onPress={() => handleSelectLevel("مبتدى أ١")}>
               <LevelIcon source={require("../../../assets/icons/chat.png")} />
               <LevelText>مبتدى أ ١ - الوحدة 1 - 5</LevelText>
             </LevelItem>
-            <LevelItem onPress={() => handleSelectLevel("Elementary A2")}>
+            <LevelItem onPress={() => handleSelectLevel("ابتدائي أ٢")}>
               <LevelIcon source={require("../../../assets/icons/chat.png")} />
-              <LevelText>Elementary A2 - Chapters 3 & 4</LevelText>
+              <LevelText>ابتدائي أ2 - الفصول 3 و 4</LevelText>
             </LevelItem>
-            <LevelItem onPress={() => handleSelectLevel("Intermediate B1")}>
+            <LevelItem onPress={() => handleSelectLevel("متوسط ب١")}>
               <LevelIcon source={require("../../../assets/icons/chat.png")} />
-              <LevelText>Intermediate B1 - Chapters 5 & 6</LevelText>
+              <LevelText>متوسط ب1 - الفصول 5 و 6</LevelText>
             </LevelItem>
-            <LevelItem
-              onPress={() => handleSelectLevel("Upper Intermediate B2")}
-            >
+            <LevelItem onPress={() => handleSelectLevel("فوق المتوسط ب٢")}>
               <LevelIcon source={require("../../../assets/icons/chat.png")} />
-              <LevelText>Upper Intermediate B2 - Chapters 7 & 8</LevelText>
+              <LevelText>فوق المتوسط ب2 - الفصول 7 و 8</LevelText>
             </LevelItem>
-            <LevelItem onPress={() => handleSelectLevel("Advanced C1")}>
+            <LevelItem onPress={() => handleSelectLevel("متقدم ج١")}>
               <LevelIcon source={require("../../../assets/icons/chat.png")} />
-              <LevelText>Advanced C1 - Chapters 9 & 10</LevelText>
+              <LevelText>متقدم ج1 - الفصول 9 و 10</LevelText>
             </LevelItem>
           </ModalContent>
         </ModalContainer>
       </StyledModal>
+      <StyledSecModal
+        animationType="slide"
+        transparent={true}
+        visible={secondModalVisible}
+        onRequestClose={handleToggleSecondModal}
+      >
+        <ModalSecContainer>
+          <ModalContent>
+            <ModalSecHeader>
+              <CrownIcon source={require("../../../assets/images/crown.png")} />
+              <ModalTitle>طور لغتك الإنجليزية</ModalTitle>
+            </ModalSecHeader>
+            <ModalText>
+              تعلم ما تحتاجه من خلال الوصول إلى الدورات المميزة المركزة فقط.
+            </ModalText>
+            <PrimaryButton onPress={handleToggleSecondModal}>
+              <PrimaryButtonText>احصل على خصم ٦٠%</PrimaryButtonText>
+            </PrimaryButton>
+            <SecondaryButton onPress={handleToggleSecondModal}>
+              <SecondaryButtonText>ليس الآن</SecondaryButtonText>
+            </SecondaryButton>
+          </ModalContent>
+        </ModalSecContainer>
+      </StyledSecModal>
     </SafeArea>
   );
 };

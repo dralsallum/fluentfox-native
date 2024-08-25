@@ -3,8 +3,10 @@ import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components/native";
 import { TouchableOpacity, Modal, View, Text, ScrollView } from "react-native";
 import { signOut, userSelector } from "../../redux/authSlice"; // Importing the signOut action and userSelector
-import { xpSelector } from "../../redux/lessonsSlice";
+import { xpSelector, fetchUnlockedSets } from "../../redux/lessonsSlice";
 import axios from "axios";
+import { Image as ExpoImage } from "expo-image";
+import { Linking } from "react-native";
 
 const SafeArea = styled.SafeAreaView`
   background-color: #ffffff;
@@ -32,7 +34,7 @@ const NavItem = styled.TouchableOpacity`
   flex-direction: row;
 `;
 
-const NavIcon = styled.Image`
+const NavIcon = styled(ExpoImage)`
   width: 24px;
   height: 24px;
 `;
@@ -70,7 +72,7 @@ const ModalTitle = styled.Text`
   font-weight: bold;
 `;
 
-const CrossIcon = styled.Image`
+const CrossIcon = styled(ExpoImage)`
   width: 24px;
   height: 24px;
 `;
@@ -81,7 +83,7 @@ const ProfileInfo = styled.View`
   align-items: center;
 `;
 
-const ProfileImage = styled.Image`
+const ProfileImage = styled(ExpoImage)`
   width: 60px;
   height: 60px;
   border-radius: 30px;
@@ -106,7 +108,7 @@ const StreakContainer = styled.View`
   justify-content: flex-start;
 `;
 
-const StreakIcon = styled.Image`
+const StreakIcon = styled(ExpoImage)`
   width: 24px;
   height: 24px;
   margin-right: 8px;
@@ -137,7 +139,7 @@ const ItemBox = styled.View`
   margin: 10px;
 `;
 
-const ItemImage = styled.Image`
+const ItemImage = styled(ExpoImage)`
   width: 60px;
   height: 60px;
   margin-right: 10px;
@@ -167,7 +169,7 @@ const NAV_ITEMS = [
     id: "Notifications",
     icon: require("../../../assets/icons/notification.png"),
     label: "الإشعارات",
-    showBadge: true,
+    showBadge: false,
   },
   {
     id: "Streak",
@@ -185,7 +187,7 @@ const NAV_ITEMS = [
     id: "Me",
     icon: require("../../../assets/images/person.png"),
     label: "الملف الشخصي",
-    showBadge: false, // No badge for the Profile icon
+    showBadge: false,
   },
 ];
 
@@ -194,11 +196,10 @@ const Navbar = () => {
   const [notificationsModalVisible, setNotificationsModalVisible] =
     useState(false);
   const [profileModalVisible, setProfileModalVisible] = useState(false);
-  const dispatch = useDispatch();
-  const { currentUser } = useSelector(userSelector);
-  const streakCount = 10;
-  const xp = useSelector(xpSelector);
   const [notifications, setNotifications] = useState([]);
+  const dispatch = useDispatch();
+  const xp = useSelector(xpSelector);
+  const { currentUser, streakCount } = useSelector(userSelector);
 
   const fetchNotifications = async () => {
     try {
@@ -241,15 +242,25 @@ const Navbar = () => {
     handleCloseModal();
   };
 
+  useEffect(() => {
+    if (currentUser) {
+      dispatch(fetchUnlockedSets(currentUser._id));
+    }
+  }, [currentUser, dispatch]);
+
   return (
     <SafeArea>
       <NavbarContainer>
         {NAV_ITEMS.map((item) => (
           <NavItem key={item.id} onPress={() => handleOpenModal(item.id)}>
-            <NavIcon source={item.icon} />
+            <NavIcon source={item.icon} cachePolicy="memory" />
             {item.showBadge && (
               <NavBadge active={activeTab === item.id}>
-                {item.id === "XP" ? xp : 0}
+                {item.id === "XP"
+                  ? xp
+                  : item.id === "Streak"
+                  ? currentUser?.streakCount ?? 0
+                  : 0}
               </NavBadge>
             )}
           </NavItem>
@@ -278,16 +289,32 @@ const Navbar = () => {
             <ScrollView>
               {notifications.length > 0 ? (
                 notifications.map((notification) => (
-                  <ItemBox key={notification._id}>
-                    <ItemImage
-                      source={{ uri: notification.image }}
-                      defaultSource={require("../../../assets/images/thumbnail.png")}
-                    />
-                    <ItemTextContainer>
-                      <ItemTitle>{notification.title}</ItemTitle>
-                      <ItemSubText>{notification.message}</ItemSubText>
-                    </ItemTextContainer>
-                  </ItemBox>
+                  <TouchableOpacity
+                    key={notification._id}
+                    onPress={() => {
+                      if (notification.url) {
+                        Linking.openURL(notification.url).catch((err) =>
+                          console.error("An error occurred", err)
+                        );
+                      } else {
+                        Alert.alert(
+                          "No URL",
+                          "This notification does not have a URL to open."
+                        );
+                      }
+                    }}
+                  >
+                    <ItemBox>
+                      <ItemImage
+                        source={{ uri: notification.image }}
+                        defaultSource={require("../../../assets/images/thumbnail.png")}
+                      />
+                      <ItemTextContainer>
+                        <ItemTitle>{notification.title}</ItemTitle>
+                        <ItemSubText>{notification.message}</ItemSubText>
+                      </ItemTextContainer>
+                    </ItemBox>
+                  </TouchableOpacity>
                 ))
               ) : (
                 <Text>لا توجد إشعارات</Text>
@@ -322,7 +349,9 @@ const Navbar = () => {
                   البريد الإلكتروني: {currentUser?.email}
                 </ProfileText>
                 <StreakContainer>
-                  <ProfileText>عدد أيام الحماس: {streakCount}</ProfileText>
+                  <ProfileText>
+                    عدد أيام الحماس: {currentUser?.streakCount ?? 0}
+                  </ProfileText>
                   <StreakIcon
                     source={require("../../../assets/icons/fire.png")}
                   />

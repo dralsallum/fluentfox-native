@@ -10,7 +10,10 @@ export const fetchUnlockedSets = createAsyncThunk(
       const response = await axios.get(
         `https://quizeng-022517ad949b.herokuapp.com/api/users/find/${userId}`
       );
-      return response.data.unlockedSets;
+      return {
+        unlockedSets: response.data.unlockedSets,
+        xp: response.data.xp,
+      };
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data || error.message);
     }
@@ -29,6 +32,25 @@ export const updateUnlockedSets = createAsyncThunk(
       await axios.put(
         `https://quizeng-022517ad949b.herokuapp.com/api/users/unlockedSets/${userId}`,
         { unlockedSets }
+      );
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+// Thunk to update xp on the backend
+export const updateXP = createAsyncThunk(
+  "lessons/updateXP",
+  async (_, thunkAPI) => {
+    const state = thunkAPI.getState();
+    const { xp } = state.lessons;
+    const userId = state.user.currentUser._id;
+
+    try {
+      await axios.put(
+        `https://quizeng-022517ad949b.herokuapp.com/api/users/xp/${userId}`,
+        { xp }
       );
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data || error.message);
@@ -80,7 +102,8 @@ const lessonsSlice = createSlice({
         state.status = "loading";
       })
       .addCase(fetchUnlockedSets.fulfilled, (state, action) => {
-        state.unlockedSets = action.payload;
+        state.unlockedSets = action.payload.unlockedSets;
+        state.xp = action.payload.xp;
         state.status = "succeeded";
       })
       .addCase(fetchUnlockedSets.rejected, (state, action) => {
@@ -94,6 +117,16 @@ const lessonsSlice = createSlice({
         state.status = "succeeded";
       })
       .addCase(updateUnlockedSets.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      })
+      .addCase(updateXP.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(updateXP.fulfilled, (state) => {
+        state.status = "succeeded";
+      })
+      .addCase(updateXP.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       });

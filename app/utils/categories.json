@@ -73,6 +73,33 @@
       "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/space.webp",
       "navigateTo": "exercise",
       "set": "set3"
+    },
+    {
+      "title": "تحدي البقاء على قمر أوروبا",
+      "subTitle": "البقاء في ظروف القمر الصعبة",
+      "borderColor": "#FF6347",
+      "locked": true,
+      "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/europe.webp",
+      "navigateTo": "exercise",
+      "set": "set4"
+    },
+    {
+      "title": "أطول مبنى في المدينة",
+      "subTitle": "استكشاف الأعاجيب المعمارية الحديثة",
+      "borderColor": "#106dee",
+      "locked": true,
+      "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/building.webp",
+      "navigateTo": "exercise",
+      "set": "set5"
+    },
+    {
+      "title": "مغامرة في الفضاء",
+      "subTitle": "رحلة عبر النجوم والمجرات البعيدة",
+      "borderColor": "#FFD700",
+      "locked": true,
+      "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/space.webp",
+      "navigateTo": "exercise",
+      "set": "set6"
     }
   ]
 }

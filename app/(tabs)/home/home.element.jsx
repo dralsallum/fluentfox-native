@@ -1,7 +1,15 @@
 import styled from "styled-components/native";
 import { ScrollView, Dimensions } from "react-native";
+import { Image as ExpoImage } from "expo-image";
 
 const screenWidth = Dimensions.get("window").width;
+
+export const LoadingAll = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+`;
 
 export const SafeArea = styled.SafeAreaView`
   flex: 1;
@@ -70,7 +78,7 @@ export const QueSubIcoCon = styled.View`
   height: 18px;
 `;
 
-export const QueSubIco = styled.Image`
+export const QueSubIco = styled(ExpoImage)`
   width: 100%;
   height: 100%;
 `;
@@ -148,7 +156,7 @@ export const LinkCon = styled.View`
   flex-direction: row;
   justify-content: space-around;
 `;
-export const SuperCon = styled.Image`
+export const SuperCon = styled(ExpoImage)`
   width: 80px;
   height: 80px;
   position: absolute;
@@ -167,7 +175,7 @@ export const QueTeHe = styled.Text`
 export const QueChaOneCon = styled.View`
   margin: 20px 0;
   border-width: 2px;
-  border-color: ${(props) => (props.completed ? "#4c47e8" : "lightgray")};
+  border-color: lightgray;
   border-radius: 18px;
   padding: 8px;
   elevation: 3;
@@ -300,7 +308,7 @@ export const QueChaPicSec = styled.View`
   background-color: transparent;
 `;
 
-export const QueChaPic = styled.Image`
+export const QueChaPic = styled(ExpoImage)`
   width: 100%;
   height: 100%;
   border-radius: 50px;
@@ -336,7 +344,7 @@ export const QueChaIteSubPar = styled.Text`
 `;
 
 export const QueChaPoiCon = styled.View`
-  z-index: 1;
+  z-index: -10000;
   position: absolute;
   height: 100%;
   left: 40px;
@@ -407,7 +415,7 @@ export const ModalHeader = styled.View`
   margin-bottom: 15px;
 `;
 
-export const FlagIcon = styled.Image`
+export const FlagIcon = styled(ExpoImage)`
   width: 30px;
   height: 30px;
   margin-right: 10px;
@@ -426,7 +434,7 @@ export const LevelItem = styled.TouchableOpacity`
   border-bottom-color: #f0f0f0;
 `;
 
-export const LevelIcon = styled.Image`
+export const LevelIcon = styled(ExpoImage)`
   width: 40px;
   height: 40px;
   margin-right: 15px;
@@ -445,8 +453,61 @@ export const CloseButtonText = styled.Text`
   font-size: 16px;
   color: blue;
 `;
-export const CrossIcon = styled.Image`
-  width: 25;
-  height: 25;
-  margin-right: 15;
+export const CrossIcon = styled(ExpoImage)`
+  width: 25px;
+  height: 25px;
+  margin-right: 15px;
+`;
+
+export const StyledSecModal = styled.Modal``;
+
+export const ModalText = styled.Text`
+  font-size: 16px;
+  color: #4c4f69;
+  text-align: center;
+  margin-bottom: 20px;
+`;
+
+export const CrownIcon = styled(ExpoImage)`
+  width: 50px;
+  height: 50px;
+`;
+
+export const ActionButton = styled.TouchableOpacity`
+  width: 100%;
+  padding: 15px;
+  border-radius: 25px;
+  align-items: center;
+  margin-bottom: 10px;
+`;
+
+export const PrimaryButton = styled(ActionButton)`
+  background-color: #4c47e9;
+`;
+
+export const PrimaryButtonText = styled.Text`
+  color: white;
+  font-size: 16px;
+`;
+
+export const SecondaryButton = styled(ActionButton)`
+  background-color: transparent;
+  border: 1px solid #4c47e9;
+`;
+
+export const SecondaryButtonText = styled.Text`
+  color: #4c47e9;
+  font-size: 16px;
+`;
+
+export const ModalSecContainer = styled.View`
+  flex: 1;
+  justify-content: flex-end;
+  background-color: rgba(0, 0, 0, 0.5);
+`;
+
+export const ModalSecHeader = styled.View`
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 15px;
 `;

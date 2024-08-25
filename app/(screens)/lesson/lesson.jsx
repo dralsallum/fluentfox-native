@@ -1,19 +1,18 @@
-import React, { useState, useEffect } from "react";
-import styled from "styled-components/native";
-import { Image, Modal, ActivityIndicator } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { Image, Modal, Easing, Animated, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import { useRoute } from "@react-navigation/native";
+import { xpSelector } from "../../redux/lessonsSlice";
 import {
-  fetchUnlockedSets,
   unlockNextLesson,
   updateUnlockedSets,
+  updateXP,
 } from "../../redux/lessonsSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import * as Speech from "expo-speech";
 import {
   SafeArea,
-  CenteredContainer,
   Header,
   BackButton,
   ProgressBarContainer,
@@ -58,7 +57,46 @@ import {
   ImageOptionButton,
   ImageOption,
   ExText,
+  ResCon,
+  ConButton,
+  ConButtonText,
+  ReCon,
+  ReTex,
+  ScCon,
+  StCon,
+  StText,
+  MidCon,
+  ScoreCon,
+  ScoreText,
+  PerTex,
+  MulTop,
+  MulMidTex,
+  MulMidAn,
+  MulMid,
+  MulImage,
+  PlaceholderText,
+  SelectedOptionText,
+  MulCon,
+  SelectedOptionWrapper,
+  SelectedOptionButton,
+  LoadingAll,
+  RealAll,
+  RealView,
+  SelectedRealButton,
+  RealText,
+  OptionsReal,
+  UnderText,
+  LineRe,
+  StreView,
+  StreSub,
+  StreRo,
+  StreTex,
+  CheIco,
+  StreText,
+  ExpText,
 } from "./lesson.element";
+import { Audio } from "expo-av";
+import CustomLoadingIndicator from "../../components/LoadingIndicator";
 
 const WriteAnswerQuestion = ({
   currentQuestion,
@@ -99,6 +137,62 @@ const WriteAnswerQuestion = ({
   );
 };
 
+const MultipleQuestion = ({
+  currentQuestion,
+  selectedOptions,
+  handleOptionSelect,
+  handleOptionDeselect,
+  selectedOption,
+  setSelectedOption,
+}) => {
+  return (
+    <MulCon>
+      <MulTop>
+        <MulImage
+          source={{ uri: currentQuestion.ImageAvatar }}
+          resizeMode="contain"
+        />
+      </MulTop>
+
+      <MulMid>
+        <MulMidTex>{currentQuestion.sentence}</MulMidTex>
+        <MulMidAn>
+          <SelectedOptionWrapper>
+            {selectedOptions.length > 0 ? (
+              selectedOptions.map((optionIndex, index) => (
+                <SelectedOptionButton
+                  key={index}
+                  onPress={() => handleOptionDeselect(index)}
+                  isSelected={selectedOption === index}
+                >
+                  <SelectedOptionText>
+                    {currentQuestion.answerOptions[optionIndex].answerText}
+                  </SelectedOptionText>
+                </SelectedOptionButton>
+              ))
+            ) : (
+              <PlaceholderText>______</PlaceholderText>
+            )}
+          </SelectedOptionWrapper>
+        </MulMidAn>
+        <MulMidTex>{currentQuestion.multiple}</MulMidTex>
+      </MulMid>
+
+      <OptionsContainer>
+        {currentQuestion.answerOptions.map((option, index) => (
+          <OptionButton
+            key={index}
+            onPress={() => handleOptionSelect(index)}
+            isSelected={selectedOption === index}
+          >
+            <OptionText>{option.answerText}</OptionText>
+          </OptionButton>
+        ))}
+      </OptionsContainer>
+    </MulCon>
+  );
+};
+
 const RegularQuestion = ({
   currentQuestion,
   selectedOptions,
@@ -112,19 +206,25 @@ const RegularQuestion = ({
     }
   }, [currentQuestion.sentence]);
 
+  const handleSpeakerPress = () => {
+    Speech.speak(currentQuestion.sentence);
+  };
+
   return (
     <>
       <DialogueView>
         <SpeechBubble>
           <SpeechText>{currentQuestion.sentence}</SpeechText>
-          <Image
-            source={require("../../../assets/icons/speaker.png")}
-            style={{ width: 24, height: 24, marginLeft: 5 }}
-            resizeMode="contain"
-          />
+          <TouchableOpacity onPress={handleSpeakerPress}>
+            <Image
+              source={require("../../../assets/icons/speaker.png")}
+              style={{ width: 24, height: 24, marginLeft: 5 }}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
         </SpeechBubble>
         <CharacterImage
-          source={require("../../../assets/images/mainGirl.png")}
+          source={{ uri: currentQuestion.ImageAvatar }}
           resizeMode="contain"
         />
       </DialogueView>
@@ -139,8 +239,13 @@ const RegularQuestion = ({
               selectable={false}
               style={{
                 borderWidth: 2,
-                borderColor: "#c9c9c9",
-                borderRadius: 10,
+                borderColor: "rgb(206, 206, 206)",
+                borderRadius: 12,
+                shadowColor: "rgba(0, 0, 0, 0.1)",
+                shadowOffset: { width: -2, height: 2 },
+                shadowOpacity: 0.5,
+                shadowRadius: 0.5,
+                elevation: 3,
                 padding: 8,
                 margin: 4,
                 marginBottom: 8,
@@ -165,16 +270,89 @@ const RegularQuestion = ({
   );
 };
 
+const RealQuestion = ({
+  currentQuestion,
+  selectedOptionIndex,
+  handleOptionSelect,
+  showResult,
+}) => {
+  const speakSentence = () => {
+    if (currentQuestion.sentence) {
+      Speech.speak(currentQuestion.sentence);
+    }
+  };
+
+  // Automatically speak the sentence when the question is loaded
+  useEffect(() => {
+    if (currentQuestion.sentence) {
+      speakSentence();
+    }
+  }, [currentQuestion.sentence]);
+
+  const handleSpeakerPress = () => {
+    Speech.speak(currentQuestion.sentence);
+  };
+
+  return (
+    <RealAll>
+      <RealView>
+        <CharacterImage
+          source={{ uri: currentQuestion.ImageAvatar }}
+          resizeMode="contain"
+        />
+        <SpeechBubble>
+          <SpeechText>{currentQuestion.sentence}</SpeechText>
+          <TouchableOpacity onPress={handleSpeakerPress}>
+            <Image
+              source={require("../../../assets/icons/speaker.png")}
+              style={{ width: 24, height: 24, marginLeft: 5 }}
+              resizeMode="contain"
+              onPress={handleSpeakerPress}
+            />
+          </TouchableOpacity>
+        </SpeechBubble>
+      </RealView>
+      <LineRe />
+      <UnderText>{currentQuestion.multiple}</UnderText>
+      <OptionsReal>
+        {currentQuestion.answerOptions.map((option, index) => {
+          const isSelected = selectedOptionIndex === index;
+          const isCorrect = currentQuestion.correctOption === index;
+
+          return (
+            <SelectedRealButton
+              key={index}
+              onPress={() => handleOptionSelect(index)}
+              selected={isSelected}
+              showResult={showResult}
+              isCorrect={isCorrect}
+              isSelected={isSelected}
+            >
+              <RealText>{option.answerText}</RealText>
+            </SelectedRealButton>
+          );
+        })}
+      </OptionsReal>
+    </RealAll>
+  );
+};
+
 const ImageQuizQuestion = ({
   currentQuestion,
   selectedOptionIndex,
   handleOptionSelect,
   showResult,
-  isAnswerCorrect,
 }) => {
-  useEffect(() => {
-    if (/^[a-zA-Z\s]+$/.test(currentQuestion.sentence)) {
+  const speakSentence = () => {
+    if (currentQuestion.sentence) {
       Speech.speak(currentQuestion.sentence);
+    }
+  };
+
+  // Automatically speak the sentence when the question is loaded
+  useEffect(() => {
+    if (currentQuestion.sentence) {
+      speakSentence();
     }
   }, [currentQuestion.sentence]);
 
@@ -231,11 +409,51 @@ const Lesson = () => {
   const [loading, setLoading] = useState(true);
   const [showResult, setShowResult] = useState(false);
   const [showTry, setShowTry] = useState(false);
+  const [showStreak, setShowStreak] = useState(true);
   const [hearts, setHearts] = useState(5);
   const router = useRouter();
   const route = useRoute();
   const [selectedSet, setSelectedSet] = useState(route.params?.set || "set1");
   const dispatch = useDispatch();
+  const xp = useSelector(xpSelector);
+  const correctSound = useRef(null);
+  const incorrectSound = useRef(null);
+  const doneSound = useRef(null);
+
+  // Preload sounds on component mount
+  useEffect(() => {
+    const loadSounds = async () => {
+      const { sound: correct } = await Audio.Sound.createAsync({
+        uri: "https://alsallum.s3.eu-north-1.amazonaws.com/correct.mp3",
+      });
+      correctSound.current = correct;
+
+      const { sound: incorrect } = await Audio.Sound.createAsync({
+        uri: "https://alsallum.s3.eu-north-1.amazonaws.com/Wrong.mp3",
+      });
+      incorrectSound.current = incorrect;
+
+      const { sound: done } = await Audio.Sound.createAsync({
+        uri: "https://alsallum.s3.eu-north-1.amazonaws.com/done.mp3",
+      });
+      doneSound.current = done;
+    };
+
+    loadSounds();
+
+    // Cleanup on unmount
+    return () => {
+      if (correctSound.current) correctSound.current.unloadAsync();
+      if (incorrectSound.current) incorrectSound.current.unloadAsync();
+      if (doneSound.current) doneSound.current.unloadAsync();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (resultModalVisible && doneSound.current) {
+      doneSound.current.replayAsync();
+    }
+  }, [resultModalVisible]);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -244,7 +462,27 @@ const Lesson = () => {
         const response = await axios.get(
           `https://quizeng-022517ad949b.herokuapp.com/api/main/${selectedSet}`
         );
-        setQuestions(response.data.questions);
+        const fetchedQuestions = response.data.questions;
+
+        // Preload all images
+        const imagePromises = fetchedQuestions.map((question) => {
+          const imagePromises = [];
+          if (question.ImageAvatar) {
+            imagePromises.push(Image.prefetch(question.ImageAvatar));
+          }
+          if (question.answerOptions) {
+            question.answerOptions.forEach((option) => {
+              if (option.imageUrl) {
+                imagePromises.push(Image.prefetch(option.imageUrl));
+              }
+            });
+          }
+          return Promise.all(imagePromises);
+        });
+
+        await Promise.all(imagePromises);
+
+        setQuestions(fetchedQuestions);
       } catch (error) {
         console.error("Failed to fetch questions", error);
       } finally {
@@ -261,7 +499,11 @@ const Lesson = () => {
 
   const handleOptionSelect = (index) => {
     const currentQuestion = questions[currentQuestionIndex];
-    if (currentQuestion.questionType === "imageQuiz") {
+
+    if (
+      currentQuestion.questionType === "imageQuiz" ||
+      currentQuestion.questionType === "RealQuestion"
+    ) {
       setSelectedOptionIndex(index);
     } else {
       setSelectedOptions((prev) => [...prev, index]);
@@ -276,7 +518,10 @@ const Lesson = () => {
     const currentQuestion = questions[currentQuestionIndex];
     let isCorrect = false;
 
-    if (currentQuestion.questionType === "imageQuiz") {
+    if (
+      currentQuestion.questionType === "imageQuiz" ||
+      currentQuestion.questionType === "RealQuestion"
+    ) {
       isCorrect = selectedOptionIndex === currentQuestion.correctOption;
     } else if (currentQuestion.questionType === "writeAnswer") {
       isCorrect =
@@ -295,8 +540,10 @@ const Lesson = () => {
 
     if (isCorrect) {
       setCorrectAnswersCount((prevCount) => prevCount + 1);
+      if (correctSound.current) correctSound.current.replayAsync(); // Play correct sound
     } else {
       setHearts((prevHearts) => Math.max(0, prevHearts - 1)); // Decrease hearts on incorrect answer
+      if (incorrectSound.current) incorrectSound.current.replayAsync(); // Play incorrect sound
     }
 
     setShowResult(true); // Show the correct/incorrect feedback
@@ -324,10 +571,11 @@ const Lesson = () => {
   };
 
   const handleFinished = () => {
-    dispatch(unlockNextLesson());
-    dispatch(updateUnlockedSets());
-    setResultModalVisible(false);
-    router.push("home/home");
+    dispatch(unlockNextLesson()); // Unlock the next lesson and increment XP
+    dispatch(updateUnlockedSets()); // Update the unlocked sets on the backend
+    dispatch(updateXP()); // Update XP on the backend
+    setResultModalVisible(false); // Close the result modal
+    router.push("home/home"); // Navigate to the home page
   };
 
   const handleTryAgain = () => {
@@ -339,18 +587,22 @@ const Lesson = () => {
     setSelectedOptionIndex(null);
     setSelectedOptions([]);
     setUserAnswer("");
+    setResultModalVisible(false);
   };
 
   if (loading) {
     return (
-      <CenteredContainer>
-        <ActivityIndicator size="large" color="#2497f2" />
-      </CenteredContainer>
+      <LoadingAll>
+        <CustomLoadingIndicator />
+      </LoadingAll>
     );
   }
 
   const currentQuestion = questions[currentQuestionIndex];
   const isArabic = currentQuestion.questionType === "type1";
+  const correctPercentage = Math.round(
+    (correctAnswersCount / questions.length) * 100
+  );
 
   return (
     <SafeArea>
@@ -388,6 +640,21 @@ const Lesson = () => {
           userAnswer={userAnswer}
           setUserAnswer={setUserAnswer}
         />
+      ) : currentQuestion.questionType === "MultipleQuestion" ? (
+        <MultipleQuestion
+          currentQuestion={currentQuestion}
+          selectedOptions={selectedOptions}
+          handleOptionSelect={handleOptionSelect}
+          handleOptionDeselect={handleOptionDeselect}
+        />
+      ) : currentQuestion.questionType === "RealQuestion" ? (
+        <RealQuestion
+          currentQuestion={currentQuestion}
+          selectedOptionIndex={selectedOptionIndex}
+          handleOptionSelect={handleOptionSelect}
+          showResult={showResult}
+          isAnswerCorrect={isAnswerCorrect}
+        />
       ) : (
         <RegularQuestion
           currentQuestion={currentQuestion}
@@ -419,7 +686,6 @@ const Lesson = () => {
           </NextButton>
         </BottomModalContainer>
       </Modal>
-
       <Modal
         animationType="fade"
         transparent={true}
@@ -428,20 +694,90 @@ const Lesson = () => {
       >
         <ResultModalContainer>
           <ResultModalContent>
-            <ResultText>
-              لقد أجبت بشكل صحيح على {correctAnswersCount} من أصل{" "}
-              {questions.length} سؤال.
-            </ResultText>
             <Image
-              source={require("../../../assets/images/congratulations.png")}
+              source={require("../../../assets/images/wins.png")}
+              style={{ width: 120, height: 120, marginBottom: 20 }}
+              resizeMode="contain"
+            />
+            <ResultText>تهانينا! لقد أنهيت الدرس بنجاح!</ResultText>
+            <MidCon>
+              <ReCon>
+                <StCon>
+                  <StText>النجوم</StText>
+                </StCon>
+                <StCon>
+                  <Image
+                    source={require("../../../assets/icons/stars.png")}
+                    style={{ width: 20, height: 20 }}
+                    resizeMode="contain"
+                  />
+                  <ReTex>{xp} + 1</ReTex>
+                </StCon>
+              </ReCon>
+              <ScCon>
+                <ScoreCon>
+                  <ScoreText>النتيجة</ScoreText>
+                </ScoreCon>
+                <StCon>
+                  <Image
+                    source={require("../../../assets/icons/stock.png")}
+                    style={{ width: 20, height: 20 }}
+                    resizeMode="contain"
+                  />
+                  <PerTex>{correctPercentage}%</PerTex>
+                </StCon>
+              </ScCon>
+            </MidCon>
+            <ResCon>
+              <ConButton onPress={handleFinished}>
+                <ConButtonText>انتقل للدرس التالي</ConButtonText>
+              </ConButton>
+              <RestartButton onPress={handleTryAgain}>
+                <RestartButtonText>اعادة الدرس</RestartButtonText>
+              </RestartButton>
+            </ResCon>
+          </ResultModalContent>
+        </ResultModalContainer>
+      </Modal>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showStreak}
+        onRequestClose={() => setShowTry(false)}
+      >
+        <TryModalContainer>
+          <TryModalContent>
+            <Image
+              source={require("../../../assets/icons/fire.png")}
               style={{ width: 100, height: 100, marginBottom: 20 }}
               resizeMode="contain"
             />
-            <RestartButton onPress={handleFinished}>
-              <RestartButtonText>انتقل للدرس التالي</RestartButtonText>
-            </RestartButton>
-          </ResultModalContent>
-        </ResultModalContainer>
+            <StreView>
+              {["Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"].map(
+                (day, index) => (
+                  <StreSub key={index}>
+                    <StreRo completed={index === 0}>
+                      {index === 0 && (
+                        <CheIco
+                          source={require("../../../assets/icons/check.png")}
+                        />
+                      )}
+                    </StreRo>
+                    <StreTex>{day}</StreTex>
+                  </StreSub>
+                )
+              )}
+            </StreView>
+            <StreText>You've started a streak!</StreText>
+            <ExpText>
+              Study every day to build your streak and create a powerful
+              learning habit
+            </ExpText>
+            <TryButton onPress={handleTryAgain}>
+              <TryButtonText>Continue</TryButtonText>
+            </TryButton>
+          </TryModalContent>
+        </TryModalContainer>
       </Modal>
       <Modal
         animationType="fade"

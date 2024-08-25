@@ -48,7 +48,6 @@ const chapterItems = [
   {
     chapterId: 2,
     lessonId: 1,
-    completed: false,
     imgSrc: "https://alsallum.s3.eu-north-1.amazonaws.com/new-job.webp",
     mainText: "بدء وظيفة جديدة",
     subText: "البدايات الوظيفية اسهل معنا",
@@ -57,7 +56,7 @@ const chapterItems = [
   },
   {
     chapterId: 2,
-    lessonId: 3,
+    lessonId: 2,
     imgSrc: "https://alsallum.s3.eu-north-1.amazonaws.com/describe.webp",
     mainText: "وصف شخص",
     subText: "تحدث عن صفات الشخص",
@@ -131,7 +130,7 @@ const chapterItems = [
   {
     chapterId: 3,
     lessonId: 5,
-    imgSrc: "https://alsallum.s3.eu-north-1.amazonaws.com/Diamond.png",
+    imgSrc: "https://alsallum.s3.eu-north-1.amazonaws.com/checkpoint.webp",
     mainText: "نقطة التحقق",
     subText: "اختبر مهاراتك للوصول إلى الفصل التالي",
     url: "lesson/lesson",

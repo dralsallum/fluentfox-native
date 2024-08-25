@@ -2,7 +2,21 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { fetchUnlockedSets } from "./lessonsSlice";
 
-// Thunk for user login
+export const updateStreakCount = createAsyncThunk(
+  "user/updateStreakCount",
+  async ({ userId }, thunkAPI) => {
+    try {
+      const response = await axios.put(
+        `https://quizeng-022517ad949b.herokuapp.com/api/users/streak/${userId}`
+      );
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || error.message;
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 export const login = createAsyncThunk(
   "user/login",
   async (credentials, thunkAPI) => {
@@ -11,8 +25,13 @@ export const login = createAsyncThunk(
         "https://quizeng-022517ad949b.herokuapp.com/api/auth/login",
         credentials
       );
+
       // Dispatch fetchUnlockedSets after a successful login
       thunkAPI.dispatch(fetchUnlockedSets(response.data._id));
+
+      // Dispatch updateStreakCount after successful login
+      thunkAPI.dispatch(updateStreakCount({ userId: response.data._id }));
+
       return response.data;
     } catch (error) {
       const message = error.response?.data?.message || error.message;
@@ -30,8 +49,13 @@ export const register = createAsyncThunk(
         "https://quizeng-022517ad949b.herokuapp.com/api/auth/register",
         userDetails
       );
+
       // Dispatch fetchUnlockedSets after a successful registration
       thunkAPI.dispatch(fetchUnlockedSets(response.data._id));
+
+      // Dispatch updateStreakCount after successful registration
+      thunkAPI.dispatch(updateStreakCount({ userId: response.data._id }));
+
       return response.data;
     } catch (error) {
       const message = error.response?.data?.message || error.message;
@@ -101,6 +125,15 @@ const userSlice = createSlice({
       })
       .addCase(register.rejected, (state, action) => {
         state.isFetching = false;
+        state.isError = true;
+        state.errorMessage = action.payload;
+      })
+      .addCase(updateStreakCount.fulfilled, (state, action) => {
+        if (state.currentUser) {
+          state.currentUser.streak = action.payload;
+        }
+      })
+      .addCase(updateStreakCount.rejected, (state, action) => {
         state.isError = true;
         state.errorMessage = action.payload;
       });
