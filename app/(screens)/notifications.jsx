@@ -6,47 +6,48 @@ const Container = styled.View`
   flex: 1;
   justify-content: center;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.5); /* Slightly darker background */
 `;
 
 const DialogBox = styled.View`
-  width: 90%;
+  width: 85%;
   background-color: #fff;
-  padding: 20px;
-  border-radius: 12px;
+  padding: 25px;
+  border-radius: 16px;
   align-items: center;
-  elevation: 5;
+  elevation: 10;
   shadow-color: #000;
-  shadow-offset: 0 2px;
-  shadow-opacity: 0.25;
-  shadow-radius: 3.84px;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.3;
+  shadow-radius: 4.65px;
 `;
 
 const Title = styled.Text`
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  color: #333;
 `;
 
 const Subtitle = styled.Text`
   font-size: 16px;
-  color: #333;
+  color: #666;
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
 `;
 
 const Button = styled.TouchableOpacity`
-  background-color: #007aff;
-  padding: 10px 20px;
-  border-radius: 6px;
-  margin-vertical: 10px;
+  background-color: ${({ isPrimary }) => (isPrimary ? "#007aff" : "#ccc")};
+  padding: 12px 25px;
+  border-radius: 8px;
+  margin-top: 10px;
   width: 80%;
   align-items: center;
 `;
 
 const ButtonText = styled.Text`
-  color: white;
+  color: ${({ isPrimary }) => (isPrimary ? "#fff" : "#333")};
   font-size: 16px;
   font-weight: bold;
 `;
@@ -54,9 +55,8 @@ const ButtonText = styled.Text`
 const NotificationPermissionScreen = () => {
   const [modalVisible, setModalVisible] = useState(true);
 
-  const handlePress = (allow) => {
-    // Process the permission request result here
-    alert(`Permission ${allow ? "granted" : "denied"}`);
+  const handlePermission = (allowed) => {
+    alert(`الإذن ${allowed ? "ممنوح" : "مرفوض"}`);
     setModalVisible(false);
   };
 
@@ -70,15 +70,15 @@ const NotificationPermissionScreen = () => {
       >
         <Container>
           <DialogBox>
-            <Title>"Busuu" would like to send you notifications</Title>
+            <Title>فلونت فوكس يرغب بإرسال إشعارات إليك</Title>
             <Subtitle>
-              Notifications may include alerts, sounds, and icon badges.
+              قد تتضمن الإشعارات تنبيهات، أصوات، وشارات على الأيقونات
             </Subtitle>
-            <Button onPress={() => handlePress(true)}>
-              <ButtonText>Allow</ButtonText>
+            <Button isPrimary onPress={() => handlePermission(true)}>
+              <ButtonText isPrimary>السماح</ButtonText>
             </Button>
-            <Button onPress={() => handlePress(false)}>
-              <ButtonText>Don't Allow</ButtonText>
+            <Button onPress={() => handlePermission(false)}>
+              <ButtonText>عدم السماح</ButtonText>
             </Button>
           </DialogBox>
         </Container>

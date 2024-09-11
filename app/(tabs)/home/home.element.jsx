@@ -98,7 +98,7 @@ export const QueTiBo = styled.View`
   border-radius: 10px;
 `;
 
-export const QueTiKeyCon = styled.View`
+export const QueTiKeyCon = styled.TouchableOpacity`
   width: 100%;
 `;
 

@@ -512,12 +512,12 @@ export const StText = styled.Text`
 
 export const RealAll = styled.View`
   align-items: center;
+  margin-top: -10px;
 `;
 export const RealView = styled.View`
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
 `;
 
 export const LineReal = styled.View`
@@ -621,4 +621,20 @@ export const ExpText = styled.Text`
 export const CheIco = styled.Image`
   width: 20px;
   height: 20px;
+`;
+
+export const DayCircle = styled.View`
+  width: 30px;
+  height: 30px;
+  border-radius: 20px;
+  border: 2px solid ${(props) => (props.completed ? "#4caf50" : "#e1e1e1")};
+  background-color: ${(props) => (props.completed ? "#4caf50" : "#ffffff")};
+  justify-content: center;
+  align-items: center;
+`;
+
+export const DayText = styled.Text`
+  font-size: 12px;
+  color: ${(props) => (props.completed ? "#333333" : "#333333")};
+  margin-top: 5px;
 `;

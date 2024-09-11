@@ -24,7 +24,7 @@
       "borderColor": "#9932CC",
       "locked": true,
       "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/space.webp",
-      "navigateTo": "Vocabulary",
+      "navigateTo": "listen",
       "set": "set3"
     },
     {
@@ -33,7 +33,7 @@
       "borderColor": "#106dee",
       "locked": false,
       "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/girlCat.webp",
-      "navigateTo": "Vocabulary",
+      "navigateTo": "listen",
       "set": "set4"
     },
     {
@@ -42,7 +42,7 @@
       "borderColor": "#FFD700",
       "locked": true,
       "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/boyBird.webp",
-      "navigateTo": "Vocabulary",
+      "navigateTo": "listen",
       "set": "set5"
     }
   ],

@@ -1,43 +1,57 @@
-import React, { useEffect, useRef } from "react";
-import { Animated, Easing } from "react-native";
+import React from "react";
+import LottieView from "lottie-react-native";
+import { Text, View } from "react-native";
 import styled from "styled-components/native";
 
+// Container for the loading indicator
 const LoadingContainer = styled.View`
-  width: 50%;
-  height: 3px;
-  background-color: #bfbfbf;
-  overflow: hidden;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
 `;
 
-const LoadingBar = styled(Animated.View)`
-  height: 100%;
-  background-color: #4c47e8;
+// Style for the text
+const LoadingText = styled(Text)`
+  margin-top: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #fd8627;
+  text-align: center;
+  letter-spacing: 1.5px;
+`;
+
+const MainAnimationWrapper = styled.View`
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 `;
 
 const CustomLoadingIndicator = () => {
-  const widthAnimation = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    // Start an infinite loop animation for the loading bar
-    Animated.loop(
-      Animated.timing(widthAnimation, {
-        toValue: 1, // We animate from 0 to 1, then interpolate this to width percentages
-        duration: 1500, // Duration for one loop of the animation
-        easing: Easing.linear, // Corrected reference to Easing.linear
-        useNativeDriver: false, // We animate layout properties, so this must be false
-      })
-    ).start();
-  }, [widthAnimation]);
-
-  const animatedStyle = {
-    width: widthAnimation.interpolate({
-      inputRange: [0, 1],
-      outputRange: ["0%", "100%"], // Animating from 0% to 100% width
-    }),
-  };
   return (
     <LoadingContainer>
-      <LoadingBar style={animatedStyle} />
+      <LottieView
+        source={require("../utils/foxAnimation - 1724582171334.json")}
+        autoPlay
+        loop
+        style={{
+          width: 250, // Adjust the size as needed
+          height: 250,
+        }}
+      />
+      <MainAnimationWrapper>
+        <LoadingText>جاري التحميل</LoadingText>
+
+        <LottieView
+          source={require("../utils/Animation - 1724581539425.json")}
+          autoPlay
+          loop
+          style={{
+            width: 100, // Smaller secondary animation
+            height: 100,
+          }}
+        />
+      </MainAnimationWrapper>
     </LoadingContainer>
   );
 };

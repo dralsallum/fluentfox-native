@@ -233,9 +233,9 @@ const Vocabulary = () => {
 
   return (
     <SafeArea>
-      <CroBut onPress={() => router.push("create")}>
+      <CroBut onPress={() => router.back()}>
         <CrossIcon
-          source={require("../../../assets/icons/cross.png")}
+          source={require("../../../assets/icons/grayCross.png")}
           resizeMode="contain"
         />
       </CroBut>
@@ -756,8 +756,8 @@ export const VocFoSpan = styled.Text`
 `;
 
 const CrossIcon = styled.Image`
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
 `;
 
 const VocFoBut = styled.TouchableOpacity`

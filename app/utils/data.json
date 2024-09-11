@@ -6,36 +6,40 @@
       "value": 1,
       "words": [
         {
-          "text": "Hello!",
-          "imagePath": "../../assets/images/superhero.png",
+          "text": "منتجات بالسوبر ماركت!",
+          "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/supermarkets.png",
           "navigateTo": "vocabulary/vocabulary",
           "set": "set1"
         },
         {
-          "text": "Good morning",
-          "imagePath": "../../assets/images/empty.png",
+          "text": "اغراض بالمنزل",
+          "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/house.png",
           "navigateTo": "vocabulary/vocabulary",
-          "set": "medical1"
+          "set": "set2"
         },
         {
-          "text": "Goodbye",
-          "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary/vocabulary"
+          "text": "اشياء بالمطبخ",
+          "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/kitchen.png",
+          "navigateTo": "vocabulary/vocabulary",
+          "set": "set3"
         },
         {
-          "text": "Thank you",
-          "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "text": "مصطلحات مدرسية",
+          "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/school.png",
+          "navigateTo": "vocabulary/vocabulary",
+          "set": "set4"
         },
         {
-          "text": "Please",
-          "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "text": "اماكن تزورها",
+          "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/location.png",
+          "navigateTo": "vocabulary/vocabulary",
+          "set": "set5"
         },
         {
-          "text": "Yes",
-          "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "text": "كلمات علمية",
+          "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/atom.png",
+          "navigateTo": "vocabulary/vocabulary",
+          "set": "set6"
         }
       ]
     },
@@ -232,37 +236,40 @@
       "value": 1,
       "words": [
         {
-          "text": "Hello!",
-          "imagePath": "../../assets/images/superhero.png",
+          "text": "استخدام الكلمات 'is,are,am'",
+          "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/chronometer.png",
           "navigateTo": "grammar",
           "set": "set1"
         },
         {
-          "text": "Good morning",
-          "imagePath": "../../assets/images/empty.png",
+          "text": "المضارع البسيط (السلبي)",
+          "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/history.png",
           "navigateTo": "grammar",
           "set": "set2"
         },
         {
-          "text": "Goodbye",
-          "imagePath": "../../assets/images/profile.png",
+          "text": "المضارع البسيط لاسئلة ايه او لا",
+          "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/grammar.png",
           "navigateTo": "grammar",
           "set": "set3"
         },
         {
-          "text": "Thank you",
-          "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "text": "المضارع البسيط بالاسئلة",
+          "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/hourglass.png",
+          "navigateTo": "grammar",
+          "set": "set4"
         },
         {
-          "text": "Please",
-          "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "text": "المضارع البسيط",
+          "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/atom.png",
+          "navigateTo": "grammar",
+          "set": "set5"
         },
         {
-          "text": "Yes",
-          "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "text": "المضارع المستمر (الايجابي)",
+          "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/world.png",
+          "navigateTo": "grammar",
+          "set": "set6"
         }
       ]
     },

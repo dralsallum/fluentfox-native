@@ -254,6 +254,10 @@ const Home = () => {
 
   const handleToggleSecondModal = () => {
     setSecondModalVisible(!secondModalVisible);
+    router.push("payment");
+  };
+  const handlePayment = () => {
+    router.push("payment");
   };
 
   const handleSelectLevel = (level) => {
@@ -307,7 +311,7 @@ const Home = () => {
               <QueTimline>
                 <QueTiBoCon>
                   <QueTiBo>
-                    <QueTiKeyCon>
+                    <QueTiKeyCon onPress={handlePayment}>
                       <QueTimKey>
                         <QueBan>
                           <QuenBanMa>
@@ -367,7 +371,7 @@ const Home = () => {
             <ModalHeader>
               <TouchableOpacity onPress={handleToggleModal}>
                 <CrossIcon
-                  source={require("../../../assets/icons/cross.png")}
+                  source={require("../../../assets/icons/grayCross.png")}
                 />
               </TouchableOpacity>
               <ModalTitle>إكمال الإنجليزية</ModalTitle>

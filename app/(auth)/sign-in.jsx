@@ -10,28 +10,34 @@ import styled from "styled-components/native";
 import { login, userSelector } from "../redux/authSlice";
 import withAuthRedirect from "../redux/withAuthRedirect";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 const Container = styled.View`
   flex: 1;
   align-items: center;
   justify-content: center;
-  background-color: #f0f2f5;
+  background-color: #f0f4f8;
+  padding: 20px;
 `;
 
 const Form = styled.View`
-  width: 90%;
+  width: 100%;
+  max-width: 400px;
   padding: 20px;
   border-radius: 15px;
   background-color: #ffffff;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  shadow-color: #000;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.2;
+  shadow-radius: 4.65px;
   elevation: 5;
 `;
 
 const Header = styled.Text`
-  font-size: 28px;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 20px;
+  font-size: 30px;
+  font-weight: bold;
+  color: #4c47e8;
+  margin-bottom: 25px;
   text-align: center;
 `;
 
@@ -47,19 +53,23 @@ const InputContainer = styled.View`
 
 const Input = styled.TextInput`
   flex: 1;
-  height: 40px;
+  height: 45px;
   margin-left: 10px;
   font-size: 16px;
+  color: #333;
 `;
 
 const Button = styled.TouchableOpacity`
-  background-color: #2946b6;
+  background-color: #4c47e8;
   border-radius: 25px;
   align-items: center;
   justify-content: center;
-  height: 45px;
+  height: 50px;
   margin-top: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  shadow-color: #000;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.2;
+  shadow-radius: 4.65px;
   elevation: 3;
 `;
 
@@ -67,6 +77,30 @@ const ButtonText = styled.Text`
   color: white;
   font-size: 18px;
   font-weight: bold;
+`;
+
+const SecondaryButton = styled.TouchableOpacity`
+  margin-top: 20px;
+  align-items: center;
+`;
+
+const SecondaryButtonText = styled.Text`
+  color: #6b7c93;
+  font-size: 16px;
+  font-weight: bold;
+`;
+
+const ForgotPasswordButton = styled.TouchableOpacity`
+  margin-top: 10px;
+  align-items: center;
+`;
+
+const ForgotPasswordText = styled.Text`
+  color: #4c47e8;
+  font-size: 15px;
+  font-weight: bold;
+
+  text-decoration: underline;
 `;
 
 const ErrorText = styled.Text`
@@ -80,13 +114,20 @@ const SignIn = () => {
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
   const { isError, isFetching, errorMessage } = useSelector(userSelector);
+  const router = useRouter();
 
   const handleLogin = () => {
     if (username.trim() && password.trim()) {
       dispatch(login({ username, password }));
-    } else {
-      console.log("Username or password is missing.");
     }
+  };
+
+  const handleOnboardingNavigation = () => {
+    router.push("onboarding");
+  };
+
+  const handleForgotPassword = () => {
+    router.push("response");
   };
 
   return (
@@ -98,7 +139,7 @@ const SignIn = () => {
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <Container>
           <Form>
-            <Header>تسجيل دخول</Header>
+            <Header>تسجيل الدخول</Header>
             {isError && <ErrorText>{errorMessage}</ErrorText>}
             <InputContainer>
               <Ionicons name="person-outline" size={20} color="#888" />
@@ -113,12 +154,14 @@ const SignIn = () => {
               <Ionicons name="lock-closed-outline" size={20} color="#888" />
               <Input
                 secureTextEntry
-                placeholder="باسورد"
+                placeholder="كلمة المرور"
                 placeholderTextColor="#888"
                 value={password}
                 onChangeText={setPassword}
               />
             </InputContainer>
+
+            {/* Login Button */}
             <Button onPress={handleLogin} disabled={isFetching}>
               {isFetching ? (
                 <ActivityIndicator size="small" color="#fff" />
@@ -126,7 +169,19 @@ const SignIn = () => {
                 <ButtonText>تسجيل الدخول</ButtonText>
               )}
             </Button>
+
+            {/* Forgot Password Button */}
+            <ForgotPasswordButton onPress={handleForgotPassword}>
+              <ForgotPasswordText>نسيت كلمة المرور؟</ForgotPasswordText>
+            </ForgotPasswordButton>
+
+            {/* Secondary Button for navigating to Onboarding */}
           </Form>
+          <SecondaryButton onPress={handleOnboardingNavigation}>
+            <SecondaryButtonText>
+              ليس لديك حساب؟ أنشئ حساب جديد
+            </SecondaryButtonText>
+          </SecondaryButton>
         </Container>
       </ScrollView>
     </KeyboardAvoidingView>

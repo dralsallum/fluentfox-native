@@ -24,18 +24,18 @@ const TabNavigator = () => {
       <Tabs
         screenOptions={{
           tabBarShowLabel: false,
-          tabBarActiveTintColor: "#116eee", // Active tab icon and text color
-          tabBarInactiveTintColor: "#666e7e", // Inactive tab icon and text color
+          tabBarActiveTintColor: "#4c47e9",
+          tabBarInactiveTintColor: "#666e7e",
           tabBarStyle: {
-            backgroundColor: "#ffffff", // Tab background color
+            backgroundColor: "#ffffff",
             borderTopWidth: 1,
-            borderTopColor: "#b2b2b2", // Border top color
+            borderTopColor: "#b2b2b2",
             height: 84,
-            shadowColor: "#000", // Box shadow color
+            shadowColor: "#000",
             shadowOffset: { width: 0, height: -2 },
             shadowOpacity: 0.1,
             shadowRadius: 3,
-            elevation: 4, // For Android box shadow
+            elevation: 4,
           },
         }}
       >

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Image, Modal, Easing, Animated, TouchableOpacity } from "react-native";
+import { Image, Modal, View, Animated, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import axios from "axios";
+import LottieView from "lottie-react-native";
 import { useRoute } from "@react-navigation/native";
 import { xpSelector } from "../../redux/lessonsSlice";
 import {
@@ -86,7 +87,7 @@ import {
   RealText,
   OptionsReal,
   UnderText,
-  LineRe,
+  LineReal,
   StreView,
   StreSub,
   StreRo,
@@ -94,9 +95,12 @@ import {
   CheIco,
   StreText,
   ExpText,
+  DayCircle,
+  DayText,
 } from "./lesson.element";
 import { Audio } from "expo-av";
 import CustomLoadingIndicator from "../../components/LoadingIndicator";
+import { userSelector } from "../../redux/authSlice";
 
 const WriteAnswerQuestion = ({
   currentQuestion,
@@ -210,6 +214,17 @@ const RegularQuestion = ({
     Speech.speak(currentQuestion.sentence);
   };
 
+  const handleOptionPress = (index) => {
+    const selectedAnswerText = currentQuestion.answerOptions[index].answerText;
+
+    // Check if the text is in English
+    if (/^[a-zA-Z\s]+$/.test(selectedAnswerText)) {
+      Speech.speak(selectedAnswerText);
+    }
+
+    handleOptionSelect(index);
+  };
+
   return (
     <>
       <DialogueView>
@@ -261,7 +276,7 @@ const RegularQuestion = ({
       </LineContainer>
       <OptionsContainer>
         {currentQuestion.answerOptions.map((option, index) => (
-          <OptionButton key={index} onPress={() => handleOptionSelect(index)}>
+          <OptionButton key={index} onPress={() => handleOptionPress(index)}>
             <OptionText>{option.answerText}</OptionText>
           </OptionButton>
         ))}
@@ -282,7 +297,6 @@ const RealQuestion = ({
     }
   };
 
-  // Automatically speak the sentence when the question is loaded
   useEffect(() => {
     if (currentQuestion.sentence) {
       speakSentence();
@@ -312,7 +326,7 @@ const RealQuestion = ({
           </TouchableOpacity>
         </SpeechBubble>
       </RealView>
-      <LineRe />
+      <LineReal />
       <UnderText>{currentQuestion.multiple}</UnderText>
       <OptionsReal>
         {currentQuestion.answerOptions.map((option, index) => {
@@ -409,7 +423,7 @@ const Lesson = () => {
   const [loading, setLoading] = useState(true);
   const [showResult, setShowResult] = useState(false);
   const [showTry, setShowTry] = useState(false);
-  const [showStreak, setShowStreak] = useState(true);
+  const [showStreak, setShowStreak] = useState(false);
   const [hearts, setHearts] = useState(5);
   const router = useRouter();
   const route = useRoute();
@@ -419,6 +433,17 @@ const Lesson = () => {
   const correctSound = useRef(null);
   const incorrectSound = useRef(null);
   const doneSound = useRef(null);
+  const [streakCount, setStreakCount] = useState(0);
+  const { currentUser } = useSelector(userSelector);
+
+  useEffect(() => {
+    // Fetch user data from Redux store
+    if (currentUser?.streakCount) {
+      setStreakCount(currentUser.streakCount);
+    }
+  }, [currentUser]);
+
+  const daysOfWeek = ["Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"];
 
   // Preload sounds on component mount
   useEffect(() => {
@@ -571,11 +596,15 @@ const Lesson = () => {
   };
 
   const handleFinished = () => {
-    dispatch(unlockNextLesson()); // Unlock the next lesson and increment XP
-    dispatch(updateUnlockedSets()); // Update the unlocked sets on the backend
-    dispatch(updateXP()); // Update XP on the backend
-    setResultModalVisible(false); // Close the result modal
-    router.push("home/home"); // Navigate to the home page
+    dispatch(unlockNextLesson());
+    dispatch(updateUnlockedSets());
+    dispatch(updateXP());
+    setResultModalVisible(false);
+    setShowStreak(true);
+  };
+  const handleHome = () => {
+    setShowStreak(false);
+    router.back();
   };
 
   const handleTryAgain = () => {
@@ -609,8 +638,8 @@ const Lesson = () => {
       <Header>
         <BackButton onPress={handleBack}>
           <Image
-            source={require("../../../assets/icons/cross.png")}
-            style={{ width: 30, height: 30 }}
+            source={require("../../../assets/icons/grayCross.png")}
+            style={{ width: 28, height: 28 }}
           />
         </BackButton>
         <ProgressBarContainer>
@@ -747,34 +776,36 @@ const Lesson = () => {
       >
         <TryModalContainer>
           <TryModalContent>
-            <Image
-              source={require("../../../assets/icons/fire.png")}
-              style={{ width: 100, height: 100, marginBottom: 20 }}
-              resizeMode="contain"
+            <LottieView
+              source={require("../../utils/fireAnimation - 1724581924405.json")} // Path to your Lottie JSON file
+              autoPlay
+              loop
+              style={{
+                width: 120, // Adjust the size as needed
+                height: 120,
+              }}
             />
             <StreView>
-              {["Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"].map(
-                (day, index) => (
-                  <StreSub key={index}>
-                    <StreRo completed={index === 0}>
-                      {index === 0 && (
-                        <CheIco
-                          source={require("../../../assets/icons/check.png")}
-                        />
-                      )}
-                    </StreRo>
-                    <StreTex>{day}</StreTex>
-                  </StreSub>
-                )
-              )}
+              {daysOfWeek.map((day, index) => (
+                <View key={index} style={{ alignItems: "center" }}>
+                  <DayCircle completed={index < streakCount}>
+                    {index < streakCount && (
+                      <Image
+                        source={require("../../../assets/icons/check.png")}
+                        style={{ width: 20, height: 20 }}
+                      />
+                    )}
+                  </DayCircle>
+                  <DayText completed={index < streakCount}>{day}</DayText>
+                </View>
+              ))}
             </StreView>
-            <StreText>You've started a streak!</StreText>
+            <StreText>لقد بدأت سلسلة التعلم اليومي!</StreText>
             <ExpText>
-              Study every day to build your streak and create a powerful
-              learning habit
+              قم بالدراسة كل يوم لبناء السلسلة الخاصة بك وخلق عادة تعلم قوية
             </ExpText>
-            <TryButton onPress={handleTryAgain}>
-              <TryButtonText>Continue</TryButtonText>
+            <TryButton onPress={handleHome}>
+              <TryButtonText>استمر</TryButtonText>
             </TryButton>
           </TryModalContent>
         </TryModalContainer>

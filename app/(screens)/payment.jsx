@@ -1,7 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components/native";
 import { ScrollView, TouchableOpacity } from "react-native";
-import { useRouter } from "expo-router"; // Import useRouter
+import { useRouter } from "expo-router";
+import Navbar from "../components/navigation/navbar";
+import * as RNIap from "react-native-iap";
+
+const itemSkus = [
+  "com.dralsallum.fluentfox.premium.monthly",
+  "com.dralsallum.fluentfox.premium.quarterly",
+  "com.dralsallum.fluentfox.premium.yearly",
+];
 
 const pricingOptions = [
   {
@@ -278,9 +286,42 @@ const PricingCard = ({
 );
 
 const Payment = () => {
-  const router = useRouter(); // Use useRouter hook
-
+  const router = useRouter();
   const [selectedOption, setSelectedOption] = useState(1);
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    async function initIAP() {
+      try {
+        await RNIap.initConnection(); // Initialize IAP
+        const products = await RNIap.getProducts(itemSkus); // Fetch available products
+        setProducts(products);
+      } catch (error) {
+        console.warn(error);
+      }
+    }
+
+    initIAP();
+
+    return () => {
+      RNIap.endConnection(); // Close IAP connection when component unmounts
+    };
+  }, []);
+
+  // Purchase handling
+  const handlePurchase = async () => {
+    const product = products.find(
+      (p) => p.productId === itemSkus[selectedOption - 1]
+    );
+    if (product) {
+      try {
+        await RNIap.requestPurchase(product.productId); // Initiate purchase
+        Alert.alert("Success", `Purchase successful for ${product.title}`);
+      } catch (err) {
+        Alert.alert("Purchase Error", err.message);
+      }
+    }
+  };
 
   const getButtonText = () => {
     const selected = pricingOptions.find(
@@ -291,6 +332,7 @@ const Payment = () => {
 
   return (
     <SafeArea>
+      <Navbar />
       <ScrollView>
         <Container>
           <TopTe>ابدأ اليوم بدون مخاطر</TopTe>
@@ -306,13 +348,10 @@ const Payment = () => {
             ))}
           </OreConAll>
           <ButtonContainer>
-            <Button bgColor="rgb(14, 190, 117)">
+            <Button bgColor="rgb(14, 190, 117)" onPress={handlePurchase}>
               <ButtonText>{getButtonText()}</ButtonText>
             </Button>
-            <Button
-              bgColor="rgb(240, 240, 240)"
-              onPress={() => router.push("/home/home")}
-            >
+            <Button bgColor="rgb(240, 240, 240)" onPress={() => router.back()}>
               <ButtonText color="rgb(30, 45, 64)">
                 لا شكراً ارغب التجربة مجاناً
               </ButtonText>

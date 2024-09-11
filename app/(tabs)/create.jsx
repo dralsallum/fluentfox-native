@@ -16,19 +16,6 @@ import data from "../utils/data.json";
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width / 3.5;
 
-const getImageSource = (imagePath) => {
-  switch (imagePath) {
-    case "../../assets/images/superhero.png":
-      return require("../../assets/images/superhero.png");
-    case "../../assets/images/empty.png":
-      return require("../../assets/images/empty.png");
-    case "../../assets/images/profile.png":
-      return require("../../assets/images/profile.png");
-    default:
-      return require("../../assets/images/empty.png"); // Fallback image
-  }
-};
-
 const WordItem = ({ text, subText, imagePath, navigateTo, set }) => {
   const handlePress = () => {
     if (set) {
@@ -40,8 +27,8 @@ const WordItem = ({ text, subText, imagePath, navigateTo, set }) => {
 
   return (
     <TouchableOpacity onPress={handlePress}>
-      <WordCon>
-        <WordImg source={getImageSource(imagePath)} />
+      <WordContainer>
+        <WordImage source={{ uri: imagePath }} />
         <View style={{ flex: 1, alignItems: "flex-end" }}>
           <Text style={{ fontSize: 18, textAlign: "right" }}>{text}</Text>
           <Text style={{ fontSize: 14, color: "#999", textAlign: "right" }}>
@@ -56,7 +43,7 @@ const WordItem = ({ text, subText, imagePath, navigateTo, set }) => {
           source={require("../../assets/icons/knowledge.png")}
           style={{ width: 24, height: 24, marginRight: 10 }}
         />
-      </WordCon>
+      </WordContainer>
     </TouchableOpacity>
   );
 };
@@ -268,7 +255,7 @@ const CardLabel = styled.Text`
   font-size: 14px;
 `;
 
-const WordCon = styled.View`
+const WordContainer = styled.View`
   flex-direction: row-reverse;
   align-items: center;
   padding: 20px 10px;
@@ -276,7 +263,7 @@ const WordCon = styled.View`
   border-bottom-width: 1px;
 `;
 
-const WordImg = styled.Image`
+const WordImage = styled.Image`
   border-radius: 8px;
   width: 40px;
   height: 40px;

@@ -74,8 +74,8 @@ const ScreenContainer = styled(SafeAreaView)`
 `;
 
 const CrossIcon = styled.Image`
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
 `;
 
 const ModalContainer = styled.View`
@@ -186,10 +186,10 @@ const Exercise = () => {
         <QuizBody>
           <TouchableOpacity
             style={{ position: "absolute", top: 30, right: 25 }}
-            onPress={() => router.push("/stories")}
+            onPress={() => router.back()}
           >
             <CrossIcon
-              source={require("../../assets/icons/cross.png")}
+              source={require("../../assets/icons/grayCross.png")}
               resizeMode="contain"
             />
           </TouchableOpacity>

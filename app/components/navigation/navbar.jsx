@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components/native";
-import { TouchableOpacity, Modal, View, Text, ScrollView } from "react-native";
-import { signOut, userSelector } from "../../redux/authSlice"; // Importing the signOut action and userSelector
+import { TouchableOpacity, Modal, View, ScrollView, Text } from "react-native";
+import { signOut, userSelector } from "../../redux/authSlice";
 import { xpSelector, fetchUnlockedSets } from "../../redux/lessonsSlice";
 import axios from "axios";
 import { Image as ExpoImage } from "expo-image";
-import { Linking } from "react-native";
 
 const SafeArea = styled.SafeAreaView`
   background-color: #ffffff;
@@ -73,8 +72,8 @@ const ModalTitle = styled.Text`
 `;
 
 const CrossIcon = styled(ExpoImage)`
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
 `;
 
 const ProfileInfo = styled.View`
@@ -106,6 +105,7 @@ const StreakContainer = styled.View`
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
+  margin-bottom: 10px; /* Adjusted for spacing */
 `;
 
 const StreakIcon = styled(ExpoImage)`
@@ -114,8 +114,14 @@ const StreakIcon = styled(ExpoImage)`
   margin-right: 8px;
 `;
 
+const StreakText = styled.Text`
+  font-size: 16px;
+  color: #333;
+  text-align: left;
+`;
+
 const ProfileButton = styled.TouchableOpacity`
-  padding: 10px;
+  padding: 15px;
   background-color: #007aff;
   border-radius: 10px;
   align-items: center;
@@ -125,6 +131,14 @@ const ProfileButton = styled.TouchableOpacity`
 const ProfileButtonText = styled.Text`
   color: #ffffff;
   font-size: 16px;
+`;
+
+const ProfileButtonsContainer = styled.View`
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  padding: 0 20px;
 `;
 
 const ItemBox = styled.View`
@@ -199,7 +213,8 @@ const Navbar = () => {
   const [notifications, setNotifications] = useState([]);
   const dispatch = useDispatch();
   const xp = useSelector(xpSelector);
-  const { currentUser, streakCount } = useSelector(userSelector);
+  const { currentUser } = useSelector(userSelector);
+  const streakCount = currentUser?.streak?.count ?? 0;
 
   const fetchNotifications = async () => {
     try {
@@ -222,6 +237,12 @@ const Navbar = () => {
     getNotifications();
   }, []);
 
+  useEffect(() => {
+    if (currentUser) {
+      dispatch(fetchUnlockedSets(currentUser._id));
+    }
+  }, [currentUser, dispatch]);
+
   const handleOpenModal = (tabId) => {
     setActiveTab(tabId);
     if (tabId === "Notifications") {
@@ -242,12 +263,6 @@ const Navbar = () => {
     handleCloseModal();
   };
 
-  useEffect(() => {
-    if (currentUser) {
-      dispatch(fetchUnlockedSets(currentUser._id));
-    }
-  }, [currentUser, dispatch]);
-
   return (
     <SafeArea>
       <NavbarContainer>
@@ -256,11 +271,7 @@ const Navbar = () => {
             <NavIcon source={item.icon} cachePolicy="memory" />
             {item.showBadge && (
               <NavBadge active={activeTab === item.id}>
-                {item.id === "XP"
-                  ? xp
-                  : item.id === "Streak"
-                  ? currentUser?.streakCount ?? 0
-                  : 0}
+                {item.id === "XP" ? xp : item.id === "Streak" ? streakCount : 0}
               </NavBadge>
             )}
           </NavItem>
@@ -282,39 +293,25 @@ const Navbar = () => {
                 onPress={() => handleCloseModal("Notifications")}
               >
                 <CrossIcon
-                  source={require("../../../assets/icons/cross.png")}
+                  source={require("../../../assets/icons/grayCross.png")}
                 />
               </TouchableOpacity>
             </ModalHeader>
             <ScrollView>
               {notifications.length > 0 ? (
                 notifications.map((notification) => (
-                  <TouchableOpacity
-                    key={notification._id}
-                    onPress={() => {
-                      if (notification.url) {
-                        Linking.openURL(notification.url).catch((err) =>
-                          console.error("An error occurred", err)
-                        );
-                      } else {
-                        Alert.alert(
-                          "No URL",
-                          "This notification does not have a URL to open."
-                        );
-                      }
-                    }}
-                  >
+                  <View key={notification._id}>
                     <ItemBox>
                       <ItemImage
                         source={{ uri: notification.image }}
-                        defaultSource={require("../../../assets/images/thumbnail.png")}
+                        placeholder={require("../../../assets/images/thumbnail.png")}
                       />
                       <ItemTextContainer>
                         <ItemTitle>{notification.title}</ItemTitle>
                         <ItemSubText>{notification.message}</ItemSubText>
                       </ItemTextContainer>
                     </ItemBox>
-                  </TouchableOpacity>
+                  </View>
                 ))
               ) : (
                 <Text>لا توجد إشعارات</Text>
@@ -337,7 +334,7 @@ const Navbar = () => {
               <ModalTitle>الملف الشخصي</ModalTitle>
               <TouchableOpacity onPress={() => handleCloseModal("Me")}>
                 <CrossIcon
-                  source={require("../../../assets/icons/cross.png")}
+                  source={require("../../../assets/icons/grayCross.png")}
                 />
               </TouchableOpacity>
             </ModalHeader>
@@ -349,25 +346,26 @@ const Navbar = () => {
                   البريد الإلكتروني: {currentUser?.email}
                 </ProfileText>
                 <StreakContainer>
-                  <ProfileText>
-                    عدد أيام الحماس: {currentUser?.streakCount ?? 0}
-                  </ProfileText>
                   <StreakIcon
                     source={require("../../../assets/icons/fire.png")}
                   />
+                  <StreakText>عدد أيام الحماس: {streakCount}</StreakText>
                 </StreakContainer>
               </ProfileTextContainer>
               <ProfileImage
-                source={require("../../../assets/images/profile.png")} // Replace with actual profile image path
+                source={require("../../../assets/images/profile.png")}
+                placeholder={require("../../../assets/images/thumbnail.png")}
               />
             </ProfileInfo>
 
-            <ProfileButton onPress={() => console.log("Settings Pressed")}>
-              <ProfileButtonText>الإعدادات</ProfileButtonText>
-            </ProfileButton>
-            <ProfileButton onPress={handleSignOut}>
-              <ProfileButtonText>تسجيل الخروج</ProfileButtonText>
-            </ProfileButton>
+            <ProfileButtonsContainer>
+              <ProfileButton onPress={() => console.log("Settings Pressed")}>
+                <ProfileButtonText>الإعدادات</ProfileButtonText>
+              </ProfileButton>
+              <ProfileButton onPress={handleSignOut}>
+                <ProfileButtonText>تسجيل الخروج</ProfileButtonText>
+              </ProfileButton>
+            </ProfileButtonsContainer>
           </ModalContent>
         </ModalContainer>
       </Modal>

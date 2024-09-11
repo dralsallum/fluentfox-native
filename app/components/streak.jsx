@@ -1,16 +1,11 @@
-import React, { useState, useEffect } from "react";
-import {
-  Image,
-  SafeAreaView,
-  View,
-  TouchableOpacity,
-  Text,
-} from "react-native";
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { updateStreakCount, userSelector } from "../redux/authSlice";
 import styled from "styled-components/native";
-import { useDispatch, useSelector } from "react-redux";
-import { userSelector } from "../redux/authSlice";
+import LottieView from "lottie-react-native";
+import { View, Image, Text } from "react-native";
 
-// Styled components
+// Styled Components
 const SafeArea = styled.SafeAreaView`
   flex: 1;
   background-color: #ffffff;
@@ -24,104 +19,59 @@ const StreakContainer = styled.View`
   padding: 20px;
 `;
 
-const FireIcon = styled.Image`
-  width: 80px;
-  height: 80px;
-  margin-bottom: 20px;
-`;
-
-const DaysContainer = styled.View`
-  flex-direction: row;
-  justify-content: space-around;
-  width: 90%;
-  margin-bottom: 20px;
-  padding: 10px 0;
-  border: 1px solid #e1e1e1;
-  border-radius: 25px;
-`;
-
 const DayCircle = styled.View`
   width: 40px;
   height: 40px;
   border-radius: 20px;
-  border: 2px solid ${(props) => (props.completed ? "#4caf50" : "#e1e1e1")};
-  background-color: ${(props) => (props.completed ? "#4caf50" : "#ffffff")};
+  border: 2px solid ${({ completed }) => (completed ? "#4caf50" : "#e1e1e1")};
+  background-color: ${({ completed }) => (completed ? "#4caf50" : "#ffffff")};
   justify-content: center;
   align-items: center;
 `;
 
 const DayText = styled.Text`
   font-size: 12px;
-  color: ${(props) => (props.completed ? "#ffffff" : "#333333")};
+  color: ${({ completed }) => (completed ? "#000" : "#333333")};
   margin-top: 5px;
 `;
 
 const StreakMessage = styled.Text`
   font-size: 22px;
-  color: #000000;
-  text-align: center;
   font-weight: bold;
-  margin-bottom: 10px;
-`;
-
-const StreakDescription = styled.Text`
-  font-size: 14px;
-  color: #666666;
   text-align: center;
-  margin-bottom: 20px;
-`;
-
-const ShareButton = styled.TouchableOpacity`
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-  padding: 10px 20px;
-  border-radius: 20px;
-  border: 1px solid #007aff;
-`;
-
-const ShareText = styled.Text`
-  font-size: 16px;
-  color: #007aff;
-`;
-
-const ContinueButton = styled.TouchableOpacity`
-  background-color: #007aff;
-  padding: 15px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 30px;
   margin-bottom: 10px;
-`;
-
-const ContinueButtonText = styled.Text`
-  color: #ffffff;
-  font-size: 18px;
-  font-weight: bold;
 `;
 
 const Streak = () => {
-  const [streakCount, setStreakCount] = useState(0);
+  const dispatch = useDispatch();
   const { currentUser } = useSelector(userSelector);
+  const streakCount = currentUser?.streak?.count || 0;
 
   useEffect(() => {
-    // Fetch user data from Redux store
-    if (currentUser?.streakCount) {
-      setStreakCount(currentUser.streakCount);
+    if (currentUser) {
+      dispatch(updateStreakCount({ userId: currentUser._id }));
     }
-  }, [currentUser]);
+  }, [currentUser, dispatch]);
 
   const daysOfWeek = ["Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"];
 
   return (
     <SafeArea>
       <StreakContainer>
-        <FireIcon
-          source={require("../../assets/icons/fire.png")}
-          resizeMode="contain"
+        <LottieView
+          source={require("../utils/fireAnimation - 1724581924405.json")}
+          autoPlay
+          loop
+          style={{ width: 120, height: 120 }}
         />
-        <DaysContainer>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-around",
+            width: "90%",
+            marginVertical: 20,
+          }}
+        >
           {daysOfWeek.map((day, index) => (
             <View key={index} style={{ alignItems: "center" }}>
               <DayCircle completed={index < streakCount}>
@@ -135,19 +85,9 @@ const Streak = () => {
               <DayText completed={index < streakCount}>{day}</DayText>
             </View>
           ))}
-        </DaysContainer>
+        </View>
         <StreakMessage>You've started a streak!</StreakMessage>
-        <StreakDescription>
-          Study every day to build your streak and create a powerful learning
-          habit.
-        </StreakDescription>
-        <ShareButton>
-          <ShareText>Share</ShareText>
-        </ShareButton>
       </StreakContainer>
-      <ContinueButton>
-        <ContinueButtonText>Continue</ContinueButtonText>
-      </ContinueButton>
     </SafeArea>
   );
 };

@@ -2,6 +2,7 @@ import { Link, Redirect, router } from "expo-router";
 import React, { useState } from "react";
 import { StatusBar } from "react-native";
 import styled from "styled-components/native";
+import LottieView from "lottie-react-native";
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,9 +18,14 @@ const Index = () => {
     <SafeArea>
       <Container>
         <StatusBar barStyle="light-content" />
-        <Logo
-          source={require("../assets/images/banner.png")} // Replace with the owl logo
-          resizeMode="contain"
+        <LottieView
+          source={require("./utils/foxAnimation - 1724582171334.json")}
+          autoPlay
+          loop
+          style={{
+            width: 250, // Adjust the size as needed
+            height: 250,
+          }}
         />
         <Subtitle>ابدأ رحلتك التعليمة. اليوم!</Subtitle>
         <ButtonContainer>
@@ -56,10 +62,15 @@ const Logo = styled.Image`
 `;
 
 const Subtitle = styled.Text`
-  color: #333;
-  font-size: 26px;
+  color: #4c47e8;
+  font-size: 28px;
   text-align: center;
   margin-bottom: 40px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  line-height: 34px;
+  padding: 0 20px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 `;
 
 const ButtonContainer = styled.View`
@@ -70,7 +81,7 @@ const ButtonContainer = styled.View`
 `;
 
 const Button = styled.TouchableOpacity`
-  background-color: #2068ed;
+  background-color: #4c47e8;
   border-radius: 25px;
   padding: 15px 0;
   margin-bottom: 10px;
@@ -87,7 +98,7 @@ const ButtonSign = styled.TouchableOpacity`
   border-radius: 25px;
   padding: 15px 0;
   width: 100%;
-  border: 1px solid #2068ed;
+  border: 1px solid #4c47e8;
   shadow-color: #000;
   shadow-opacity: 0.25;
   shadow-radius: 3.84px;
@@ -103,7 +114,7 @@ const ButtonText = styled.Text`
 `;
 
 const TextSign = styled.Text`
-  color: #2068ed;
+  color: #4c47e8;
   font-size: 18px;
   font-weight: bold;
   text-align: center;

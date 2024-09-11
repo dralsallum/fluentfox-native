@@ -12,7 +12,7 @@ const ScreenContainer = styled(SafeAreaView)`
 
 const ContentContainer = styled(ScrollView)`
   flex-grow: 1;
-  padding: 20px;
+  padding: 10px 20px;
 `;
 
 const Container = styled.View`
@@ -83,8 +83,8 @@ const TopImg = styled.Image`
 `;
 
 const CloseImg = styled.Image`
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   margin-right: 10px;
 `;
 
@@ -247,7 +247,7 @@ const Listen = () => {
 
   const handleBackToStories = async () => {
     await stopSound();
-    router.push("/stories");
+    router.back();
   };
 
   const toggleContainerVisibility = () => {
@@ -268,7 +268,7 @@ const Listen = () => {
       <Header>
         <TouchableOpacity onPress={handleBackToStories}>
           <CloseImg
-            source={require("../../assets/icons/cross.png")}
+            source={require("../../assets/icons/grayCross.png")}
             resizeMode="contain"
           />
         </TouchableOpacity>

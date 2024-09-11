@@ -6,7 +6,6 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { register, clearState } from "../redux/authSlice";
@@ -149,6 +148,18 @@ const NotificationContainer = styled.View`
   margin-top: 20px;
 `;
 
+const ButtonGroup = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 20px;
+`;
+
+const NotificationButton = styled(ContinueButton)`
+  flex: 1;
+  margin-horizontal: 5px;
+`;
+
 const questions = [
   {
     question: "حدد هدفك اليومي للدراسة",
@@ -201,7 +212,7 @@ const questions = [
   },
   {
     question: "ابقَ على المسار مع التذكيرات اليومية",
-    subText: "التذكيرات تساعد في بناء عادات تعلم أفضل.",
+    subText: "التذكيرات تساعد في بناء عادات تعلم أفضل",
     options: [], // No options, this is a notification prompt
     isNotificationPrompt: true, // Custom flag to detect notification prompt
   },
@@ -234,7 +245,6 @@ const Onboarding = () => {
   const handleContinue = async () => {
     if (questions[currentQuestionIndex].isSignUp) {
       if (!inputs.username || !inputs.email || !inputs.password) {
-        alert("يرجى ملء جميع الحقول");
         return;
       }
       dispatch(register(inputs));
@@ -247,13 +257,13 @@ const Onboarding = () => {
       } else {
         router.push("home/home");
       }
-    } else {
-      console.log("يرجى اختيار خيار");
     }
   };
 
   const handleBack = () => {
-    if (currentQuestionIndex > 0) {
+    if (currentQuestionIndex === 0) {
+      router.back();
+    } else {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
       setSelectedOptionIndex(null);
     }
@@ -261,17 +271,11 @@ const Onboarding = () => {
 
   const requestNotifications = async () => {
     const { status } = await Notifications.requestPermissionsAsync();
-    if (status === "granted") {
-      console.log("تم منح أذونات الإشعارات.");
-    } else {
-      console.log("تم رفض أذونات الإشعارات.");
-    }
     router.push("home/home");
   };
 
   useEffect(() => {
     if (isSuccess) {
-      console.log("تم تسجيل المستخدم بنجاح");
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       dispatch(clearState());
     }
@@ -357,15 +361,23 @@ const Onboarding = () => {
                   source={require("../../assets/icons/notification.png")} // Replace with your notification icon
                   style={{ width: 80, height: 80, marginBottom: 20 }}
                 />
-                <ContinueButton onPress={handleContinue}>
-                  <ButtonText>تشغيل التذكيرات</ButtonText>
-                </ContinueButton>
-                <ContinueButton
-                  onPress={() => router.push("home/home")}
-                  style={{ backgroundColor: "#f0f0f0", marginTop: 10 }}
-                >
-                  <ButtonText style={{ color: "#000" }}>ربما لاحقًا</ButtonText>
-                </ContinueButton>
+
+                <ButtonGroup>
+                  <NotificationButton
+                    onPress={() => router.push("home/home")}
+                    style={{ backgroundColor: "#f0f0f0", opacity: 0.5 }}
+                  >
+                    <ButtonText style={{ color: "#000" }}>
+                      ربما لاحقًا
+                    </ButtonText>
+                  </NotificationButton>
+                  <NotificationButton
+                    onPress={handleContinue}
+                    style={{ opacity: 1 }}
+                  >
+                    <ButtonText>تشغيل التذكيرات</ButtonText>
+                  </NotificationButton>
+                </ButtonGroup>
               </NotificationContainer>
             )}
 

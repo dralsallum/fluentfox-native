@@ -104,6 +104,7 @@ const Grammar = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [explanation, setExplanation] = useState("");
+  const [translation, setTranslation] = useState("");
   const [progress, setProgress] = useState(0);
   const route = useRoute();
   const router = useRouter();
@@ -119,6 +120,7 @@ const Grammar = () => {
         );
         setQuestions(response.data.questions);
         setExplanation(response.data.explanation);
+        setTranslation(response.data.translation);
         const initialAnswers = {};
         response.data.questions.forEach((q, idx) => {
           initialAnswers[idx] = "";
@@ -190,14 +192,15 @@ const Grammar = () => {
             <ProgressBarContainer>
               <ProgressBar progress={progress} />
             </ProgressBarContainer>
-            <CroBut onPress={() => router.push("create")}>
+            <CroBut onPress={() => router.back()}>
               <CrossIcon
-                source={require("../../assets/icons/cross.png")}
+                source={require("../../assets/icons/grayCross.png")}
                 resizeMode="contain"
               />
             </CroBut>
           </HeaderContainer>
           <ExplanationText>{explanation}</ExplanationText>
+          <ExplanationText>{translation}</ExplanationText>
           {questions.map((question, index) => (
             <QuestionContainer key={index}>
               <QuestionText>
