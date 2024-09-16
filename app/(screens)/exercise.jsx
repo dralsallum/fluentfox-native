@@ -186,7 +186,7 @@ const Exercise = () => {
         <QuizBody>
           <TouchableOpacity
             style={{ position: "absolute", top: 30, right: 25 }}
-            onPress={() => router.back()}
+            onPress={() => router.push("stories")}
           >
             <CrossIcon
               source={require("../../assets/icons/grayCross.png")}

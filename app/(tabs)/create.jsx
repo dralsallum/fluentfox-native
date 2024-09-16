@@ -10,23 +10,67 @@ import {
   TouchableOpacity,
   Animated,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+
 import data from "../utils/data.json";
+import { InterstitialAd, AdEventType } from "react-native-google-mobile-ads";
+import { SafeAreaView, Alert } from "react-native";
+import { useSelector } from "react-redux";
+
+const adUnitId = "ca-app-pub-7167740558520278/7250402342";
+
+const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
+  requestNonPersonalizedAdsOnly: true,
+});
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width / 3.5;
 
 const WordItem = ({ text, subText, imagePath, navigateTo, set }) => {
-  const handlePress = () => {
-    if (set) {
-      router.push({ pathname: navigateTo, params: { set } });
+  const currentUser = useSelector((state) => state.user.currentUser);
+  const isPaid = currentUser?.isPaid; // Access the isPaid status
+
+  useEffect(() => {
+    const loadInterstitialAd = () => {
+      interstitial.load();
+    };
+    loadInterstitialAd();
+  }, []);
+
+  const handleCategoryPress = () => {
+    if (!isPaid) {
+      // User is not paid, show interstitial ad
+      if (interstitial.loaded) {
+        interstitial.show();
+      } else {
+        Alert.alert("Ad not ready yet", "Please try again in a few seconds.");
+      }
+
+      interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+        // Navigate to the exercise after the ad is closed
+        if (set) {
+          router.push({
+            pathname: navigateTo,
+            params: { set },
+          });
+        } else {
+          console.warn(`Set parameter is missing for word: ${text}`);
+        }
+      });
     } else {
-      console.warn(`Set parameter is missing for word: ${text}`);
+      // If the user is paid, proceed directly to the exercise
+      if (set) {
+        router.push({
+          pathname: navigateTo,
+          params: { set },
+        });
+      } else {
+        console.warn(`Set parameter is missing for word: ${text}`);
+      }
     }
   };
 
   return (
-    <TouchableOpacity onPress={handlePress}>
+    <TouchableOpacity onPress={handleCategoryPress}>
       <WordContainer>
         <WordImage source={{ uri: imagePath }} />
         <View style={{ flex: 1, alignItems: "flex-end" }}>

@@ -192,7 +192,7 @@ const Grammar = () => {
             <ProgressBarContainer>
               <ProgressBar progress={progress} />
             </ProgressBarContainer>
-            <CroBut onPress={() => router.back()}>
+            <CroBut onPress={() => router.push("create")}>
               <CrossIcon
                 source={require("../../assets/icons/grayCross.png")}
                 resizeMode="contain"

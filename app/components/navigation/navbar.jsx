@@ -6,6 +6,7 @@ import { signOut, userSelector } from "../../redux/authSlice";
 import { xpSelector, fetchUnlockedSets } from "../../redux/lessonsSlice";
 import axios from "axios";
 import { Image as ExpoImage } from "expo-image";
+import { router } from "expo-router";
 
 const SafeArea = styled.SafeAreaView`
   background-color: #ffffff;
@@ -261,6 +262,7 @@ const Navbar = () => {
   const handleSignOut = () => {
     dispatch(signOut());
     handleCloseModal();
+    router.push("sign-in");
   };
 
   return (

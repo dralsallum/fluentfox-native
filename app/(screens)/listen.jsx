@@ -247,7 +247,7 @@ const Listen = () => {
 
   const handleBackToStories = async () => {
     await stopSound();
-    router.back();
+    router.push("stories");
   };
 
   const toggleContainerVisibility = () => {

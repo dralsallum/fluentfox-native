@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "fluentfox",
+    "name": "FluentFox",
     "slug": "fluentfox",
-    "version": "1.0.1",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "fluentfox",
@@ -13,8 +13,9 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.dralsallum.fluentfox",
+      "buildNumber": "2",
       "entitlements": {
         "com.apple.developer.in-app-payments": [
           "merchant.com.dralsallum.fluentfox"
@@ -29,32 +30,50 @@
         },
         "NSPhotoLibraryUsageDescription": "This app requires access to your photo library to upload images.",
         "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you.",
+        "NSMicrophoneUsageDescription": "This app needs access to the microphone for audio playback.",
+        "UIBackgroundModes": ["audio"],
         "SKAdNetworkItems": [
           {
-            "SKAdNetworkIdentifier": "your-ad-network-id"
+            "SKAdNetworkIdentifier": "cstr6suwn9.skadnetwork"
           }
         ]
       }
     },
     "android": {
       "package": "com.dralsallum.fluentfox",
-      "versionCode": 4,
-      "playBilling": true,
+      "versionCode": 6,
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ],
+
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
-      "jsEngine": "jsc"
+      "config": {
+        "googleMobileAdsAppId": "ca-app-pub-7167740558520278~3989253100"
+      },
+      "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
+      "favicon": "./assets/images/favicon.png",
       "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "output": "static"
     },
-    "plugins": ["expo-router", "react-native-iap"],
-    "experiments": {
-      "typedRoutes": true
-    },
+    "plugins": [
+      "expo-router",
+      "react-native-iap",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-7167740558520278~3989253100",
+          "iosAppId": "ca-app-pub-7167740558520278~3899158731"
+        }
+      ]
+    ],
     "extra": {
       "router": {
         "origin": false
@@ -62,6 +81,10 @@
       "eas": {
         "projectId": "7a90a210-7db1-451e-a07f-293fe3a353c2"
       }
-    }
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": ["**/*"]
   }
 }

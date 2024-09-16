@@ -3,121 +3,101 @@ import { Tabs } from "expo-router";
 import styled from "styled-components/native";
 import { icons } from "../../constants";
 
-const TabIcon = ({ icon, color, name, focused }) => {
-  return (
-    <ViewBox>
-      <ImageBox
-        source={icon}
-        resizeMode="contain"
-        style={{ tintColor: color }}
-      />
-      <TabText focused={focused} style={{ color }}>
-        {name}
-      </TabText>
-    </ViewBox>
-  );
-};
+// Tab Icon Component for each tab
+const TabIcon = ({ icon, color, name, focused }) => (
+  <IconContainer>
+    <StyledImage
+      source={icon}
+      resizeMode="contain"
+      style={{ tintColor: color }}
+    />
+    <StyledText focused={focused} style={{ color }}>
+      {name}
+    </StyledText>
+  </IconContainer>
+);
 
+// Main Tab Navigator
 const TabNavigator = () => {
+  const tabBarOptions = {
+    tabBarShowLabel: false,
+    tabBarActiveTintColor: "#4c47e9",
+    tabBarInactiveTintColor: "#666e7e",
+    tabBarStyle: {
+      backgroundColor: "#ffffff",
+      borderTopWidth: 1,
+      borderTopColor: "#b2b2b2",
+      height: 84,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: -2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 4,
+    },
+  };
+
+  const screens = [
+    {
+      name: "home",
+      title: "الرئيسية",
+      icon: icons.home,
+    },
+    {
+      name: "stories",
+      title: "قصص",
+      icon: icons.stories,
+    },
+    {
+      name: "create",
+      title: "المفردات",
+      icon: icons.words,
+    },
+    {
+      name: "profile",
+      title: "الملف الشخصي",
+      icon: icons.profile,
+    },
+  ];
+
   return (
-    <>
-      <Tabs
-        screenOptions={{
-          tabBarShowLabel: false,
-          tabBarActiveTintColor: "#4c47e9",
-          tabBarInactiveTintColor: "#666e7e",
-          tabBarStyle: {
-            backgroundColor: "#ffffff",
-            borderTopWidth: 1,
-            borderTopColor: "#b2b2b2",
-            height: 84,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: -2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 3,
-            elevation: 4,
-          },
-        }}
-      >
+    <Tabs screenOptions={tabBarOptions}>
+      {screens.map(({ name, title, icon }) => (
         <Tabs.Screen
-          name="home/home"
+          key={name}
+          name={name}
           options={{
-            title: "الرئيسية",
+            title,
             headerShown: false,
             tabBarIcon: ({ color, focused }) => (
               <TabIcon
-                icon={icons.home}
+                icon={icon}
                 color={color}
-                name="الرئيسية"
+                name={title}
                 focused={focused}
               />
             ),
           }}
         />
-        <Tabs.Screen
-          name="stories"
-          options={{
-            title: "قصص",
-            headerShown: false,
-            tabBarIcon: ({ color, focused }) => (
-              <TabIcon
-                icon={icons.stories}
-                color={color}
-                name="قصص"
-                focused={focused}
-              />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="create"
-          options={{
-            title: "المفردات",
-            headerShown: false,
-            tabBarIcon: ({ color, focused }) => (
-              <TabIcon
-                icon={icons.words}
-                color={color}
-                name="المفردات"
-                focused={focused}
-              />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="profile"
-          options={{
-            title: "الملف الشخصي",
-            headerShown: false,
-            tabBarIcon: ({ color, focused }) => (
-              <TabIcon
-                icon={icons.profile}
-                color={color}
-                name="الملف الشخصي"
-                focused={focused}
-              />
-            ),
-          }}
-        />
-      </Tabs>
-    </>
+      ))}
+    </Tabs>
   );
 };
 
 export default TabNavigator;
 
-const ViewBox = styled.View`
+// Styled Components
+const IconContainer = styled.View`
   justify-content: center;
   align-items: center;
   gap: 2px;
 `;
 
-const ImageBox = styled.Image`
+const StyledImage = styled.Image`
   width: 24px;
   height: 24px;
 `;
 
-const TabText = styled.Text`
+const StyledText = styled.Text`
   font-size: 12px;
   font-weight: ${({ focused }) => (focused ? "600" : "400")};
   text-align: center;

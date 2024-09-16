@@ -1,9 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components/native";
-import { SafeAreaView, ScrollView } from "react-native";
+import { SafeAreaView, ScrollView, Alert } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 import categories from "../utils/categories.json";
+import { InterstitialAd, AdEventType } from "react-native-google-mobile-ads";
+import { useSelector } from "react-redux";
+
+const adUnitId = "ca-app-pub-7167740558520278/7250402342";
+
+const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
+  requestNonPersonalizedAdsOnly: true,
+});
 
 const Container = styled.View`
   flex: 1;
@@ -138,6 +146,41 @@ const Stories = () => {
   const data =
     activeTab === "stories" ? categories.stories : categories.exercises;
 
+  // Access the currentUser directly from Redux
+  const currentUser = useSelector((state) => state.user.currentUser);
+  const isPaid = currentUser?.isPaid; // Access the isPaid status
+
+  useEffect(() => {
+    const loadInterstitialAd = () => {
+      interstitial.load();
+    };
+    loadInterstitialAd();
+  }, []);
+
+  const handleCategoryPress = (category) => {
+    if (!isPaid) {
+      // User is not paid, show interstitial ad
+      if (interstitial.loaded) {
+        interstitial.show();
+      } else {
+        Alert.alert("Ad not ready yet", "Please try again in a few seconds.");
+      }
+
+      interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+        // Navigate to the exercise after the ad is closed
+        router.push({
+          pathname: category.navigateTo,
+          params: { set: category.set },
+        });
+      });
+    } else {
+      // If the user is paid, proceed directly to the exercise
+      router.push({
+        pathname: category.navigateTo,
+        params: { set: category.set },
+      });
+    }
+  };
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <Container>
@@ -175,17 +218,13 @@ const Stories = () => {
             <BotText>١ نقطة</BotText>
           </BotCon>
         </BoxCon>
+
         <ScrollView>
           {data.map((category, index) => (
             <CategoryItemContainer
               key={index}
               borderColor={category.borderColor}
-              onPress={() =>
-                router.push({
-                  pathname: category.navigateTo,
-                  params: { set: category.set },
-                })
-              }
+              onPress={() => handleCategoryPress(category)}
             >
               <IconImage source={{ uri: category.icon }} />
               <CategoryTextContainer>

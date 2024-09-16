@@ -255,7 +255,7 @@ const Onboarding = () => {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
         setSelectedOptionIndex(null);
       } else {
-        router.push("home/home");
+        router.push("home");
       }
     }
   };
@@ -271,7 +271,7 @@ const Onboarding = () => {
 
   const requestNotifications = async () => {
     const { status } = await Notifications.requestPermissionsAsync();
-    router.push("home/home");
+    router.push("home");
   };
 
   useEffect(() => {
@@ -364,7 +364,7 @@ const Onboarding = () => {
 
                 <ButtonGroup>
                   <NotificationButton
-                    onPress={() => router.push("home/home")}
+                    onPress={() => router.push("home")}
                     style={{ backgroundColor: "#f0f0f0", opacity: 0.5 }}
                   >
                     <ButtonText style={{ color: "#000" }}>

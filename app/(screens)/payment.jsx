@@ -293,18 +293,22 @@ const Payment = () => {
   useEffect(() => {
     async function initIAP() {
       try {
-        await RNIap.initConnection(); // Initialize IAP
-        const products = await RNIap.getProducts(itemSkus); // Fetch available products
-        setProducts(products);
+        const result = await RNIap.initConnection();
+        if (result) {
+          const products = await RNIap.getProducts(itemSkus);
+          setProducts(products);
+        } else {
+          console.warn("Failed to connect to the store.");
+        }
       } catch (error) {
-        console.warn(error);
+        console.warn("IAP Error:", error);
       }
     }
 
     initIAP();
 
     return () => {
-      RNIap.endConnection(); // Close IAP connection when component unmounts
+      RNIap.endConnection();
     };
   }, []);
 
