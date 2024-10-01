@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components/native";
-import { TouchableOpacity, Modal, View, ScrollView, Text } from "react-native";
+import {
+  TouchableOpacity,
+  Modal,
+  View,
+  ScrollView,
+  Text,
+  TouchableWithoutFeedback,
+} from "react-native";
 import { signOut, userSelector } from "../../redux/authSlice";
 import { xpSelector, fetchUnlockedSets } from "../../redux/lessonsSlice";
 import axios from "axios";
 import { Image as ExpoImage } from "expo-image";
 import { router } from "expo-router";
+
+/* Existing Styled Components */
 
 const SafeArea = styled.SafeAreaView`
   background-color: #ffffff;
@@ -44,6 +53,8 @@ const NavBadge = styled.Text`
   color: ${({ active }) => (active ? "#007AFF" : "#8e8e93")};
   margin-left: 4px;
 `;
+
+/* Existing Modal Styled Components */
 
 const ModalContainer = styled.View`
   flex: 1;
@@ -179,6 +190,32 @@ const ItemSubText = styled.Text`
   text-align: right;
 `;
 
+/* Tooltip Modal Styled Components */
+
+const TooltipModalContainer = styled.View`
+  position: absolute;
+  z-index: 1001;
+  top: 100px;
+  right: 100px;
+`;
+
+const TooltipModalContent = styled.View`
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  width: 160px; /* Smaller width */
+  align-items: center;
+`;
+
+const TooltipModalText = styled.Text`
+  color: #000000;
+  font-size: 12px;
+  text-align: center;
+`;
+
+/* Navigation Items */
+
 const NAV_ITEMS = [
   {
     id: "Notifications",
@@ -206,17 +243,27 @@ const NAV_ITEMS = [
   },
 ];
 
+/* Navbar Component */
+
 const Navbar = () => {
   const [activeTab, setActiveTab] = useState(null);
   const [notificationsModalVisible, setNotificationsModalVisible] =
     useState(false);
   const [profileModalVisible, setProfileModalVisible] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [tooltipModal, setTooltipModal] = useState({
+    visible: false,
+    message: "",
+    x: 0,
+    y: 0,
+  });
+
   const dispatch = useDispatch();
   const xp = useSelector(xpSelector);
   const { currentUser } = useSelector(userSelector);
   const streakCount = currentUser?.streak?.count ?? 0;
 
+  /* Fetch Notifications */
   const fetchNotifications = async () => {
     try {
       const res = await axios.get(
@@ -244,32 +291,79 @@ const Navbar = () => {
     }
   }, [currentUser, dispatch]);
 
-  const handleOpenModal = (tabId) => {
-    setActiveTab(tabId);
+  /* Handle Modal Open */
+  const handleOpenModal = (tabId, event) => {
     if (tabId === "Notifications") {
+      setActiveTab(tabId);
       setNotificationsModalVisible(true);
     } else if (tabId === "Me") {
+      setActiveTab(tabId);
       setProfileModalVisible(true);
+    } else if (tabId === "XP" || tabId === "Streak") {
+      const message =
+        tabId === "XP"
+          ? "Stars are awarded for finishing lessons."
+          : "Streak counts the number of consecutive days you log in.";
+
+      if (event) {
+        const { pageX, pageY } = event.nativeEvent;
+        setTooltipModal({
+          visible: true,
+          message,
+          x: pageX,
+          y: pageY,
+        });
+
+        // Automatically hide the tooltip after 3 seconds
+        setTimeout(() => {
+          setTooltipModal({ visible: false, message: "", x: 0, y: 0 });
+        }, 3000);
+      } else {
+        // Fallback position if event is not available
+        setTooltipModal({
+          visible: true,
+          message,
+          x: 20,
+          y: 100,
+        });
+
+        setTimeout(() => {
+          setTooltipModal({ visible: false, message: "", x: 0, y: 0 });
+        }, 3000);
+      }
     }
   };
 
+  /* Handle Modal Close */
   const handleCloseModal = () => {
     setNotificationsModalVisible(false);
     setProfileModalVisible(false);
     setActiveTab(null);
+    setTooltipModal({ visible: false, message: "" });
   };
 
+  /* Handle Sign Out */
   const handleSignOut = () => {
     dispatch(signOut());
     handleCloseModal();
     router.push("sign-in");
   };
 
+  /* Handle Settings */
+  const handleSetting = () => {
+    handleCloseModal();
+    router.push("setting");
+  };
+
   return (
     <SafeArea>
+      {/* Navbar */}
       <NavbarContainer>
         {NAV_ITEMS.map((item) => (
-          <NavItem key={item.id} onPress={() => handleOpenModal(item.id)}>
+          <NavItem
+            key={item.id}
+            onPressIn={(event) => handleOpenModal(item.id, event)}
+          >
             <NavIcon source={item.icon} cachePolicy="memory" />
             {item.showBadge && (
               <NavBadge active={activeTab === item.id}>
@@ -280,6 +374,26 @@ const Navbar = () => {
         ))}
       </NavbarContainer>
 
+      {/* Tooltip Modal */}
+      <Modal
+        transparent={true}
+        animationType="fade"
+        visible={tooltipModal.visible}
+        onRequestClose={() => setTooltipModal({ visible: false, message: "" })}
+      >
+        <TouchableWithoutFeedback
+          onPress={() => setTooltipModal({ visible: false, message: "" })}
+        >
+          <TooltipModalContainer>
+            <TouchableWithoutFeedback>
+              <TooltipModalContent>
+                <TooltipModalText>{tooltipModal.message}</TooltipModalText>
+              </TooltipModalContent>
+            </TouchableWithoutFeedback>
+          </TooltipModalContainer>
+        </TouchableWithoutFeedback>
+      </Modal>
+
       {/* Notifications Modal */}
       <Modal
         transparent={true}
@@ -287,40 +401,40 @@ const Navbar = () => {
         visible={notificationsModalVisible}
         onRequestClose={handleCloseModal}
       >
-        <ModalContainer>
-          <ModalContent>
-            <ModalHeader>
-              <ModalTitle>الإشعارات</ModalTitle>
-              <TouchableOpacity
-                onPress={() => handleCloseModal("Notifications")}
-              >
-                <CrossIcon
-                  source={require("../../../assets/icons/grayCross.png")}
-                />
-              </TouchableOpacity>
-            </ModalHeader>
-            <ScrollView>
-              {notifications.length > 0 ? (
-                notifications.map((notification) => (
-                  <View key={notification._id}>
-                    <ItemBox>
-                      <ItemImage
-                        source={{ uri: notification.image }}
-                        placeholder={require("../../../assets/images/thumbnail.png")}
-                      />
-                      <ItemTextContainer>
-                        <ItemTitle>{notification.title}</ItemTitle>
-                        <ItemSubText>{notification.message}</ItemSubText>
-                      </ItemTextContainer>
-                    </ItemBox>
-                  </View>
-                ))
-              ) : (
-                <Text>لا توجد إشعارات</Text>
-              )}
-            </ScrollView>
-          </ModalContent>
-        </ModalContainer>
+        <TouchableWithoutFeedback onPress={handleCloseModal}>
+          <ModalContainer>
+            <ModalContent>
+              <ModalHeader>
+                <ModalTitle>الإشعارات</ModalTitle>
+                <TouchableOpacity onPress={handleCloseModal}>
+                  <CrossIcon
+                    source={require("../../../assets/icons/grayCross.png")}
+                  />
+                </TouchableOpacity>
+              </ModalHeader>
+              <ScrollView>
+                {notifications.length > 0 ? (
+                  notifications.map((notification) => (
+                    <View key={notification._id}>
+                      <ItemBox>
+                        <ItemImage
+                          source={{ uri: notification.image }}
+                          placeholder={require("../../../assets/images/thumbnail.png")}
+                        />
+                        <ItemTextContainer>
+                          <ItemTitle>{notification.title}</ItemTitle>
+                          <ItemSubText>{notification.message}</ItemSubText>
+                        </ItemTextContainer>
+                      </ItemBox>
+                    </View>
+                  ))
+                ) : (
+                  <Text>لا توجد إشعارات</Text>
+                )}
+              </ScrollView>
+            </ModalContent>
+          </ModalContainer>
+        </TouchableWithoutFeedback>
       </Modal>
 
       {/* Profile Modal */}
@@ -330,46 +444,50 @@ const Navbar = () => {
         visible={profileModalVisible}
         onRequestClose={handleCloseModal}
       >
-        <ModalContainer>
-          <ModalContent>
-            <ModalHeader>
-              <ModalTitle>الملف الشخصي</ModalTitle>
-              <TouchableOpacity onPress={() => handleCloseModal("Me")}>
-                <CrossIcon
-                  source={require("../../../assets/icons/grayCross.png")}
-                />
-              </TouchableOpacity>
-            </ModalHeader>
-
-            <ProfileInfo>
-              <ProfileTextContainer>
-                <ProfileText>اسم المستخدم: {currentUser?.username}</ProfileText>
-                <ProfileText>
-                  البريد الإلكتروني: {currentUser?.email}
-                </ProfileText>
-                <StreakContainer>
-                  <StreakIcon
-                    source={require("../../../assets/icons/fire.png")}
+        <TouchableWithoutFeedback onPress={handleCloseModal}>
+          <ModalContainer>
+            <ModalContent>
+              <ModalHeader>
+                <ModalTitle>الملف الشخصي</ModalTitle>
+                <TouchableOpacity onPress={handleCloseModal}>
+                  <CrossIcon
+                    source={require("../../../assets/icons/grayCross.png")}
                   />
-                  <StreakText>عدد أيام الحماس: {streakCount}</StreakText>
-                </StreakContainer>
-              </ProfileTextContainer>
-              <ProfileImage
-                source={require("../../../assets/images/profile.png")}
-                placeholder={require("../../../assets/images/thumbnail.png")}
-              />
-            </ProfileInfo>
+                </TouchableOpacity>
+              </ModalHeader>
 
-            <ProfileButtonsContainer>
-              <ProfileButton onPress={() => console.log("Settings Pressed")}>
-                <ProfileButtonText>الإعدادات</ProfileButtonText>
-              </ProfileButton>
-              <ProfileButton onPress={handleSignOut}>
-                <ProfileButtonText>تسجيل الخروج</ProfileButtonText>
-              </ProfileButton>
-            </ProfileButtonsContainer>
-          </ModalContent>
-        </ModalContainer>
+              <ProfileInfo>
+                <ProfileTextContainer>
+                  <ProfileText>
+                    اسم المستخدم: {currentUser?.username}
+                  </ProfileText>
+                  <ProfileText>
+                    البريد الإلكتروني: {currentUser?.email}
+                  </ProfileText>
+                  <StreakContainer>
+                    <StreakIcon
+                      source={require("../../../assets/icons/fire.png")}
+                    />
+                    <StreakText>عدد أيام الحماس: {streakCount}</StreakText>
+                  </StreakContainer>
+                </ProfileTextContainer>
+                <ProfileImage
+                  source={require("../../../assets/images/profile.png")}
+                  placeholder={require("../../../assets/images/thumbnail.png")}
+                />
+              </ProfileInfo>
+
+              <ProfileButtonsContainer>
+                <ProfileButton onPress={handleSetting}>
+                  <ProfileButtonText>الإعدادات</ProfileButtonText>
+                </ProfileButton>
+                <ProfileButton onPress={handleSignOut}>
+                  <ProfileButtonText>تسجيل الخروج</ProfileButtonText>
+                </ProfileButton>
+              </ProfileButtonsContainer>
+            </ModalContent>
+          </ModalContainer>
+        </TouchableWithoutFeedback>
       </Modal>
     </SafeArea>
   );

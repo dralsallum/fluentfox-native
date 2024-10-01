@@ -1,73 +1,48 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components/native";
-import { ScrollView, TouchableOpacity } from "react-native";
+import {
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { useRouter } from "expo-router";
 import Navbar from "../components/navigation/navbar";
 import * as RNIap from "react-native-iap";
+import { createUserRequest } from "../../requestMethods";
+import { useSelector } from "react-redux";
 
 const itemSkus = [
-  "com.dralsallum.fluentfox.premium.monthly",
-  "com.dralsallum.fluentfox.premium.quarterly",
-  "com.dralsallum.fluentfox.premium.yearly",
-];
-
-const pricingOptions = [
-  {
-    id: 1,
-    duration: "1 أشهر",
-    price: "SAR 29.00",
-    monthlyPrice: "SAR 29.00 / شهرياً",
-    discount: "خصم 0%",
-    discountColor: "#fff",
-  },
-  {
-    id: 2,
-    duration: "3 أشهر",
-    price: "SAR 87.00",
-    monthlyPrice: "SAR 17.99 / شهرياً",
-    discount: "خصم 40%",
-    discountColor: "rgb(14, 190, 117)",
-  },
-  {
-    id: 3,
-    duration: "12 أشهر",
-    price: "SAR 348.00",
-    monthlyPrice: "SAR 11.99 / شهرياً",
-    discount: "خصم 60%",
-    discountColor: "rgb(14, 190, 117)",
-  },
+  "com.dralsallum.fluentfox.monthly",
+  "com.dralsallum.fluentfox.quarterly",
+  "com.dralsallum.fluentfox.yearly",
 ];
 
 const features = [
   {
-    text: "الدورات المتخصصة",
-    description: "افتح الدورات المتخصصة لتحسين مهاراتك الأساسية.",
-    image: require("../../assets/images/superhero.png"),
-  },
-  {
-    text: "التكرار المتباعد",
-    description: "مارس الكلمات الصحيحة في الوقت المناسب وثبتها في الذاكرة.",
-    image: require("../../assets/images/profile.png"),
-  },
-  {
-    text: "مراجعة القواعد",
-    description: "عزز ثقتك في المحادثة مع تدريبات نحوية شخصية.",
-    image: require("../../assets/images/congratulations.png"),
-  },
-  {
-    text: "تغذية راجعة ذات أولوية",
-    description: "مارس اللغة الإنجليزية مع المتحدثين الأصليين.",
-    image: require("../../assets/images/clap.png"),
-  },
-  {
-    text: "تخطي الدروس",
-    description: "احصل على الدروس بأي ترتيب لتجد الموضوعات الأكثر ملائمة لك.",
-    image: require("../../assets/images/goal.png"),
+    text: "الوصول لكل الدروس بدون إعلانات",
+    description: "تجنب الانقطاعات.",
+    image: require("../../assets/images/empty.png"),
   },
   {
     text: "بدون إعلانات",
     description: "تجنب الانقطاعات.",
     image: require("../../assets/images/empty.png"),
+  },
+  {
+    text: "زيادة الالتزام",
+    description: "تابع تقدمك وتحسن مهاراتك بطرق منظمة وفعّالة.",
+    image: require("../../assets/images/progress.png"),
+  },
+  {
+    text: "دعم سريع بغضون ٢٤ ساعة",
+    description: "تواصل مع مدربين مختصين للحصول على مساعدة سريعة.",
+    image: require("../../assets/images/live-support.png"),
+  },
+  {
+    text: "تقارير اسبوعية",
+    description: "اطلع على تحليلات دقيقة حول تقدمك واستراتيجياتك.",
+    image: require("../../assets/images/report.png"),
   },
 ];
 
@@ -186,6 +161,7 @@ const MonTex = styled.Text`
   text-align: center;
   color: rgb(30, 45, 64);
 `;
+
 const TextView = styled.View`
   gap: 4px;
 `;
@@ -244,6 +220,7 @@ const FeatureText = styled.Text`
   flex: 1;
   text-align: right;
 `;
+
 const FeatureDes = styled.Text`
   font-size: 11px;
   color: #7f7f7f;
@@ -288,15 +265,39 @@ const PricingCard = ({
 const Payment = () => {
   const router = useRouter();
   const [selectedOption, setSelectedOption] = useState(1);
-  const [products, setProducts] = useState([]);
+  const [pricingOptions, setPricingOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const userId = useSelector((state) => state.user.currentUser?._id);
+  const userIsPaid = useSelector((state) => state.user.currentUser?.isPaid);
+
+  useEffect(() => {
+    if (userIsPaid) {
+      Alert.alert("You already have a premium membership");
+      router.back();
+    }
+  }, [userIsPaid]);
 
   useEffect(() => {
     async function initIAP() {
       try {
         const result = await RNIap.initConnection();
         if (result) {
-          const products = await RNIap.getProducts(itemSkus);
-          setProducts(products);
+          console.log("IAP Connection successful");
+          const fetchedProducts = await RNIap.getSubscriptions({
+            skus: itemSkus,
+          });
+
+          // Build pricingOptions from fetched products
+          const options = fetchedProducts.map((product, index) => ({
+            id: index + 1,
+            duration: getDurationLabel(product),
+            price: product.localizedPrice,
+            monthlyPrice: getMonthlyPrice(product),
+            discount: getDiscountLabel(product),
+            productId: product.productId,
+          }));
+          setPricingOptions(options);
         } else {
           console.warn("Failed to connect to the store.");
         }
@@ -304,26 +305,137 @@ const Payment = () => {
         console.warn("IAP Error:", error);
       }
     }
-
     initIAP();
-
     return () => {
       RNIap.endConnection();
     };
   }, []);
 
-  // Purchase handling
+  const getDurationLabel = (product) => {
+    switch (product.productId) {
+      case "com.dralsallum.fluentfox.monthly":
+        return "1 أشهر";
+      case "com.dralsallum.fluentfox.quarterly":
+        return "3 أشهر";
+      case "com.dralsallum.fluentfox.yearly":
+        return "12 أشهر";
+      default:
+        return "";
+    }
+  };
+
+  const getMonthlyPrice = (product) => {
+    const priceInUnits = parseFloat(product.price);
+    if (isNaN(priceInUnits)) return "";
+    let months = 1;
+    switch (product.productId) {
+      case "com.dralsallum.fluentfox.monthly":
+        months = 1;
+        break;
+      case "com.dralsallum.fluentfox.quarterly":
+        months = 3;
+        break;
+      case "com.dralsallum.fluentfox.yearly":
+        months = 12;
+        break;
+      default:
+        months = 1;
+    }
+    const monthlyPrice = (priceInUnits / months).toFixed(2);
+    const currency = product.currency || "";
+    return `${monthlyPrice} ${currency} / شهرياً`;
+  };
+
+  const getDiscountLabel = (product) => {
+    let discountPercentage = 0;
+    switch (product.productId) {
+      case "com.dralsallum.fluentfox.monthly":
+        discountPercentage = 0;
+        break;
+      case "com.dralsallum.fluentfox.quarterly":
+        discountPercentage = 40;
+        break;
+      case "com.dralsallum.fluentfox.yearly":
+        discountPercentage = 60;
+        break;
+      default:
+        discountPercentage = 0;
+    }
+    return `خصم ${discountPercentage}%`;
+  };
+
   const handlePurchase = async () => {
-    const product = products.find(
-      (p) => p.productId === itemSkus[selectedOption - 1]
+    setLoading(true);
+
+    const selectedProduct = pricingOptions.find(
+      (option) => option.id === selectedOption
     );
-    if (product) {
-      try {
-        await RNIap.requestPurchase(product.productId); // Initiate purchase
-        Alert.alert("Success", `Purchase successful for ${product.title}`);
-      } catch (err) {
-        Alert.alert("Purchase Error", err.message);
+
+    if (!selectedProduct) {
+      Alert.alert("Error", "Product not found. Please try again.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const purchase = await RNIap.requestSubscription({
+        sku: selectedProduct.productId,
+      });
+      const transactionId = purchase.transactionId;
+
+      if (transactionId) {
+        await verifyPurchase(transactionId);
+      } else {
+        Alert.alert(
+          "Purchase Error",
+          "No transaction ID found. Please try again."
+        );
       }
+    } catch (err) {
+      handlePurchaseError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyPurchase = async (transactionId) => {
+    try {
+      const userRequest = createUserRequest();
+      const response = await userRequest.post("/verifyPurchase", {
+        userId,
+        transactionId,
+      });
+
+      const data = response.data;
+      if (data.success) {
+        Alert.alert("Success", "Purchase verified successfully!");
+      } else {
+        Alert.alert("Verification Failed", data.message);
+      }
+    } catch (error) {
+      console.error("Verification Error:", error);
+      if (error.response) {
+        console.error("Response data:", error.response.data);
+        Alert.alert("Verification Error", error.response.data.message);
+      } else if (error.request) {
+        console.error("Request error:", error.request);
+        Alert.alert(
+          "Verification Error",
+          "Cannot reach server. Please try again."
+        );
+      } else {
+        console.error("Error message:", error.message);
+        Alert.alert("Verification Error", error.message);
+      }
+    }
+  };
+
+  const handlePurchaseError = (err) => {
+    if (err.code === "E_USER_CANCELLED") {
+      Alert.alert("Purchase Cancelled", "You cancelled the purchase.");
+    } else {
+      console.error("Purchase Error:", err);
+      Alert.alert("Purchase Error", "An error occurred. Please try again.");
     }
   };
 
@@ -331,7 +443,7 @@ const Payment = () => {
     const selected = pricingOptions.find(
       (option) => option.id === selectedOption
     );
-    return `فتح العضوية المميزة لمدة ${selected.duration}`;
+    return selected ? `فتح العضوية المميزة لمدة ${selected.duration}` : "";
   };
 
   return (
@@ -341,23 +453,27 @@ const Payment = () => {
         <Container>
           <TopTe>ابدأ اليوم بدون مخاطر</TopTe>
           <TopSubTe>طور لغتك بطريقة علمية ومدروسة</TopSubTe>
-          <OreConAll>
-            {pricingOptions.map((option) => (
-              <PricingCard
-                key={option.id}
-                {...option}
-                selected={selectedOption === option.id}
-                onSelect={() => setSelectedOption(option.id)}
-              />
-            ))}
-          </OreConAll>
+          {pricingOptions.length > 0 ? (
+            <OreConAll>
+              {pricingOptions.map((option) => (
+                <PricingCard
+                  key={option.id}
+                  {...option}
+                  selected={selectedOption === option.id}
+                  onSelect={() => setSelectedOption(option.id)}
+                />
+              ))}
+            </OreConAll>
+          ) : (
+            <Tex>جاري تحميل المنتجات...</Tex>
+          )}
           <ButtonContainer>
             <Button bgColor="rgb(14, 190, 117)" onPress={handlePurchase}>
               <ButtonText>{getButtonText()}</ButtonText>
             </Button>
             <Button bgColor="rgb(240, 240, 240)" onPress={() => router.back()}>
               <ButtonText color="rgb(30, 45, 64)">
-                لا شكراً ارغب التجربة مجاناً
+                لا شكراً، أرغب بالتجربة مجاناً
               </ButtonText>
             </Button>
           </ButtonContainer>
@@ -368,7 +484,7 @@ const Payment = () => {
                 <FeatureImage source={feature.image} />
                 <TextView>
                   <FeatureText>{feature.text}</FeatureText>
-                  <FeatureDes> {feature.description}</FeatureDes>
+                  <FeatureDes>{feature.description}</FeatureDes>
                 </TextView>
               </FeatureItem>
             ))}

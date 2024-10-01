@@ -11,7 +11,7 @@ import styled from "styled-components/native";
 import { ScrollView, Dimensions } from "react-native";
 import { Image as ExpoImage } from "expo-image";
 import { InterstitialAd, AdEventType } from "react-native-google-mobile-ads";
-const adUnitId = "ca-app-pub-7167740558520278/7250402342"; // Use your actual ad unit ID
+const adUnitId = "ca-app-pub-7167740558520278/7250402342";
 
 const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
   requestNonPersonalizedAdsOnly: true,
@@ -189,6 +189,7 @@ const QueTeHe = styled.Text`
 `;
 
 const QueChaOneCon = styled.View`
+  background-color: #ffffff;
   margin: 20px 0;
   border-width: 2px;
   border-color: lightgray;

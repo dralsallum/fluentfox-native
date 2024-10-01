@@ -8,37 +8,37 @@
         {
           "text": "منتجات بالسوبر ماركت!",
           "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/supermarkets.png",
-          "navigateTo": "vocabulary/vocabulary",
+          "navigateTo": "vocabulary",
           "set": "set1"
         },
         {
           "text": "اغراض بالمنزل",
           "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/house.png",
-          "navigateTo": "vocabulary/vocabulary",
+          "navigateTo": "vocabulary",
           "set": "set2"
         },
         {
           "text": "اشياء بالمطبخ",
           "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/kitchen.png",
-          "navigateTo": "vocabulary/vocabulary",
+          "navigateTo": "vocabulary",
           "set": "set3"
         },
         {
           "text": "مصطلحات مدرسية",
           "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/school.png",
-          "navigateTo": "vocabulary/vocabulary",
+          "navigateTo": "vocabulary",
           "set": "set4"
         },
         {
           "text": "اماكن تزورها",
           "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/location.png",
-          "navigateTo": "vocabulary/vocabulary",
+          "navigateTo": "vocabulary",
           "set": "set5"
         },
         {
           "text": "كلمات علمية",
           "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/atom.png",
-          "navigateTo": "vocabulary/vocabulary",
+          "navigateTo": "vocabulary",
           "set": "set6"
         }
       ]
@@ -281,32 +281,32 @@
         {
           "text": "See you",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "Welcome",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "Sorry",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "Excuse me",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "Can I help you?",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "Nice to meet you",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         }
       ]
     },
@@ -318,32 +318,32 @@
         {
           "text": "How are you?",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "I'm fine",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "And you?",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "What's up?",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "Nothing much",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "All good",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         }
       ]
     },
@@ -355,32 +355,32 @@
         {
           "text": "Hello!",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "Good morning",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "Goodbye",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "Thank you",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "Please",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "Yes",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         }
       ]
     },
@@ -392,32 +392,32 @@
         {
           "text": "See you",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "Welcome",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "Sorry",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "Excuse me",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "Can I help you?",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "Nice to meet you",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         }
       ]
     },
@@ -429,32 +429,32 @@
         {
           "text": "How are you?",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "I'm fine",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "And you?",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "What's up?",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "Nothing much",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         },
         {
           "text": "All good",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "grammar"
         }
       ]
     }

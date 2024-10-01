@@ -71,6 +71,7 @@ const Subtitle = styled.Text`
   line-height: 34px;
   padding: 0 20px;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  background-color: #f7f7f7;
 `;
 
 const ButtonContainer = styled.View`
@@ -81,7 +82,6 @@ const ButtonContainer = styled.View`
 `;
 
 const Button = styled.TouchableOpacity`
-  background-color: #4c47e8;
   border-radius: 25px;
   padding: 15px 0;
   margin-bottom: 10px;
@@ -91,10 +91,10 @@ const Button = styled.TouchableOpacity`
   shadow-radius: 3.84px;
   elevation: 5;
   opacity: ${(props) => (props.isLoading ? 0.5 : 1)};
+  background-color: #4c47e8;
 `;
 
 const ButtonSign = styled.TouchableOpacity`
-  background-color: transparent;
   border-radius: 25px;
   padding: 15px 0;
   width: 100%;
@@ -104,6 +104,7 @@ const ButtonSign = styled.TouchableOpacity`
   shadow-radius: 3.84px;
   elevation: 5;
   opacity: ${(props) => (props.isLoading ? 0.5 : 1)};
+  background-color: #ffffff;
 `;
 
 const ButtonText = styled.Text`

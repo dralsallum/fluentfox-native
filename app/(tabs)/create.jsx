@@ -9,53 +9,69 @@ import {
   Dimensions,
   TouchableOpacity,
   Animated,
+  SafeAreaView,
+  Alert,
 } from "react-native";
-
 import data from "../utils/data.json";
 import { InterstitialAd, AdEventType } from "react-native-google-mobile-ads";
-import { SafeAreaView, Alert } from "react-native";
 import { useSelector } from "react-redux";
-
-const adUnitId = "ca-app-pub-7167740558520278/7250402342";
-
-const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
-  requestNonPersonalizedAdsOnly: true,
-});
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width / 3.5;
 
-const WordItem = ({ text, subText, imagePath, navigateTo, set }) => {
+const Create = () => {
+  const [activeTab, setActiveTab] = useState("Vocabulary");
+  const [selectedLevel, setSelectedLevel] = useState(data.vocabularyLevels[0]);
+
   const currentUser = useSelector((state) => state.user.currentUser);
   const isPaid = currentUser?.isPaid; // Access the isPaid status
 
-  useEffect(() => {
-    const loadInterstitialAd = () => {
-      interstitial.load();
-    };
-    loadInterstitialAd();
-  }, []);
+  const adUnitId = "ca-app-pub-7167740558520278/7250402342";
+  const interstitial = useRef(
+    InterstitialAd.createForAdRequest(adUnitId, {
+      requestNonPersonalizedAdsOnly: true,
+    })
+  ).current;
 
-  const handleCategoryPress = () => {
+  const [nextNavigation, setNextNavigation] = useState(null);
+
+  useEffect(() => {
+    interstitial.load();
+
+    const adEventListener = interstitial.addAdEventListener(
+      AdEventType.CLOSED,
+      () => {
+        interstitial.load(); // Load a new ad when the previous one is closed
+
+        if (nextNavigation) {
+          const { navigateTo, set, text } = nextNavigation;
+          if (set) {
+            router.push({
+              pathname: navigateTo,
+              params: { set },
+            });
+          } else {
+            console.warn(`Set parameter is missing for word: ${text}`);
+          }
+          setNextNavigation(null); // Reset the next navigation
+        }
+      }
+    );
+
+    return () => {
+      adEventListener(); // Clean up the listener
+    };
+  }, [nextNavigation]);
+
+  const handleAdShowAndNavigate = (navigateTo, set, text) => {
     if (!isPaid) {
       // User is not paid, show interstitial ad
       if (interstitial.loaded) {
+        setNextNavigation({ navigateTo, set, text });
         interstitial.show();
       } else {
         Alert.alert("Ad not ready yet", "Please try again in a few seconds.");
       }
-
-      interstitial.addAdEventListener(AdEventType.CLOSED, () => {
-        // Navigate to the exercise after the ad is closed
-        if (set) {
-          router.push({
-            pathname: navigateTo,
-            params: { set },
-          });
-        } else {
-          console.warn(`Set parameter is missing for word: ${text}`);
-        }
-      });
     } else {
       // If the user is paid, proceed directly to the exercise
       if (set) {
@@ -68,33 +84,6 @@ const WordItem = ({ text, subText, imagePath, navigateTo, set }) => {
       }
     }
   };
-
-  return (
-    <TouchableOpacity onPress={handleCategoryPress}>
-      <WordContainer>
-        <WordImage source={{ uri: imagePath }} />
-        <View style={{ flex: 1, alignItems: "flex-end" }}>
-          <Text style={{ fontSize: 18, textAlign: "right" }}>{text}</Text>
-          <Text style={{ fontSize: 14, color: "#999", textAlign: "right" }}>
-            {subText}
-          </Text>
-        </View>
-        <Image
-          source={require("../../assets/icons/signal.png")}
-          style={{ width: 24, height: 24 }}
-        />
-        <Image
-          source={require("../../assets/icons/knowledge.png")}
-          style={{ width: 24, height: 24, marginRight: 10 }}
-        />
-      </WordContainer>
-    </TouchableOpacity>
-  );
-};
-
-const Create = () => {
-  const [activeTab, setActiveTab] = useState("Vocabulary");
-  const [selectedLevel, setSelectedLevel] = useState(data.vocabularyLevels[0]);
 
   const handleCardPress = (level) => {
     setSelectedLevel(level);
@@ -129,18 +118,24 @@ const Create = () => {
         <VocabularyContent
           selectedLevel={selectedLevel}
           onCardPress={handleCardPress}
+          handleAdShowAndNavigate={handleAdShowAndNavigate}
         />
       ) : (
         <GrammarContent
           selectedLevel={selectedLevel}
           onCardPress={handleCardPress}
+          handleAdShowAndNavigate={handleAdShowAndNavigate}
         />
       )}
     </SafeAreaView>
   );
 };
 
-const VocabularyContent = ({ selectedLevel, onCardPress }) => (
+const VocabularyContent = ({
+  selectedLevel,
+  onCardPress,
+  handleAdShowAndNavigate,
+}) => (
   <StyledScrollView>
     <HorizontalCardList
       data={data.vocabularyLevels}
@@ -157,13 +152,18 @@ const VocabularyContent = ({ selectedLevel, onCardPress }) => (
           imagePath={word.imagePath}
           navigateTo={word.navigateTo}
           set={word.set}
+          handleAdShowAndNavigate={handleAdShowAndNavigate}
         />
       ))}
     </SavedWords>
   </StyledScrollView>
 );
 
-const GrammarContent = ({ selectedLevel, onCardPress }) => (
+const GrammarContent = ({
+  selectedLevel,
+  onCardPress,
+  handleAdShowAndNavigate,
+}) => (
   <StyledScrollView>
     <HorizontalCardList
       data={data.grammarLevels}
@@ -180,11 +180,47 @@ const GrammarContent = ({ selectedLevel, onCardPress }) => (
           imagePath={word.imagePath}
           navigateTo={word.navigateTo}
           set={word.set}
+          handleAdShowAndNavigate={handleAdShowAndNavigate}
         />
       ))}
     </SavedWords>
   </StyledScrollView>
 );
+
+const WordItem = ({
+  text,
+  subText,
+  imagePath,
+  navigateTo,
+  set,
+  handleAdShowAndNavigate,
+}) => {
+  const handleCategoryPress = () => {
+    handleAdShowAndNavigate(navigateTo, set, text);
+  };
+
+  return (
+    <TouchableOpacity onPress={handleCategoryPress}>
+      <WordContainer>
+        <WordImage source={{ uri: imagePath }} />
+        <View style={{ flex: 1, alignItems: "flex-end" }}>
+          <Text style={{ fontSize: 18, textAlign: "right" }}>{text}</Text>
+          <Text style={{ fontSize: 14, color: "#999", textAlign: "right" }}>
+            {subText}
+          </Text>
+        </View>
+        <Image
+          source={require("../../assets/icons/signal.png")}
+          style={{ width: 24, height: 24 }}
+        />
+        <Image
+          source={require("../../assets/icons/knowledge.png")}
+          style={{ width: 24, height: 24, marginRight: 10 }}
+        />
+      </WordContainer>
+    </TouchableOpacity>
+  );
+};
 
 const HorizontalCardList = ({ data, selectedLevel, onCardPress }) => {
   const animations = useRef(data.map(() => new Animated.Value(1))).current;

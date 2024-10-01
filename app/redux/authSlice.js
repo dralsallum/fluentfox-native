@@ -17,6 +17,60 @@ export const updateStreakCount = createAsyncThunk(
   }
 );
 
+export const updateUserProfile = createAsyncThunk(
+  "user/updateUserProfile",
+  async ({ userId, updates }, thunkAPI) => {
+    try {
+      // Get the user's access token from the state
+      const state = thunkAPI.getState();
+      const accessToken = state.user.currentUser?.accessToken;
+
+      const response = await axios.put(
+        `https://quizeng-022517ad949b.herokuapp.com/api/users/profile/${userId}`,
+        updates,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || error.message;
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+export const deleteUser = createAsyncThunk(
+  "user/deleteUser",
+  async ({ userId }, thunkAPI) => {
+    try {
+      // Get the user's access token from the state
+      const state = thunkAPI.getState();
+      const accessToken = state.user.currentUser?.accessToken;
+
+      await axios.delete(
+        `https://quizeng-022517ad949b.herokuapp.com/api/users/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      // After successful deletion, dispatch signOut to clear user state
+      thunkAPI.dispatch(signOut());
+
+      return { success: true };
+    } catch (error) {
+      const message = error.response?.data?.message || error.message;
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 export const login = createAsyncThunk(
   "user/login",
   async (credentials, thunkAPI) => {
@@ -136,10 +190,47 @@ const userSlice = createSlice({
       .addCase(updateStreakCount.rejected, (state, action) => {
         state.isError = true;
         state.errorMessage = action.payload;
+      })
+      .addCase(updateUserProfile.pending, (state) => {
+        state.isFetching = true;
+        state.isError = false;
+        state.isSuccess = false;
+      })
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
+        if (state.currentUser) {
+          state.currentUser = {
+            ...state.currentUser,
+            ...action.payload,
+          };
+        }
+        state.isSuccess = true;
+        state.isFetching = false;
+        state.isError = false;
+        state.errorMessage = "";
+      })
+      .addCase(updateUserProfile.rejected, (state, action) => {
+        state.isFetching = false;
+        state.isError = true;
+        state.errorMessage = action.payload;
+      })
+      .addCase(deleteUser.pending, (state) => {
+        state.isFetching = true;
+        state.isError = false;
+        state.isSuccess = false;
+      })
+      .addCase(deleteUser.fulfilled, (state) => {
+        state.isFetching = false;
+        state.isSuccess = true;
+        state.isError = false;
+        state.errorMessage = "";
+      })
+      .addCase(deleteUser.rejected, (state, action) => {
+        state.isFetching = false;
+        state.isError = true;
+        state.errorMessage = action.payload;
       });
   },
 });
-
 // Export the actions
 export const { clearState, signOut } = userSlice.actions;
 

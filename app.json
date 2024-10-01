@@ -2,7 +2,7 @@
   "expo": {
     "name": "FluentFox",
     "slug": "fluentfox",
-    "version": "2.0.0",
+    "version": "3.2.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "fluentfox",
@@ -15,12 +15,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.dralsallum.fluentfox",
-      "buildNumber": "2",
-      "entitlements": {
-        "com.apple.developer.in-app-payments": [
-          "merchant.com.dralsallum.fluentfox"
-        ]
-      },
+      "buildNumber": "31",
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -29,9 +24,7 @@
           "NSAllowsArbitraryLoads": true
         },
         "NSPhotoLibraryUsageDescription": "This app requires access to your photo library to upload images.",
-        "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you.",
         "NSMicrophoneUsageDescription": "This app needs access to the microphone for audio playback.",
-        "UIBackgroundModes": ["audio"],
         "SKAdNetworkItems": [
           {
             "SKAdNetworkIdentifier": "cstr6suwn9.skadnetwork"
@@ -40,23 +33,20 @@
       }
     },
     "android": {
-      "package": "com.dralsallum.fluentfox",
-      "versionCode": 6,
+      "versionCode": 15,
       "permissions": [
-        "CAMERA",
-        "RECORD_AUDIO",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "com.google.android.gms.permission.AD_ID"
       ],
-
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
-      "config": {
-        "googleMobileAdsAppId": "ca-app-pub-7167740558520278~3989253100"
-      },
-      "softwareKeyboardLayoutMode": "pan"
+      "softwareKeyboardLayoutMode": "pan",
+      "package": "com.dralsallum.fluentfox"
     },
     "web": {
       "favicon": "./assets/images/favicon.png",

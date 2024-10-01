@@ -127,7 +127,7 @@ export const SelectedOptionText = styled.Text`
   line-height: 24px;
 `;
 export const SelectedOptionButton = styled.TouchableOpacity`
-  background-color: transparent;
+  background-color: #ffffff;
   padding: 3px 8px;
   border-radius: 12px;
   border: 2px solid rgb(206, 206, 206);
@@ -232,7 +232,6 @@ export const OptionsContainer = styled.View`
 export const OptionButton = styled.TouchableOpacity`
   align-self: center;
   justify-content: center;
-  background-color: transparent;
   padding: 6px 12px;
   border-radius: 12px;
   margin: 5px;
@@ -244,6 +243,7 @@ export const OptionButton = styled.TouchableOpacity`
   shadow-opacity: 0.5;
   shadow-radius: 0.5px;
   elevation: 3;
+  background-color: #ffffff;
 `;
 
 export const OptionText = styled.Text`
@@ -542,7 +542,7 @@ export const LineAct = styled.View`
 `;
 
 export const SelectedRealButton = styled.TouchableOpacity`
-  background-color: transparent;
+  background-color: #ffffff;
   padding: 15px;
   margin: 10px 0;
   border-radius: 10px;

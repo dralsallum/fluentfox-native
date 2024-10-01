@@ -1,3 +1,5 @@
+// src/components/Onboarding.js
+
 import React, { useState, useEffect } from "react";
 import styled from "styled-components/native";
 import {
@@ -6,12 +8,20 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  Modal,
+  View,
+  Text,
+  TouchableOpacity,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { register, clearState } from "../redux/authSlice";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Notifications from "expo-notifications";
+import privacyPolicy from "../utils/privacy.json"; // Import your privacy.json
+import Markdown from "react-native-markdown-display"; // To render markdown content
+
+// Styled Components
 
 export const SafeArea = styled.SafeAreaView`
   flex: 1;
@@ -160,6 +170,7 @@ const NotificationButton = styled(ContinueButton)`
   margin-horizontal: 5px;
 `;
 
+// Define your onboarding questions
 const questions = [
   {
     question: "حدد هدفك اليومي للدراسة",
@@ -226,6 +237,9 @@ const Onboarding = () => {
     email: "",
     password: "",
   });
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+
   const dispatch = useDispatch();
   const router = useRouter();
   const { isFetching, isError, errorMessage, isSuccess } = useSelector(
@@ -243,12 +257,20 @@ const Onboarding = () => {
   };
 
   const handleContinue = async () => {
-    if (questions[currentQuestionIndex].isSignUp) {
+    const currentQuestion = questions[currentQuestionIndex];
+
+    if (currentQuestion.isSignUp) {
+      if (!termsAccepted) {
+        // Terms are not accepted yet; modal should already be visible
+        return;
+      }
+
       if (!inputs.username || !inputs.email || !inputs.password) {
+        // You can add more validation or display errors here
         return;
       }
       dispatch(register(inputs));
-    } else if (questions[currentQuestionIndex].isNotificationPrompt) {
+    } else if (currentQuestion.isNotificationPrompt) {
       await requestNotifications();
     } else if (selectedOptionIndex !== null) {
       if (currentQuestionIndex < questions.length - 1) {
@@ -281,6 +303,18 @@ const Onboarding = () => {
     }
   }, [isSuccess]);
 
+  const acceptTerms = () => {
+    setTermsAccepted(true);
+    setShowTermsModal(false);
+  };
+
+  // Automatically show the Terms Modal when entering the sign-up step
+  useEffect(() => {
+    if (questions[currentQuestionIndex].isSignUp) {
+      setShowTermsModal(true);
+    }
+  }, [currentQuestionIndex]);
+
   return (
     <SafeArea>
       <KeyboardAvoidingView
@@ -307,6 +341,7 @@ const Onboarding = () => {
             <Title>{questions[currentQuestionIndex].question}</Title>
             <Subtitle>{questions[currentQuestionIndex].subText}</Subtitle>
 
+            {/* Display Options or Forms based on the current step */}
             {!questions[currentQuestionIndex].isSignUp &&
             !questions[currentQuestionIndex].isNotificationPrompt ? (
               <OptionsContainer>
@@ -324,37 +359,154 @@ const Onboarding = () => {
                 )}
               </OptionsContainer>
             ) : questions[currentQuestionIndex].isSignUp ? (
-              <Form>
-                {isError && <ErrorText>{errorMessage}</ErrorText>}
-                <InputContainer>
-                  <Ionicons name="person-outline" size={20} color="#888" />
-                  <Input
-                    placeholder="اسم المستخدم"
-                    placeholderTextColor="#888"
-                    value={inputs.username}
-                    onChangeText={(text) => handleInputChange("username", text)}
-                  />
-                </InputContainer>
-                <InputContainer>
-                  <Ionicons name="mail-outline" size={20} color="#888" />
-                  <Input
-                    placeholder="الايميل"
-                    placeholderTextColor="#888"
-                    value={inputs.email}
-                    onChangeText={(text) => handleInputChange("email", text)}
-                  />
-                </InputContainer>
-                <InputContainer>
-                  <Ionicons name="lock-closed-outline" size={20} color="#888" />
-                  <Input
-                    secureTextEntry
-                    placeholder="باسورد"
-                    placeholderTextColor="#888"
-                    value={inputs.password}
-                    onChangeText={(text) => handleInputChange("password", text)}
-                  />
-                </InputContainer>
-              </Form>
+              <>
+                {/* Sign-Up Form */}
+                <Form>
+                  {isError && <ErrorText>{errorMessage}</ErrorText>}
+                  <InputContainer>
+                    <Ionicons name="person-outline" size={20} color="#888" />
+                    <Input
+                      placeholder="اسم المستخدم"
+                      placeholderTextColor="#888"
+                      value={inputs.username}
+                      onChangeText={(text) =>
+                        handleInputChange("username", text)
+                      }
+                      editable={termsAccepted}
+                    />
+                  </InputContainer>
+                  <InputContainer>
+                    <Ionicons name="mail-outline" size={20} color="#888" />
+                    <Input
+                      placeholder="الايميل"
+                      placeholderTextColor="#888"
+                      value={inputs.email}
+                      onChangeText={(text) => handleInputChange("email", text)}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      editable={termsAccepted}
+                    />
+                  </InputContainer>
+                  <InputContainer>
+                    <Ionicons
+                      name="lock-closed-outline"
+                      size={20}
+                      color="#888"
+                    />
+                    <Input
+                      secureTextEntry
+                      placeholder="باسورد"
+                      placeholderTextColor="#888"
+                      value={inputs.password}
+                      onChangeText={(text) =>
+                        handleInputChange("password", text)
+                      }
+                      editable={termsAccepted}
+                    />
+                  </InputContainer>
+                </Form>
+
+                {/* Terms and Conditions Modal */}
+                <Modal
+                  animationType="slide"
+                  transparent={true}
+                  visible={showTermsModal}
+                  onRequestClose={() => {
+                    // Prevent modal from closing without acceptance
+                  }}
+                >
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      backgroundColor: "rgba(0,0,0,0.5)",
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: "90%",
+                        height: "80%",
+                        backgroundColor: "#fff",
+                        borderRadius: 20,
+                        padding: 20,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 20,
+                          fontWeight: "bold",
+                          marginBottom: 10,
+                          textAlign: "center",
+                        }}
+                      >
+                        شروط الخدمة
+                      </Text>
+                      <ScrollView style={{ marginBottom: 20 }}>
+                        {privacyPolicy.sections.map((section, index) => (
+                          <View key={index} style={{ marginBottom: 15 }}>
+                            <Text
+                              style={{
+                                fontSize: 18,
+                                fontWeight: "bold",
+                                color: "#333",
+                                marginBottom: 5,
+                                textAlign: "left",
+                              }}
+                            >
+                              {section.title}
+                            </Text>
+                            <Markdown
+                              style={{
+                                body: {
+                                  fontSize: 16,
+                                  color: "#555",
+                                  textAlign: "left",
+                                },
+                                strong: {
+                                  fontWeight: "bold",
+                                  color: "#333",
+                                },
+                                bullet_list: {
+                                  marginLeft: 10,
+                                },
+                                bullet_item: {
+                                  flexDirection: "row",
+                                  alignItems: "flex-start",
+                                  marginBottom: 5,
+                                },
+                                list_item: {
+                                  flexDirection: "row",
+                                  alignItems: "flex-start",
+                                  marginBottom: 5,
+                                },
+                                link: {
+                                  color: "#1e90ff",
+                                },
+                              }}
+                            >
+                              {section.content.join("\n\n")}
+                            </Markdown>
+                          </View>
+                        ))}
+                      </ScrollView>
+                      <TouchableOpacity
+                        onPress={acceptTerms}
+                        style={{
+                          backgroundColor: "#2196f3",
+                          padding: 15,
+                          borderRadius: 10,
+                          alignItems: "center",
+                        }}
+                      >
+                        <Text style={{ color: "#fff", fontSize: 18 }}>
+                          أوافق على الشروط
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </Modal>
+              </>
             ) : (
               <NotificationContainer>
                 <Image
@@ -381,22 +533,34 @@ const Onboarding = () => {
               </NotificationContainer>
             )}
 
+            {/* Continue Button */}
             {!questions[currentQuestionIndex].isNotificationPrompt && (
               <ContinueButton
                 onPress={handleContinue}
                 enabled={
                   questions[currentQuestionIndex].isSignUp
-                    ? !isFetching
+                    ? !isFetching && termsAccepted
                     : selectedOptionIndex !== null
                 }
+                style={{
+                  opacity: questions[currentQuestionIndex].isSignUp
+                    ? !isFetching && termsAccepted
+                      ? 1
+                      : 0.5
+                    : selectedOptionIndex !== null
+                    ? 1
+                    : 0.5,
+                }}
               >
-                <ButtonText>
-                  {questions[currentQuestionIndex].isSignUp
-                    ? isFetching
-                      ? "إنشاء حساب..."
-                      : "انشاء حساب جديد"
-                    : "متابعة"}
-                </ButtonText>
+                {questions[currentQuestionIndex].isSignUp ? (
+                  isFetching ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <ButtonText>انشاء حساب جديد</ButtonText>
+                  )
+                ) : (
+                  <ButtonText>متابعة</ButtonText>
+                )}
               </ContinueButton>
             )}
           </Container>

@@ -4,6 +4,8 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  Linking,
+  TouchableOpacity,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components/native";
@@ -12,6 +14,7 @@ import withAuthRedirect from "../redux/withAuthRedirect";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
+// Styled Components for better UI
 const Container = styled.View`
   flex: 1;
   align-items: center;
@@ -47,7 +50,7 @@ const InputContainer = styled.View`
   border: 1px solid #ccc;
   border-radius: 8px;
   margin-bottom: 15px;
-  padding: 0 10px;
+  padding: 0 15px;
   background-color: #f9f9f9;
 `;
 
@@ -99,7 +102,6 @@ const ForgotPasswordText = styled.Text`
   color: #4c47e8;
   font-size: 15px;
   font-weight: bold;
-
   text-decoration: underline;
 `;
 
@@ -107,6 +109,25 @@ const ErrorText = styled.Text`
   color: red;
   margin-bottom: 10px;
   text-align: center;
+`;
+
+const TermsContainer = styled.View`
+  margin-top: 30px;
+  padding: 0 20px;
+`;
+
+const TermsText = styled.Text`
+  text-align: center;
+  color: #6b7c93;
+  font-size: 14px;
+  line-height: 22px;
+  margin-bottom: 10px;
+`;
+
+const TermsLink = styled.Text`
+  color: #4c47e8;
+  font-weight: bold;
+  text-decoration: underline;
 `;
 
 const SignIn = () => {
@@ -128,6 +149,10 @@ const SignIn = () => {
 
   const handleForgotPassword = () => {
     router.push("response");
+  };
+
+  const handlePrivacyPolicyPress = () => {
+    router.push("privacy");
   };
 
   return (
@@ -174,14 +199,21 @@ const SignIn = () => {
             <ForgotPasswordButton onPress={handleForgotPassword}>
               <ForgotPasswordText>نسيت كلمة المرور؟</ForgotPasswordText>
             </ForgotPasswordButton>
+            <TouchableOpacity onPress={handlePrivacyPolicyPress}>
+              <TermsText>
+                <TermsLink>
+                  يُرجى الاطلاع على اشعارات الخصوصية الخاص بنا
+                </TermsLink>
+              </TermsText>
+            </TouchableOpacity>
 
             {/* Secondary Button for navigating to Onboarding */}
+            <SecondaryButton onPress={handleOnboardingNavigation}>
+              <SecondaryButtonText>
+                ليس لديك حساب؟ أنشئ حساب جديد
+              </SecondaryButtonText>
+            </SecondaryButton>
           </Form>
-          <SecondaryButton onPress={handleOnboardingNavigation}>
-            <SecondaryButtonText>
-              ليس لديك حساب؟ أنشئ حساب جديد
-            </SecondaryButtonText>
-          </SecondaryButton>
         </Container>
       </ScrollView>
     </KeyboardAvoidingView>
