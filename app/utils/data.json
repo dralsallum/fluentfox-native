@@ -8,37 +8,37 @@
         {
           "text": "منتجات بالسوبر ماركت!",
           "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/supermarkets.png",
-          "navigateTo": "vocabulary",
+          "navigateTo": "vocabulary/vocabulary",
           "set": "set1"
         },
         {
           "text": "اغراض بالمنزل",
           "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/house.png",
-          "navigateTo": "vocabulary",
+          "navigateTo": "vocabulary/vocabulary",
           "set": "set2"
         },
         {
           "text": "اشياء بالمطبخ",
           "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/kitchen.png",
-          "navigateTo": "vocabulary",
+          "navigateTo": "vocabulary/vocabulary",
           "set": "set3"
         },
         {
           "text": "مصطلحات مدرسية",
           "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/school.png",
-          "navigateTo": "vocabulary",
+          "navigateTo": "vocabulary/vocabulary",
           "set": "set4"
         },
         {
           "text": "اماكن تزورها",
           "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/location.png",
-          "navigateTo": "vocabulary",
+          "navigateTo": "vocabulary/vocabulary",
           "set": "set5"
         },
         {
           "text": "كلمات علمية",
           "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/atom.png",
-          "navigateTo": "vocabulary",
+          "navigateTo": "vocabulary/vocabulary",
           "set": "set6"
         }
       ]
@@ -51,32 +51,32 @@
         {
           "text": "See you",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "Welcome",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "Sorry",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "Excuse me",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "Can I help you?",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "Nice to meet you",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         }
       ]
     },
@@ -88,32 +88,32 @@
         {
           "text": "How are you?",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "I'm fine",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "And you?",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "What's up?",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "Nothing much",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "All good",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         }
       ]
     },
@@ -125,32 +125,32 @@
         {
           "text": "Hello!",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "Good morning",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "Goodbye",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "Thank you",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "Please",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "Yes",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         }
       ]
     },
@@ -162,32 +162,32 @@
         {
           "text": "See you",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "Welcome",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "Sorry",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "Excuse me",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "Can I help you?",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "Nice to meet you",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         }
       ]
     },
@@ -199,32 +199,32 @@
         {
           "text": "How are you?",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "I'm fine",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "And you?",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "What's up?",
           "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "Nothing much",
           "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         },
         {
           "text": "All good",
           "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary"
+          "navigateTo": "vocabulary/vocabulary"
         }
       ]
     }

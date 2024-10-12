@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components/native";
+import { Linking } from "react-native";
 import {
   TouchableOpacity,
   Modal,
@@ -355,6 +356,22 @@ const Navbar = () => {
     router.push("setting");
   };
 
+  /* Handle Privacy */
+  const handlePrivacy = async () => {
+    handleCloseModal();
+    const url = "https://www.fluentfox.net/privacy-policy";
+
+    // Check if the URL can be opened
+    const supported = await Linking.canOpenURL(url);
+
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      console.error(`Don't know how to open URI: ${url}`);
+      // Optionally, you can alert the user or handle the error as needed
+    }
+  };
+
   return (
     <SafeArea>
       {/* Navbar */}
@@ -480,6 +497,9 @@ const Navbar = () => {
               <ProfileButtonsContainer>
                 <ProfileButton onPress={handleSetting}>
                   <ProfileButtonText>الإعدادات</ProfileButtonText>
+                </ProfileButton>
+                <ProfileButton onPress={handlePrivacy}>
+                  <ProfileButtonText>الشروط والاحكام</ProfileButtonText>
                 </ProfileButton>
                 <ProfileButton onPress={handleSignOut}>
                   <ProfileButtonText>تسجيل الخروج</ProfileButtonText>

@@ -1,9 +1,7 @@
 import React, { useEffect } from "react";
-import { SplashScreen, Stack } from "expo-router";
-import { useFonts } from "expo-font";
+import { Stack } from "expo-router";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
-import { initialize } from "react-native-google-mobile-ads";
 
 const RooyLayout = () => {
   return (

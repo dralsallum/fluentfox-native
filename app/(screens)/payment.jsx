@@ -10,7 +10,8 @@ import { useRouter } from "expo-router";
 import Navbar from "../components/navigation/navbar";
 import * as RNIap from "react-native-iap";
 import { createUserRequest } from "../../requestMethods";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { setUser } from "../redux/authSlice";
 
 const itemSkus = [
   "com.dralsallum.fluentfox.monthly",
@@ -19,11 +20,6 @@ const itemSkus = [
 ];
 
 const features = [
-  {
-    text: "الوصول لكل الدروس بدون إعلانات",
-    description: "تجنب الانقطاعات.",
-    image: require("../../assets/images/empty.png"),
-  },
   {
     text: "بدون إعلانات",
     description: "تجنب الانقطاعات.",
@@ -127,7 +123,7 @@ const OreConBot = styled.View`
 const OreConSub = styled.View`
   background-color: rgb(14, 190, 117);
   border-radius: 12px;
-  padding: 3px 8px;
+  padding: 5px 3px;
 `;
 
 const OreConLast = styled.View`
@@ -167,11 +163,13 @@ const TextView = styled.View`
 `;
 
 const Tex = styled.Text`
-  font-size: ${({ size }) => size || "12px"};
+  font-size: ${({ size }) => size || "14px"};
   font-weight: 700;
   color: ${({ color }) => color || "#000"};
-  text-align: right;
+  text-align: center;
   margin-top: ${({ marginTop }) => marginTop || "0px"};
+  margin-bottom: ${({ marginBottom }) =>
+    marginBottom || "0px"}; /* Added marginBottom */
 `;
 
 const BotTex = styled.Text`
@@ -193,6 +191,7 @@ const Button = styled(TouchableOpacity)`
   margin-bottom: 10px;
   justify-content: center;
   align-items: center;
+  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
 `;
 
 const ButtonText = styled.Text`
@@ -239,20 +238,23 @@ const PricingCard = ({
   duration,
   price,
   monthlyPrice,
+  title,
   discount,
   selected,
   onSelect,
+  titleColor,
 }) => (
   <OreCon onPress={onSelect}>
     <OreConTop selected={selected}>
-      <Tex size="16px">{duration}</Tex>
+      <Tex size="15px" color={titleColor || "#2068ed"} marginBottom="8px">
+        {title}
+      </Tex>
+      <Tex size="14px">{duration}</Tex>
     </OreConTop>
     <OreConMid>
       <Tex color="rgb(14, 190, 117)">{price}</Tex>
     </OreConMid>
-    <MonCon>
-      <MonTex>{monthlyPrice}</MonTex>
-    </MonCon>
+
     <OreConBot>
       <OreConSub>
         <Tex color="#fff">{discount}</Tex>
@@ -264,6 +266,7 @@ const PricingCard = ({
 
 const Payment = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [selectedOption, setSelectedOption] = useState(1);
   const [pricingOptions, setPricingOptions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -283,7 +286,6 @@ const Payment = () => {
       try {
         const result = await RNIap.initConnection();
         if (result) {
-          console.log("IAP Connection successful");
           const fetchedProducts = await RNIap.getSubscriptions({
             skus: itemSkus,
           });
@@ -293,7 +295,8 @@ const Payment = () => {
             id: index + 1,
             duration: getDurationLabel(product),
             price: product.localizedPrice,
-            monthlyPrice: getMonthlyPrice(product),
+            title: getTitleLabel(product),
+            titleColor: getTitleColor(product),
             discount: getDiscountLabel(product),
             productId: product.productId,
           }));
@@ -311,39 +314,43 @@ const Payment = () => {
     };
   }, []);
 
-  const getDurationLabel = (product) => {
+  const getTitleLabel = (product) => {
     switch (product.productId) {
       case "com.dralsallum.fluentfox.monthly":
-        return "1 أشهر";
+        return "البرنزي"; // Monthly Subscription
       case "com.dralsallum.fluentfox.quarterly":
-        return "3 أشهر";
+        return "فضي"; // Quarterly Subscription
       case "com.dralsallum.fluentfox.yearly":
-        return "12 أشهر";
+        return "ذهبي"; // Yearly Subscription
       default:
-        return "";
+        return "اشتراك"; // Subscription
     }
   };
 
-  const getMonthlyPrice = (product) => {
-    const priceInUnits = parseFloat(product.price);
-    if (isNaN(priceInUnits)) return "";
-    let months = 1;
+  const getTitleColor = (product) => {
     switch (product.productId) {
       case "com.dralsallum.fluentfox.monthly":
-        months = 1;
-        break;
+        return "#CD7F32"; // Bronze
       case "com.dralsallum.fluentfox.quarterly":
-        months = 3;
-        break;
+        return "#C0C0C0"; // Silver
       case "com.dralsallum.fluentfox.yearly":
-        months = 12;
-        break;
+        return "#FFD700"; // Gold
       default:
-        months = 1;
+        return "#000"; // Default color
     }
-    const monthlyPrice = (priceInUnits / months).toFixed(2);
-    const currency = product.currency || "";
-    return `${monthlyPrice} ${currency} / شهرياً`;
+  };
+
+  const getDurationLabel = (product) => {
+    switch (product.productId) {
+      case "com.dralsallum.fluentfox.monthly":
+        return "مدة الاشتراك ١ شهر";
+      case "com.dralsallum.fluentfox.quarterly":
+        return "مدة الاشتراك ٣ اشهر";
+      case "com.dralsallum.fluentfox.yearly":
+        return "مدة الاشتراك ١٢ شهر";
+      default:
+        return "";
+    }
   };
 
   const getDiscountLabel = (product) => {
@@ -353,10 +360,10 @@ const Payment = () => {
         discountPercentage = 0;
         break;
       case "com.dralsallum.fluentfox.quarterly":
-        discountPercentage = 40;
+        discountPercentage = 33;
         break;
       case "com.dralsallum.fluentfox.yearly":
-        discountPercentage = 60;
+        discountPercentage = 63;
         break;
       default:
         discountPercentage = 0;
@@ -373,7 +380,7 @@ const Payment = () => {
 
     if (!selectedProduct) {
       Alert.alert("Error", "Product not found. Please try again.");
-      setLoading(false);
+
       return;
     }
 
@@ -381,14 +388,15 @@ const Payment = () => {
       const purchase = await RNIap.requestSubscription({
         sku: selectedProduct.productId,
       });
-      const transactionId = purchase.transactionId;
+      const receiptData = purchase.transactionReceipt;
 
-      if (transactionId) {
-        await verifyPurchase(transactionId);
+      if (receiptData) {
+        await verifyPurchase(receiptData);
+        router.push("home");
       } else {
         Alert.alert(
           "Purchase Error",
-          "No transaction ID found. Please try again."
+          "No receipt data found. Please try again."
         );
       }
     } catch (err) {
@@ -398,24 +406,31 @@ const Payment = () => {
     }
   };
 
-  const verifyPurchase = async (transactionId) => {
+  const verifyPurchase = async (receiptData) => {
     try {
       const userRequest = createUserRequest();
       const response = await userRequest.post("/verifyPurchase", {
         userId,
-        transactionId,
+        receiptData,
       });
 
       const data = response.data;
       if (data.success) {
         Alert.alert("Success", "Purchase verified successfully!");
+
+        // Fetch the updated user data
+        const updatedUserResponse = await userRequest.get(
+          `/users/find/${userId}`
+        );
+
+        // Update the Redux store with the new user data
+        dispatch(setUser(updatedUserResponse.data));
       } else {
         Alert.alert("Verification Failed", data.message);
       }
     } catch (error) {
       console.error("Verification Error:", error);
       if (error.response) {
-        console.error("Response data:", error.response.data);
         Alert.alert("Verification Error", error.response.data.message);
       } else if (error.request) {
         console.error("Request error:", error.request);
@@ -468,13 +483,27 @@ const Payment = () => {
             <Tex>جاري تحميل المنتجات...</Tex>
           )}
           <ButtonContainer>
-            <Button bgColor="rgb(14, 190, 117)" onPress={handlePurchase}>
-              <ButtonText>{getButtonText()}</ButtonText>
+            <Button
+              bgColor="rgb(14, 190, 117)"
+              onPress={handlePurchase}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <ButtonText>{getButtonText()}</ButtonText>
+              )}
             </Button>
             <Button bgColor="rgb(240, 240, 240)" onPress={() => router.back()}>
               <ButtonText color="rgb(30, 45, 64)">
                 لا شكراً، أرغب بالتجربة مجاناً
               </ButtonText>
+            </Button>
+            <Button
+              bgColor="rgb(240, 240, 240)"
+              onPress={() => router.push("privacy")}
+            >
+              <ButtonText color="rgb(30, 45, 64)">الشروط والاحكام</ButtonText>
             </Button>
           </ButtonContainer>
           <BotTex>فتح ميزات العضوية المميزة</BotTex>

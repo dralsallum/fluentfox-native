@@ -1,47 +1,47 @@
 {
   "stories": [
     {
-      "title": "تحدي البقاء على قمر أوروبا",
-      "subTitle": "البقاء في ظروف القمر الصعبة",
+      "title": "ميرا والقرية",
+      "subTitle": "فتاة تعيش بقرية بعالمة الصغير",
       "borderColor": "#FF6347",
-      "locked": true,
-      "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/europe.webp",
+      "locked": false,
+      "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/village_story.jpg",
       "navigateTo": "listen",
       "set": "set1"
     },
     {
-      "title": "أطول مبنى في المدينة",
-      "subTitle": "استكشاف الأعاجيب المعمارية الحديثة",
+      "title": "سر الكهف البلوري",
+      "subTitle": "استكشاف الأعاجيب بالعالم العتيق",
       "borderColor": "#20B2AA",
       "locked": true,
-      "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/building.webp",
+      "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/The_Secret_of_the_Crystal_Cave.jpg",
       "navigateTo": "listen",
       "set": "set2"
     },
     {
-      "title": "مغامرة في الفضاء",
-      "subTitle": "رحلة عبر النجوم والمجرات البعيدة",
+      "title": "البحث عن المفتاح الفضي",
+      "subTitle": "رحلة عبر المملكة للبحث عن المفتاح",
       "borderColor": "#9932CC",
       "locked": true,
-      "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/space.webp",
+      "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/The_Quest_for_the_Silver_Key.jpg",
       "navigateTo": "listen",
       "set": "set3"
     },
     {
-      "title": "رحلة ميرا في أعماق البحر",
-      "subTitle": "مغامرة مثيرة تحت سطح المحيط",
+      "title": "أغنية البحر المقمر",
+      "subTitle": "مغامرة مثيرة في المحيط",
       "borderColor": "#106dee",
-      "locked": false,
-      "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/girlCat.webp",
+      "locked": true,
+      "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/The+Song+of+the+Moonlit+Sea+each+one+alone.jpg",
       "navigateTo": "listen",
       "set": "set4"
     },
     {
-      "title": "قصة العصفور الطائر",
-      "subTitle": "حكاية عن الطيور وحرية الحركة",
+      "title": "سر البوصلة الذهبية",
+      "subTitle": "حكاية عن مغامرة البحث عن الذهب",
       "borderColor": "#FFD700",
       "locked": true,
-      "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/boyBird.webp",
+      "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/The+Mystery+of+the+Golden+Compass.jpg",
       "navigateTo": "listen",
       "set": "set5"
     }
@@ -51,7 +51,7 @@
       "title": "تحدي البقاء على قمر أوروبا",
       "subTitle": "البقاء في ظروف القمر الصعبة",
       "borderColor": "#FF6347",
-      "locked": true,
+      "locked": false,
       "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/europe.webp",
       "navigateTo": "exercise",
       "set": "set1"
@@ -75,8 +75,8 @@
       "set": "set3"
     },
     {
-      "title": "تحدي البقاء على قمر أوروبا",
-      "subTitle": "البقاء في ظروف القمر الصعبة",
+      "title": "التواصل في مكان العمل",
+      "subTitle": "تعلم طريقة التواصل بالعمل",
       "borderColor": "#FF6347",
       "locked": true,
       "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/europe.webp",
@@ -84,8 +84,8 @@
       "set": "set4"
     },
     {
-      "title": "أطول مبنى في المدينة",
-      "subTitle": "استكشاف الأعاجيب المعمارية الحديثة",
+      "title": "الصحة والعافية",
+      "subTitle": "تعلم عن الصحة باللغة الانجليزية",
       "borderColor": "#106dee",
       "locked": true,
       "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/building.webp",
@@ -93,8 +93,8 @@
       "set": "set5"
     },
     {
-      "title": "مغامرة في الفضاء",
-      "subTitle": "رحلة عبر النجوم والمجرات البعيدة",
+      "title": "الوعي البيئي",
+      "subTitle": "البيئة والعالم من حولك",
       "borderColor": "#FFD700",
       "locked": true,
       "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/space.webp",

@@ -145,6 +145,9 @@ const userSlice = createSlice({
       state.isFetching = false;
       state.errorMessage = "";
     },
+    setUser: (state, action) => {
+      state.currentUser = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -232,7 +235,7 @@ const userSlice = createSlice({
   },
 });
 // Export the actions
-export const { clearState, signOut } = userSlice.actions;
+export const { clearState, signOut, setUser } = userSlice.actions;
 
 // Selector to get user state
 export const userSelector = (state) => state.user;

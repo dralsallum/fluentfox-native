@@ -101,7 +101,7 @@ const SignUp = () => {
 
   useEffect(() => {
     if (isSuccess) {
-      router.push("payment"); // Redirect to payment after signup
+      router.push("subscription"); // Redirect to payment after signup
       dispatch(clearState()); // Reset state after successful registration
     }
   }, [isSuccess]);

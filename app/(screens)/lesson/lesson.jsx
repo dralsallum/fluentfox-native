@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { Image, Modal, View, Animated, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import axios from "axios";
-import LottieView from "lottie-react-native";
 import { useRoute } from "@react-navigation/native";
 import { xpSelector } from "../../redux/lessonsSlice";
 import {
@@ -149,6 +148,12 @@ const MultipleQuestion = ({
   selectedOption,
   setSelectedOption,
 }) => {
+  useEffect(() => {
+    if (/^[a-zA-Z\s]+$/.test(currentQuestion.sentence)) {
+      Speech.speak(currentQuestion.sentence);
+    }
+  }, [currentQuestion.sentence]);
+
   return (
     <MulCon>
       <MulTop>
@@ -600,10 +605,6 @@ const Lesson = () => {
     dispatch(updateUnlockedSets());
     dispatch(updateXP());
     setResultModalVisible(false);
-    setShowStreak(true);
-  };
-  const handleHome = () => {
-    setShowStreak(false);
     router.back();
   };
 
@@ -767,48 +768,6 @@ const Lesson = () => {
             </ResCon>
           </ResultModalContent>
         </ResultModalContainer>
-      </Modal>
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={showStreak}
-        onRequestClose={() => setShowTry(false)}
-      >
-        <TryModalContainer>
-          <TryModalContent>
-            <LottieView
-              source={require("../../utils/fireAnimation - 1724581924405.json")} // Path to your Lottie JSON file
-              autoPlay
-              loop
-              style={{
-                width: 120, // Adjust the size as needed
-                height: 120,
-              }}
-            />
-            <StreView>
-              {daysOfWeek.map((day, index) => (
-                <View key={index} style={{ alignItems: "center" }}>
-                  <DayCircle completed={index < streakCount}>
-                    {index < streakCount && (
-                      <Image
-                        source={require("../../../assets/icons/check.png")}
-                        style={{ width: 20, height: 20 }}
-                      />
-                    )}
-                  </DayCircle>
-                  <DayText completed={index < streakCount}>{day}</DayText>
-                </View>
-              ))}
-            </StreView>
-            <StreText>لقد بدأت سلسلة التعلم اليومي!</StreText>
-            <ExpText>
-              قم بالدراسة كل يوم لبناء السلسلة الخاصة بك وخلق عادة تعلم قوية
-            </ExpText>
-            <TryButton onPress={handleHome}>
-              <TryButtonText>استمر</TryButtonText>
-            </TryButton>
-          </TryModalContent>
-        </TryModalContainer>
       </Modal>
       <Modal
         animationType="fade"

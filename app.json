@@ -2,20 +2,20 @@
   "expo": {
     "name": "FluentFox",
     "slug": "fluentfox",
-    "version": "3.2.4",
+    "version": "3.5.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "fluentfox",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0178ff"
     },
     "ios": {
-      "supportsTablet": false,
+      "supportsTablet": true,
       "bundleIdentifier": "com.dralsallum.fluentfox",
-      "buildNumber": "31",
+      "buildNumber": "59",
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -33,7 +33,7 @@
       }
     },
     "android": {
-      "versionCode": 15,
+      "versionCode": 16,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
@@ -70,7 +70,9 @@
       },
       "eas": {
         "projectId": "7a90a210-7db1-451e-a07f-293fe3a353c2"
-      }
+      },
+      "privacyPolicyUrl": "https://https://www.fluentfox.net/privacy-policy",
+      "termsOfUseUrl": "https://https://www.fluentfox.net/terms-of-use"
     },
     "updates": {
       "fallbackToCacheTimeout": 0

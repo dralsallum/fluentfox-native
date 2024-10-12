@@ -15,6 +15,7 @@ import americaIcon from "../../../assets/icons/america.png";
 import axios from "axios";
 import { useRoute } from "@react-navigation/native";
 import { useRouter } from "expo-router";
+import useDeviceType from "../../../hooks/useDeviceType";
 
 const Vocabulary = () => {
   const route = useRoute();
@@ -32,6 +33,7 @@ const Vocabulary = () => {
   const [selectedSet, setSelectedSet] = useState(
     route.params?.set || "medical1"
   );
+  const isTablet = useDeviceType();
 
   useEffect(() => {
     const fetchVocabularyData = async () => {
@@ -102,7 +104,7 @@ const Vocabulary = () => {
     <Animated.View
       style={[{ transform: [{ translateX }], opacity }, styles.card]}
     >
-      <CardContainer>
+      <CardContainer isTablet={isTablet}>
         <FlipCardContainer onPress={flipCard}>
           <Animated.View style={[frontAnimatedStyle, styles.flipCard]}>
             <CardOn>
@@ -553,8 +555,8 @@ const CardContainer = styled.View`
   justify-content: center;
   width: 300px;
   height: 185px;
-  margin-top: 40px;
-  margin-left: 11px;
+  margin-top: ${(props) => (props.isTablet ? "100px" : "40px")};
+  margin-left: ${(props) => (props.isTablet ? "300px" : "11px")};
   z-index: 1;
 `;
 

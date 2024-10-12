@@ -10,12 +10,6 @@ const screenWidth = Dimensions.get("window").width;
 import styled from "styled-components/native";
 import { ScrollView, Dimensions } from "react-native";
 import { Image as ExpoImage } from "expo-image";
-import { InterstitialAd, AdEventType } from "react-native-google-mobile-ads";
-const adUnitId = "ca-app-pub-7167740558520278/7250402342";
-
-const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
-  requestNonPersonalizedAdsOnly: true,
-});
 
 const LoadingAll = styled.View`
   flex: 1;
@@ -177,7 +171,7 @@ const SuperCon = styled(ExpoImage)`
   height: 80px;
   position: absolute;
   right: -4px;
-  top: -10px;
+  top: -15px;
 `;
 
 const QueTeHe = styled.Text`
@@ -568,29 +562,13 @@ const ChapterItem = ({
 }) => {
   const isPaid = useSelector((state) => state.user.currentUser?.isPaid); // Access the isPaid status
 
-  useEffect(() => {
-    const loadInterstitialAd = () => {
-      interstitial.load();
-    };
-    loadInterstitialAd();
-  }, []);
-
   const handlePress = () => {
     if (isUnlocked && set) {
-      if (!isPaid) {
-        // Show interstitial ad if the user is not paid
-        if (interstitial.loaded) {
-          interstitial.show();
-        } else {
-          Alert.alert("Ad not ready yet", "Please try again in a few seconds.");
-        }
-
-        interstitial.addAdEventListener(AdEventType.CLOSED, () => {
-          // Navigate to the URL after the ad is closed
-          router.push({ pathname: url, params: { set } });
-        });
+      if (!isPaid && set !== "set1") {
+        // User is not paid and the set is not 'set1', redirect to payment
+        router.push("subscription"); // Replace 'paymentPage' with your payment page route
       } else {
-        // Navigate directly if the user is paid
+        // Navigate directly to the URL
         router.push({ pathname: url, params: { set } });
       }
     }
@@ -725,10 +703,10 @@ const Home = () => {
 
   const handleToggleSecondModal = () => {
     setSecondModalVisible(!secondModalVisible);
-    router.push("payment");
+    router.push("subscription");
   };
   const handlePayment = () => {
-    router.push("payment");
+    router.push("subscription");
   };
 
   const handleSelectLevel = (level) => {
