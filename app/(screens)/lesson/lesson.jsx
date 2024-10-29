@@ -524,7 +524,7 @@ const Lesson = () => {
   }, [selectedSet]);
 
   const handleBack = () => {
-    router.back();
+    router.push("home");
   };
 
   const handleOptionSelect = (index) => {
@@ -605,7 +605,7 @@ const Lesson = () => {
     dispatch(updateUnlockedSets());
     dispatch(updateXP());
     setResultModalVisible(false);
-    router.back();
+    router.push("home");
   };
 
   const handleTryAgain = () => {

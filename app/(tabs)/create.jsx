@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   Animated,
   SafeAreaView,
+  Alert,
 } from "react-native";
 import data from "../utils/data.json";
 import { useSelector } from "react-redux";

@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import {
   SafeAreaView,
-  TouchableOpacity,
   ActivityIndicator,
   View,
-  I18nManager,
   Alert,
+  Linking,
 } from "react-native";
 import styled from "styled-components/native";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
@@ -16,6 +15,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../redux/authSlice";
 import Navbar from "../components/navigation/navbar";
 import useDeviceType from "../../hooks/useDeviceType";
+import * as WebBrowser from "expo-web-browser";
 
 const itemSkus = [
   "com.dralsallum.fluentfox.monthly",
@@ -58,19 +58,15 @@ const Subscription = () => {
   const [selectedOption, setSelectedOption] = useState(1);
   const dispatch = useDispatch();
   const [pricingOptions, setPricingOptions] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // For purchase loading
+  const [dataLoading, setDataLoading] = useState(true); // For data loading
   const userId = useSelector((state) => state.user.currentUser?._id);
   const userIsPaid = useSelector((state) => state.user.currentUser?.isPaid);
   const isTablet = useDeviceType();
 
   useEffect(() => {
-    I18nManager.forceRTL(true);
-    I18nManager.allowRTL(true);
-  }, []);
-
-  useEffect(() => {
     if (userIsPaid) {
-      Alert.alert("لديك بالفعل عضوية مميزة");
+      Alert.alert("لديك الان عضوية مميزة");
       router.back();
     }
   }, [userIsPaid]);
@@ -105,11 +101,14 @@ const Subscription = () => {
             productId: product.productId,
           }));
           setPricingOptions(options);
+          setDataLoading(false); // Data has been loaded
         } else {
           console.warn("Failed to connect to the store.");
+          setDataLoading(false); // Stop loading even if failed
         }
       } catch (error) {
         console.warn("IAP Error:", error);
+        setDataLoading(false); // Stop loading even if error occurs
       }
     }
     initIAP();
@@ -258,14 +257,20 @@ const Subscription = () => {
       : "فتح العضوية المميزة";
   };
 
+  if (dataLoading) {
+    // Render loading indicator while data is loading
+    return (
+      <LoadingContainer>
+        <ActivityIndicator size="large" color="#4c47e9" />
+      </LoadingContainer>
+    );
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <Navbar />
       <Container isTablet={isTablet}>
         <HeaderContainer>
-          <CloseButton onPress={handleBack}>
-            <FontAwesome name="close" size={isTablet ? 32 : 24} color="black" />
-          </CloseButton>
           <Title isTablet={isTablet}>فتح ميزات العضوية المميزة</Title>
           <FeatureList isTablet={isTablet}>
             {features.map((feature, index) => (
@@ -297,9 +302,33 @@ const Subscription = () => {
         </PlanContainer>
 
         <Footer>
-          <FooterText isTablet={isTablet}>
-            ابدأ اليوم وطور من نفسك باسرع وقت.
-          </FooterText>
+          <FooterTextContainer isTablet={isTablet}>
+            <FooterText isTablet={isTablet}>
+              من خلال الاشتراك، فإنك توافق على{" "}
+              <FooterLink
+                isTablet={isTablet}
+                onPress={() =>
+                  WebBrowser.openBrowserAsync(
+                    "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
+                  )
+                }
+              >
+                شروط استخدام أبل
+              </FooterLink>
+              {" و "}
+              <FooterLink
+                isTablet={isTablet}
+                onPress={() =>
+                  WebBrowser.openBrowserAsync(
+                    "https://www.fluentfox.net/privacy-policy"
+                  )
+                }
+              >
+                سياسة الخصوصية الخاصة بنا
+              </FooterLink>
+              {"."}
+            </FooterText>
+          </FooterTextContainer>
           <SubscribeButton isTablet={isTablet} onPress={handlePurchase}>
             {loading ? (
               <ActivityIndicator color="#fff" />
@@ -309,17 +338,66 @@ const Subscription = () => {
               </SubscribeButtonText>
             )}
           </SubscribeButton>
+          <Button isTablet={isTablet} onPress={handleBack}>
+            <ButtonText isTablet={isTablet}>
+              لا شكراً، أرغب بالتجربة مجاناً
+            </ButtonText>
+          </Button>
         </Footer>
       </Container>
     </SafeAreaView>
   );
 };
 
+const Footer = styled.View`
+  align-items: center;
+`;
+
+const FooterTextContainer = styled.View`
+  margin-bottom: ${(props) => (props.isTablet ? "30px" : "20px")};
+  width: ${(props) => (props.isTablet ? "80%" : "100%")};
+`;
+
+const FooterText = styled.Text`
+  color: black;
+  font-size: ${(props) => (props.isTablet ? "18px" : "14px")};
+  text-align: center;
+  flex-wrap: wrap;
+`;
+
+const FooterLink = styled.Text`
+  color: blue;
+  text-decoration: underline;
+  font-size: ${(props) => (props.isTablet ? "18px" : "14px")};
+`;
+
+const LoadingContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+`;
+
 const Container = styled.View`
   flex: 1;
   background-color: white;
   padding: ${(props) => (props.isTablet ? "40px" : "20px")};
-  margin-top: ${(props) => (props.isTablet ? "40px" : "20px")};
+  margin-top: ${(props) => (props.isTablet ? "30px" : "10px")};
+`;
+
+const Button = styled.TouchableOpacity`
+  background-color: rgb(240, 240, 240);
+  padding: ${(props) => (props.isTablet ? "20px 60px" : "15px 50px")};
+  border-radius: ${(props) => (props.isTablet ? "40px" : "30px")};
+  margin-top: ${(props) => (props.isTablet ? "20px" : "15px")};
+  width: 100%;
+`;
+
+const ButtonText = styled.Text`
+  color: rgb(30, 45, 64);
+  font-size: ${(props) => (props.isTablet ? "20px" : "16px")};
+  font-weight: bold;
+  text-align: center;
 `;
 
 const HeaderContainer = styled.View`
@@ -327,23 +405,16 @@ const HeaderContainer = styled.View`
   position: relative;
 `;
 
-const CloseButton = styled.TouchableOpacity`
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  padding: 10px;
-`;
-
 const Title = styled.Text`
   color: black;
   font-size: ${(props) => (props.isTablet ? "34px" : "24px")};
   font-weight: bold;
-  margin-bottom: ${(props) => (props.isTablet ? "30px" : "20px")};
+  margin-bottom: ${(props) => (props.isTablet ? "30px" : "15px")};
   text-align: center;
 `;
 
 const FeatureList = styled.View`
-  margin-top: ${(props) => (props.isTablet ? "20px" : "10px")};
+  margin-top: ${(props) => (props.isTablet ? "20px" : "8px")};
   width: 100%;
 `;
 
@@ -360,7 +431,7 @@ const FeatureContent = styled.View`
 
 const FeatureText = styled.Text`
   color: black;
-  font-size: ${(props) => (props.isTablet ? "22px" : "16px")};
+  font-size: ${(props) => (props.isTablet ? "22px" : "14px")};
   text-align: center;
 `;
 
@@ -377,7 +448,7 @@ const PlanButtonContainer = styled.TouchableOpacity`
   flex-direction: row;
   align-items: center;
   border-width: ${(props) => (props.selected ? "2px" : "0px")};
-  border-color: ${(props) => (props.selected ? "purple" : "transparent")};
+  border-color: ${(props) => (props.selected ? "#4c47e9" : "transparent")};
   position: relative;
 `;
 
@@ -421,34 +492,24 @@ const SaveTag = styled.Text`
 `;
 
 const CheckMarkContainer = styled.View`
-  background-color: purple;
+  background-color: #4c47e9;
   border-radius: ${(props) => (props.isTablet ? "20px" : "15px")};
   padding: 5px;
   margin-left: 10px;
 `;
 
-const Footer = styled.View`
-  align-items: center;
-`;
-
-const FooterText = styled.Text`
-  color: black;
-  font-size: ${(props) => (props.isTablet ? "18px" : "14px")};
-  margin-bottom: ${(props) => (props.isTablet ? "30px" : "20px")};
-  text-align: center;
-  width: ${(props) => (props.isTablet ? "80%" : "100%")};
-`;
-
 const SubscribeButton = styled.TouchableOpacity`
-  background-color: purple;
+  background-color: #4c47e9;
   padding: ${(props) => (props.isTablet ? "20px 60px" : "15px 50px")};
   border-radius: ${(props) => (props.isTablet ? "40px" : "30px")};
+  width: 100%;
 `;
 
 const SubscribeButtonText = styled.Text`
   color: white;
   font-size: ${(props) => (props.isTablet ? "20px" : "16px")};
   font-weight: bold;
+  text-align: center;
 `;
 
 export default Subscription;

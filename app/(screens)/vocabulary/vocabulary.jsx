@@ -16,6 +16,7 @@ import axios from "axios";
 import { useRoute } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import useDeviceType from "../../../hooks/useDeviceType";
+import * as Speech from "expo-speech";
 
 const Vocabulary = () => {
   const route = useRoute();
@@ -34,6 +35,7 @@ const Vocabulary = () => {
     route.params?.set || "medical1"
   );
   const isTablet = useDeviceType();
+  const [voices, setVoices] = useState([]);
 
   useEffect(() => {
     const fetchVocabularyData = async () => {
@@ -52,6 +54,14 @@ const Vocabulary = () => {
 
     fetchVocabularyData();
   }, [selectedSet]);
+
+  useEffect(() => {
+    const fetchVoices = async () => {
+      const availableVoices = await Speech.getAvailableVoicesAsync();
+      setVoices(availableVoices);
+    };
+    fetchVoices();
+  }, []);
 
   const flipCard = () => {
     Animated.timing(animatedValue, {
@@ -113,9 +123,7 @@ const Vocabulary = () => {
                 <CardOnSp>
                   <CardOnAm>
                     <CardOnIc>
-                      <CardOnAt
-                        onPress={() => console.log("Play US pronunciation")}
-                      >
+                      <CardOnAt onPress={handlePronounce}>
                         <Image
                           source={playIcon}
                           style={{ width: 16, height: 16, marginRight: 30 }}
@@ -233,6 +241,38 @@ const Vocabulary = () => {
     }
   };
 
+  const handlePronounce = () => {
+    if (cardsData.length === 0) {
+      return;
+    }
+    const currentCardData = cardsData[currentCard];
+    if (!currentCardData) {
+      return;
+    }
+    const bestVoice =
+      voices.find(
+        (voice) =>
+          voice.quality === "Enhanced" && voice.language.startsWith("en")
+      ) ||
+      voices.find(
+        (voice) =>
+          voice.quality === "Default" && voice.language.startsWith("en")
+      ) ||
+      voices.find((voice) => voice.language.startsWith("en"));
+
+    const options = bestVoice
+      ? { voice: bestVoice.identifier }
+      : { language: "en-US" };
+
+    const textToSpeak = isFlipped
+      ? currentCardData.answer
+      : currentCardData.word;
+
+    Speech.speak(textToSpeak, options);
+  };
+
+  const pronounceButtonText = isFlipped ? "استمع للجملة" : "استمع للكلمة";
+
   return (
     <SafeArea>
       <CroBut onPress={() => router.back()}>
@@ -244,10 +284,8 @@ const Vocabulary = () => {
       <AllWr>
         <VocWra>
           <VocHead>
-            تعلم باستخدام بطاقات التعليم -
-            <VocHeadSpan>
-              اضغط على الورقة لرؤية المعنى بالعربي واستخدامها بجملة
-            </VocHeadSpan>
+            Learn with Flashcards -
+            <VocHeadSpan>Tap the card to see the meaning and usage</VocHeadSpan>
           </VocHead>
           <VocMain>
             <VocOn>
@@ -283,7 +321,7 @@ const Vocabulary = () => {
                 </HidSub>
               </HiddenWr>
             )}
-            <VocTh>مجموعة الكلمات</VocTh>
+            <VocTh>Word Sets</VocTh>
             <SelectContainer>
               <DropdownHeader onPress={toggleDropdown}>
                 <DropdownText>{selectedOption}</DropdownText>
@@ -337,6 +375,9 @@ const Vocabulary = () => {
                   <ButtonText>التالي</ButtonText>
                 </VocFoNe>
               </VocFoBot>
+              <VocFoPronounceButton onPress={handlePronounce}>
+                <ButtonText>{pronounceButtonText}</ButtonText>
+              </VocFoPronounceButton>
             </VocFo>
           </VocMain>
         </VocWra>
@@ -352,6 +393,17 @@ export const AllWr = styled.View`
   width: 95%;
   margin-left: auto;
   margin-right: auto;
+`;
+
+const VocFoPronounceButton = styled.TouchableOpacity`
+  background-color: #0a9be3;
+  border-radius: 3px;
+  padding: 9px 10px;
+  min-width: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
 `;
 
 export const VocWra = styled.View`

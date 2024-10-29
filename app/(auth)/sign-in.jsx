@@ -13,6 +13,7 @@ import { login, userSelector } from "../redux/authSlice";
 import withAuthRedirect from "../redux/withAuthRedirect";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 
 // Styled Components for better UI
 const Container = styled.View`
@@ -151,8 +152,19 @@ const SignIn = () => {
     router.push("response");
   };
 
-  const handlePrivacyPolicyPress = () => {
-    router.push("privacy");
+  const handlePrivacy = async () => {
+    const url =
+      "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
+
+    // Check if the URL can be opened
+    const supported = await Linking.canOpenURL(url);
+
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      console.error(`Don't know how to open URI: ${url}`);
+      // Optionally, you can alert the user or handle the error as needed
+    }
   };
 
   return (
@@ -199,7 +211,13 @@ const SignIn = () => {
             <ForgotPasswordButton onPress={handleForgotPassword}>
               <ForgotPasswordText>نسيت كلمة المرور؟</ForgotPasswordText>
             </ForgotPasswordButton>
-            <TouchableOpacity onPress={handlePrivacyPolicyPress}>
+            <TouchableOpacity
+              onPress={() =>
+                WebBrowser.openBrowserAsync(
+                  "https://www.fluentfox.net/privacy-policy"
+                )
+              }
+            >
               <TermsText>
                 <TermsLink>
                   يُرجى الاطلاع على اشعارات الخصوصية الخاص بنا

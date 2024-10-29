@@ -8,8 +8,9 @@ import CustomLoadingIndicator from "../components/LoadingIndicator";
 import Navbar from "../components/navigation/navbar";
 const screenWidth = Dimensions.get("window").width;
 import styled from "styled-components/native";
-import { ScrollView, Dimensions } from "react-native";
+import { ScrollView, Dimensions, Linking, Platform } from "react-native";
 import { Image as ExpoImage } from "expo-image";
+import { Animated } from "react-native";
 
 const LoadingAll = styled.View`
   flex: 1;
@@ -76,7 +77,7 @@ const QueLeCo = styled.Text`
   color: #555;
 `;
 
-const QueSubTit = styled.Text`
+const QueSubTit = styled(Animated.Text)`
   font-size: 18px;
   font-weight: bold;
   color: #555;
@@ -85,6 +86,7 @@ const QueSubTit = styled.Text`
 const QueSubIcoCon = styled.View`
   width: 18px;
   height: 18px;
+  margin-left: 4px;
 `;
 
 const QueSubIco = styled(ExpoImage)`
@@ -681,10 +683,30 @@ const Home = () => {
   const [secondModalVisible, setSecondModalVisible] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState("مبتدى أ١"); // Default level
   const unlockedSets = useSelector((state) => state.lessons.unlockedSets);
+  const userXp = useSelector((state) => state.user.currentUser?.xp ?? 0);
   const userId = useSelector((state) => state.user.currentUser?._id);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const scaleValue = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const scaling = Animated.sequence([
+      Animated.timing(scaleValue, {
+        toValue: 1.05,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleValue, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]);
+
+    Animated.loop(scaling).start();
+  }, [scaleValue]);
 
   useEffect(() => {
     if (userId) {
@@ -696,6 +718,25 @@ const Home = () => {
         });
     }
   }, [dispatch, userId]);
+
+  const openStoreReviewPage = () => {
+    const appStoreId = "6673901781";
+    const playStoreId = "your-play-store-id";
+
+    if (Platform.OS === "ios") {
+      Linking.openURL(
+        `itms-apps://itunes.apple.com/app/id${appStoreId}?action=write-review`
+      );
+    } else {
+      Linking.openURL(`market://details?id=${playStoreId}`);
+    }
+  };
+
+  useEffect(() => {
+    if (userXp === 5) {
+      openStoreReviewPage();
+    }
+  }, [userXp]);
 
   const handleToggleModal = () => {
     setModalVisible(!modalVisible);
@@ -742,7 +783,11 @@ const Home = () => {
                 <QueTi>تعلم الانجليزي</QueTi>
                 <TouchableOpacity onPress={handleToggleModal}>
                   <QueSubTitCon>
-                    <QueSubTit>
+                    <QueSubTit
+                      style={{
+                        transform: [{ scale: scaleValue }],
+                      }}
+                    >
                       <QueLe>المستوى:</QueLe>
                       <QueLeCo> {selectedLevel} </QueLeCo>
                     </QueSubTit>

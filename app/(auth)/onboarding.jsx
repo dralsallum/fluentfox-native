@@ -1,5 +1,4 @@
 // src/components/Onboarding.js
-
 import React, { useState, useEffect } from "react";
 import styled from "styled-components/native";
 import {
@@ -14,12 +13,14 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { register, clearState } from "../redux/authSlice";
+import { register, clearState, updateUserProfile } from "../redux/authSlice";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Notifications from "expo-notifications";
-import privacyPolicy from "../utils/privacy.json"; // Import your privacy.json
-import Markdown from "react-native-markdown-display"; // To render markdown content
+import privacyPolicy from "../utils/privacy.json";
+import Markdown from "react-native-markdown-display";
+import axios from "axios";
+import store from "../redux/store";
 
 // Styled Components
 
@@ -239,7 +240,6 @@ const Onboarding = () => {
   });
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
-
   const dispatch = useDispatch();
   const router = useRouter();
   const { isFetching, isError, errorMessage, isSuccess } = useSelector(
@@ -247,6 +247,13 @@ const Onboarding = () => {
   );
 
   const progress = (currentQuestionIndex / (questions.length - 1)) * 100;
+
+  // Avoid calling navigation during render
+  useEffect(() => {
+    if (currentQuestionIndex >= questions.length) {
+      router.push("home");
+    }
+  }, [currentQuestionIndex]);
 
   const handleSelectOption = (index) => {
     setSelectedOptionIndex(index);
@@ -258,13 +265,11 @@ const Onboarding = () => {
 
   const handleContinue = async () => {
     const currentQuestion = questions[currentQuestionIndex];
-
     if (currentQuestion.isSignUp) {
       if (!termsAccepted) {
         // Terms are not accepted yet; modal should already be visible
         return;
       }
-
       if (!inputs.username || !inputs.email || !inputs.password) {
         // You can add more validation or display errors here
         return;
@@ -274,7 +279,7 @@ const Onboarding = () => {
       await requestNotifications();
     } else if (selectedOptionIndex !== null) {
       if (currentQuestionIndex < questions.length - 1) {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
+        setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
         setSelectedOptionIndex(null);
       } else {
         router.push("home");
@@ -293,13 +298,50 @@ const Onboarding = () => {
 
   const requestNotifications = async () => {
     const { status } = await Notifications.requestPermissionsAsync();
-    router.push("home");
+    if (status === "granted") {
+      const tokenData = await Notifications.getExpoPushTokenAsync();
+      const expoPushToken = tokenData.data;
+
+      // Send the expoPushToken to the backend
+      try {
+        // Get the user's id and access token from Redux
+        const state = store.getState();
+        const userId = state.user.currentUser._id;
+        const accessToken = state.user.currentUser.accessToken;
+
+        // Make an API call to update the user's profile with the expoPushToken
+        await axios.put(
+          `https://quizeng-022517ad949b.herokuapp.com/api/users/profile/${userId}`,
+          { expoPushToken },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+
+        // Optionally update the user in Redux
+        dispatch(updateUserProfile({ userId, updates: { expoPushToken } }));
+      } catch (error) {
+        console.error("Error saving expoPushToken:", error);
+      }
+
+      // Navigate to home
+      router.push("home");
+    } else {
+      // Handle the case where permissions are not granted
+      router.push("home");
+    }
   };
 
   useEffect(() => {
     if (isSuccess) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
       dispatch(clearState());
+      if (currentQuestionIndex < questions.length - 1) {
+        setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
+      } else {
+        router.push("home");
+      }
     }
   }, [isSuccess]);
 
@@ -314,6 +356,11 @@ const Onboarding = () => {
       setShowTermsModal(true);
     }
   }, [currentQuestionIndex]);
+
+  // Do not call router.push during render
+  if (currentQuestionIndex >= questions.length) {
+    return null;
+  }
 
   return (
     <SafeArea>
@@ -405,7 +452,6 @@ const Onboarding = () => {
                     />
                   </InputContainer>
                 </Form>
-
                 {/* Terms and Conditions Modal */}
                 <Modal
                   animationType="slide"

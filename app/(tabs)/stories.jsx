@@ -155,7 +155,6 @@ const Stories = () => {
       });
     }
   };
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <Container>

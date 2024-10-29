@@ -15,6 +15,7 @@ import { xpSelector, fetchUnlockedSets } from "../../redux/lessonsSlice";
 import axios from "axios";
 import { Image as ExpoImage } from "expo-image";
 import { router } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 
 /* Existing Styled Components */
 
@@ -358,18 +359,18 @@ const Navbar = () => {
 
   /* Handle Privacy */
   const handlePrivacy = async () => {
-    handleCloseModal();
-    const url = "https://www.fluentfox.net/privacy-policy";
+    const url =
+      "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
 
-    // Check if the URL can be opened
-    const supported = await Linking.canOpenURL(url);
-
-    if (supported) {
-      await Linking.openURL(url);
-    } else {
-      console.error(`Don't know how to open URI: ${url}`);
-      // Optionally, you can alert the user or handle the error as needed
+    try {
+      const result = await WebBrowser.openBrowserAsync(url);
+      // Optionally handle the result
+    } catch (error) {
+      console.error(`Failed to open URL: ${error}`);
     }
+
+    // Close the modal after the browser interaction is done
+    handleCloseModal();
   };
 
   return (
@@ -419,39 +420,41 @@ const Navbar = () => {
         onRequestClose={handleCloseModal}
       >
         <TouchableWithoutFeedback onPress={handleCloseModal}>
-          <ModalContainer>
-            <ModalContent>
-              <ModalHeader>
-                <ModalTitle>الإشعارات</ModalTitle>
-                <TouchableOpacity onPress={handleCloseModal}>
-                  <CrossIcon
-                    source={require("../../../assets/icons/grayCross.png")}
-                  />
-                </TouchableOpacity>
-              </ModalHeader>
-              <ScrollView>
-                {notifications.length > 0 ? (
-                  notifications.map((notification) => (
-                    <View key={notification._id}>
-                      <ItemBox>
-                        <ItemImage
-                          source={{ uri: notification.image }}
-                          placeholder={require("../../../assets/images/thumbnail.png")}
-                        />
-                        <ItemTextContainer>
-                          <ItemTitle>{notification.title}</ItemTitle>
-                          <ItemSubText>{notification.message}</ItemSubText>
-                        </ItemTextContainer>
-                      </ItemBox>
-                    </View>
-                  ))
-                ) : (
-                  <Text>لا توجد إشعارات</Text>
-                )}
-              </ScrollView>
-            </ModalContent>
-          </ModalContainer>
+          <View style={{ flex: 1 }} />
         </TouchableWithoutFeedback>
+
+        <ModalContainer>
+          <ModalContent>
+            <ModalHeader>
+              <ModalTitle>الإشعارات</ModalTitle>
+              <TouchableOpacity onPress={handleCloseModal}>
+                <CrossIcon
+                  source={require("../../../assets/icons/grayCross.png")}
+                />
+              </TouchableOpacity>
+            </ModalHeader>
+            <ScrollView>
+              {notifications.length > 0 ? (
+                notifications.map((notification) => (
+                  <View key={notification._id}>
+                    <ItemBox>
+                      <ItemImage
+                        source={{ uri: notification.image }}
+                        placeholder={require("../../../assets/images/thumbnail.png")}
+                      />
+                      <ItemTextContainer>
+                        <ItemTitle>{notification.title}</ItemTitle>
+                        <ItemSubText>{notification.message}</ItemSubText>
+                      </ItemTextContainer>
+                    </ItemBox>
+                  </View>
+                ))
+              ) : (
+                <Text>لا توجد إشعارات</Text>
+              )}
+            </ScrollView>
+          </ModalContent>
+        </ModalContainer>
       </Modal>
 
       {/* Profile Modal */}
@@ -499,7 +502,9 @@ const Navbar = () => {
                   <ProfileButtonText>الإعدادات</ProfileButtonText>
                 </ProfileButton>
                 <ProfileButton onPress={handlePrivacy}>
-                  <ProfileButtonText>الشروط والاحكام</ProfileButtonText>
+                  <ProfileButtonText>
+                    الشروط والاحكام - terms of services
+                  </ProfileButtonText>
                 </ProfileButton>
                 <ProfileButton onPress={handleSignOut}>
                   <ProfileButtonText>تسجيل الخروج</ProfileButtonText>
