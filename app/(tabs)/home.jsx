@@ -1,16 +1,28 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchUnlockedSets } from "../redux/lessonsSlice";
-import { TouchableOpacity, View, Alert } from "react-native";
+import {
+  TouchableOpacity,
+  View,
+  Alert,
+  ScrollView,
+  Dimensions,
+  Animated,
+  Linking,
+  Platform,
+} from "react-native";
 import { router } from "expo-router";
 import chapterItems from "../utils/chapterItems";
 import CustomLoadingIndicator from "../components/LoadingIndicator";
 import Navbar from "../components/navigation/navbar";
 const screenWidth = Dimensions.get("window").width;
 import styled from "styled-components/native";
-import { ScrollView, Dimensions, Linking, Platform } from "react-native";
 import { Image as ExpoImage } from "expo-image";
-import { Animated } from "react-native";
+import { InterstitialAd, AdEventType } from "react-native-google-mobile-ads";
+const adUnitId = "ca-app-pub-7167740558520278/7250402342";
+const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
+  requestNonPersonalizedAdsOnly: true,
+});
 
 const LoadingAll = styled.View`
   flex: 1;
@@ -173,7 +185,7 @@ const SuperCon = styled(ExpoImage)`
   height: 80px;
   position: absolute;
   right: -4px;
-  top: -15px;
+  top: -10px;
 `;
 
 const QueTeHe = styled.Text`
@@ -564,13 +576,27 @@ const ChapterItem = ({
 }) => {
   const isPaid = useSelector((state) => state.user.currentUser?.isPaid); // Access the isPaid status
 
+  useEffect(() => {
+    const loadInterstitialAd = () => {
+      interstitial.load();
+    };
+    loadInterstitialAd();
+  }, []);
   const handlePress = () => {
     if (isUnlocked && set) {
-      if (!isPaid && set !== "set1") {
-        // User is not paid and the set is not 'set1', redirect to payment
-        router.push("subscription"); // Replace 'paymentPage' with your payment page route
+      if (!isPaid) {
+        // Show interstitial ad if the user is not paid
+        if (interstitial.loaded) {
+          interstitial.show();
+        } else {
+          Alert.alert("Ad not ready yet", "Please try again in a few seconds.");
+        }
+        interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+          // Navigate to the URL after the ad is closed
+          router.push({ pathname: url, params: { set } });
+        });
       } else {
-        // Navigate directly to the URL
+        // Navigate directly if the user is paid
         router.push({ pathname: url, params: { set } });
       }
     }
@@ -683,30 +709,46 @@ const Home = () => {
   const [secondModalVisible, setSecondModalVisible] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState("مبتدى أ١"); // Default level
   const unlockedSets = useSelector((state) => state.lessons.unlockedSets);
-  const userXp = useSelector((state) => state.user.currentUser?.xp ?? 0);
   const userId = useSelector((state) => state.user.currentUser?._id);
+  const isPaid = useSelector((state) => state.user.currentUser?.isPaid);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const userXp = useSelector((state) => state.user.currentUser?.xp ?? 0);
 
   const scaleValue = useRef(new Animated.Value(1)).current;
-
   useEffect(() => {
     const scaling = Animated.sequence([
       Animated.timing(scaleValue, {
-        toValue: 1.05,
+        toValue: 1.1,
         duration: 1000,
         useNativeDriver: true,
       }),
       Animated.timing(scaleValue, {
         toValue: 1,
-        duration: 500,
+        duration: 1000,
         useNativeDriver: true,
       }),
     ]);
-
     Animated.loop(scaling).start();
   }, [scaleValue]);
+
+  const openStoreReviewPage = () => {
+    const appStoreId = "6673901781";
+    const playStoreId = "your-play-store-id";
+    if (Platform.OS === "ios") {
+      Linking.openURL(
+        `itms-apps://itunes.apple.com/app/id${appStoreId}?action=write-review`
+      );
+    } else {
+      Linking.openURL(`market://details?id=${playStoreId}`);
+    }
+  };
+  useEffect(() => {
+    if (userXp === 5) {
+      openStoreReviewPage();
+    }
+  }, [userXp]);
 
   useEffect(() => {
     if (userId) {
@@ -719,28 +761,18 @@ const Home = () => {
     }
   }, [dispatch, userId]);
 
-  const openStoreReviewPage = () => {
-    const appStoreId = "6673901781";
-    const playStoreId = "your-play-store-id";
-
-    if (Platform.OS === "ios") {
-      Linking.openURL(
-        `itms-apps://itunes.apple.com/app/id${appStoreId}?action=write-review`
-      );
-    } else {
-      Linking.openURL(`market://details?id=${playStoreId}`);
-    }
-  };
-
-  useEffect(() => {
-    if (userXp === 5) {
-      openStoreReviewPage();
-    }
-  }, [userXp]);
-
   const handleToggleModal = () => {
     setModalVisible(!modalVisible);
   };
+  const handleCloseSecondModal = () => {
+    setSecondModalVisible(!secondModalVisible);
+  };
+
+  useEffect(() => {
+    if (!isPaid) {
+      setSecondModalVisible(true);
+    }
+  }, [isPaid]);
 
   const handleToggleSecondModal = () => {
     setSecondModalVisible(!secondModalVisible);
@@ -911,7 +943,7 @@ const Home = () => {
             <PrimaryButton onPress={handleToggleSecondModal}>
               <PrimaryButtonText>احصل على خصم ٦٠%</PrimaryButtonText>
             </PrimaryButton>
-            <SecondaryButton onPress={handleToggleSecondModal}>
+            <SecondaryButton onPress={handleCloseSecondModal}>
               <SecondaryButtonText>ليس الآن</SecondaryButtonText>
             </SecondaryButton>
           </ModalContent>

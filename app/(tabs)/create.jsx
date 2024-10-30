@@ -13,6 +13,7 @@ import {
   Alert,
 } from "react-native";
 import data from "../utils/data.json";
+import { InterstitialAd, AdEventType } from "react-native-google-mobile-ads";
 import { useSelector } from "react-redux";
 
 const { width } = Dimensions.get("window");
@@ -25,12 +26,48 @@ const Create = () => {
   const currentUser = useSelector((state) => state.user.currentUser);
   const isPaid = currentUser?.isPaid; // Access the isPaid status
 
-  const handleNavigate = (navigateTo, set, text) => {
-    if (!isPaid && set !== "set1") {
-      // User is not paid and set is not set1, navigate to payment page
-      router.push("/subscription");
+  const adUnitId = "ca-app-pub-7167740558520278/7250402342";
+  const interstitial = useRef(
+    InterstitialAd.createForAdRequest(adUnitId, {
+      requestNonPersonalizedAdsOnly: true,
+    })
+  ).current;
+  const [nextNavigation, setNextNavigation] = useState(null);
+  useEffect(() => {
+    interstitial.load();
+    const adEventListener = interstitial.addAdEventListener(
+      AdEventType.CLOSED,
+      () => {
+        interstitial.load(); // Load a new ad when the previous one is closed
+        if (nextNavigation) {
+          const { navigateTo, set, text } = nextNavigation;
+          if (set) {
+            router.push({
+              pathname: navigateTo,
+              params: { set },
+            });
+          } else {
+            console.warn(`Set parameter is missing for word: ${text}`);
+          }
+          setNextNavigation(null); // Reset the next navigation
+        }
+      }
+    );
+    return () => {
+      adEventListener(); // Clean up the listener
+    };
+  }, [nextNavigation]);
+  const handleAdShowAndNavigate = (navigateTo, set, text) => {
+    if (!isPaid) {
+      // User is not paid, show interstitial ad
+      if (interstitial.loaded) {
+        setNextNavigation({ navigateTo, set, text });
+        interstitial.show();
+      } else {
+        Alert.alert("Ad not ready yet", "Please try again in a few seconds.");
+      }
     } else {
-      // If the user is paid or set is set1, proceed directly to the exercise
+      // If the user is paid, proceed directly to the exercise
       if (set) {
         router.push({
           pathname: navigateTo,
@@ -75,20 +112,24 @@ const Create = () => {
         <VocabularyContent
           selectedLevel={selectedLevel}
           onCardPress={handleCardPress}
-          handleNavigate={handleNavigate}
+          handleAdShowAndNavigate={handleAdShowAndNavigate}
         />
       ) : (
         <GrammarContent
           selectedLevel={selectedLevel}
           onCardPress={handleCardPress}
-          handleNavigate={handleNavigate}
+          handleAdShowAndNavigate={handleAdShowAndNavigate}
         />
       )}
     </SafeAreaView>
   );
 };
 
-const VocabularyContent = ({ selectedLevel, onCardPress, handleNavigate }) => (
+const VocabularyContent = ({
+  selectedLevel,
+  onCardPress,
+  handleAdShowAndNavigate,
+}) => (
   <StyledScrollView>
     <HorizontalCardList
       data={data.vocabularyLevels}
@@ -105,14 +146,18 @@ const VocabularyContent = ({ selectedLevel, onCardPress, handleNavigate }) => (
           imagePath={word.imagePath}
           navigateTo={word.navigateTo}
           set={word.set}
-          handleNavigate={handleNavigate}
+          handleAdShowAndNavigate={handleAdShowAndNavigate}
         />
       ))}
     </SavedWords>
   </StyledScrollView>
 );
 
-const GrammarContent = ({ selectedLevel, onCardPress, handleNavigate }) => (
+const GrammarContent = ({
+  selectedLevel,
+  onCardPress,
+  handleAdShowAndNavigate,
+}) => (
   <StyledScrollView>
     <HorizontalCardList
       data={data.grammarLevels}
@@ -129,7 +174,7 @@ const GrammarContent = ({ selectedLevel, onCardPress, handleNavigate }) => (
           imagePath={word.imagePath}
           navigateTo={word.navigateTo}
           set={word.set}
-          handleNavigate={handleNavigate}
+          handleAdShowAndNavigate={handleAdShowAndNavigate}
         />
       ))}
     </SavedWords>
@@ -142,10 +187,10 @@ const WordItem = ({
   imagePath,
   navigateTo,
   set,
-  handleNavigate,
+  handleAdShowAndNavigate,
 }) => {
   const handleCategoryPress = () => {
-    handleNavigate(navigateTo, set, text);
+    handleAdShowAndNavigate(navigateTo, set, text);
   };
 
   return (

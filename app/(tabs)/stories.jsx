@@ -1,11 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components/native";
 import { SafeAreaView, ScrollView, Alert } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 import categories from "../utils/categories.json";
+import { InterstitialAd, AdEventType } from "react-native-google-mobile-ads";
 import { useSelector } from "react-redux";
 
+const adUnitId = "ca-app-pub-7167740558520278/7250402342";
+const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
+  requestNonPersonalizedAdsOnly: true,
+});
 const Container = styled.View`
   flex: 1;
   background-color: #fff;
@@ -143,12 +148,29 @@ const Stories = () => {
   const currentUser = useSelector((state) => state.user.currentUser);
   const isPaid = currentUser?.isPaid; // Access the isPaid status
 
+  useEffect(() => {
+    const loadInterstitialAd = () => {
+      interstitial.load();
+    };
+    loadInterstitialAd();
+  }, []);
   const handleCategoryPress = (category) => {
-    if (!isPaid && category.set !== "set1") {
-      // User is not paid and the set is not 'set1', redirect to payment
-      router.push("subscription"); // Replace 'paymentPage' with your payment page route
+    if (!isPaid) {
+      // User is not paid, show interstitial ad
+      if (interstitial.loaded) {
+        interstitial.show();
+      } else {
+        Alert.alert("Ad not ready yet", "Please try again in a few seconds.");
+      }
+      interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+        // Navigate to the exercise after the ad is closed
+        router.push({
+          pathname: category.navigateTo,
+          params: { set: category.set },
+        });
+      });
     } else {
-      // Proceed to the lesson
+      // If the user is paid, proceed directly to the exercise
       router.push({
         pathname: category.navigateTo,
         params: { set: category.set },

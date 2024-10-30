@@ -2,7 +2,7 @@
   "expo": {
     "name": "FluentFox",
     "slug": "fluentfox",
-    "version": "3.6.6",
+    "version": "3.6.8",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "fluentfox",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dralsallum.fluentfox",
-      "buildNumber": "73",
+      "buildNumber": "75",
       "config": {
         "usesNonExemptEncryption": false
       },
