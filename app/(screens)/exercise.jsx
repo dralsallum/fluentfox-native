@@ -1,59 +1,87 @@
 import React, { useState, useEffect } from "react";
 import {
-  View,
   Text,
   TouchableOpacity,
-  Image,
   Modal,
   ActivityIndicator,
   SafeAreaView,
   Pressable,
+  Image,
 } from "react-native";
 import styled from "styled-components/native";
 import { Audio } from "expo-av";
 import { useRouter } from "expo-router";
 import { useRoute } from "@react-navigation/native";
 import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { updateExercise, fetchExercise } from "../redux/exerciseSlice";
+import { userSelector } from "../redux/authSlice";
+
+// Color Palette
+const COLORS = {
+  background: "#ccecff",
+  white: "#ffffff",
+  primary: "#00796b",
+  secondary: "#0a9be3",
+  correct: "green",
+  incorrect: "red",
+  shadow: "#000",
+  progressBackground: "#d3d3d3",
+  progressBar: "#000000",
+  modalOverlay: "rgba(0, 0, 0, 0.6)",
+  textPrimary: "#004d40",
+  textSecondary: "#555",
+};
 
 // Styled Components
+const ScreenContainer = styled(SafeAreaView)`
+  flex: 1;
+  background-color: ${COLORS.background};
+`;
+
 const QuizBody = styled.View`
   flex: 1;
   justify-content: center;
   align-items: center;
-  background-color: #ccecff;
   padding: 20px;
+`;
+
+const CloseButton = styled.TouchableOpacity`
+  position: absolute;
+  top: 30px;
+  right: 25px;
+`;
+
+const CrossIcon = styled.Image`
+  width: 30px;
+  height: 30px;
 `;
 
 const QuestionSection = styled.View`
   width: 100%;
-  height: 500px;
   max-width: 600px;
   padding: 20px;
   align-items: center;
-  background-color: #ffffff;
+  background-color: ${COLORS.white};
   border-radius: 12px;
-  shadow-color: #000;
-  shadow-offset: 0 2px;
+  shadow-color: ${COLORS.shadow};
+  shadow-offset: 0px 2px;
   shadow-opacity: 0.1;
   shadow-radius: 4px;
   elevation: 5;
-  position: relative;
 `;
 
 const QuestionCount = styled.Text`
   font-size: 24px;
   margin-bottom: 10px;
+  color: ${COLORS.textPrimary};
 `;
 
 const QuestionText = styled.Text`
   font-size: 20px;
   margin-bottom: 20px;
   text-align: center;
-`;
-
-const AnswerText = styled.Text`
-  font-size: 18px;
-  font-weight: 500;
+  color: ${COLORS.textPrimary};
 `;
 
 const AnswerSection = styled.View`
@@ -63,49 +91,83 @@ const AnswerSection = styled.View`
 
 const QuizButton = styled.TouchableOpacity`
   background-color: ${(props) =>
-    props.selected ? (props.isCorrect ? "green" : "red") : "#f1fafe"};
+    props.selected
+      ? props.isCorrect
+        ? COLORS.correct
+        : COLORS.incorrect
+      : "#f1fafe"};
   padding: 12px;
   border-radius: 12px;
-  margin: 10px;
+  margin: 10px 0;
   width: 90%;
   align-items: center;
+  shadow-color: ${COLORS.shadow};
+  shadow-offset: 0px 2px;
+  shadow-opacity: 0.2;
+  shadow-radius: 4px;
+  elevation: 3;
 `;
 
-const ScreenContainer = styled(SafeAreaView)`
-  flex: 1;
-  background-color: #ccecff;
-`;
-
-const CrossIcon = styled.Image`
-  width: 30px;
-  height: 30px;
-`;
-
-const ModalContainer = styled.View`
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-  background-color: rgba(0, 0, 0, 0.5);
-`;
-
-const ModalContent = styled.View`
-  width: 300px;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 12px;
-  align-items: center;
-`;
-
-const ResultImage = styled.Image`
-  width: 100px;
-  height: 100px;
-  margin-bottom: 20px;
+const AnswerText = styled.Text`
+  font-size: 18px;
+  font-weight: 500;
+  color: ${(props) => (props.selected ? "#fff" : COLORS.textPrimary)};
 `;
 
 const LoadingContainer = styled.View`
   flex: 1;
   justify-content: center;
   align-items: center;
+`;
+
+const ModalContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-color: ${COLORS.modalOverlay};
+`;
+
+const ModalContent = styled.View`
+  width: 85%;
+  padding: 25px;
+  background-color: ${COLORS.white};
+  border-radius: 20px;
+  align-items: center;
+  shadow-color: ${COLORS.shadow};
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.3;
+  shadow-radius: 6px;
+  elevation: 10;
+`;
+
+const ResultImage = styled.Image`
+  width: 120px;
+  height: 120px;
+  margin-bottom: 25px;
+`;
+
+const ResultText = styled.Text`
+  font-size: 24px;
+  margin-bottom: 25px;
+  text-align: center;
+  color: ${COLORS.textPrimary};
+`;
+
+const ModalButton = styled.TouchableOpacity`
+  background-color: ${COLORS.primary};
+  padding: 12px 25px;
+  border-radius: 12px;
+  shadow-color: ${COLORS.shadow};
+  shadow-offset: 0px 2px;
+  shadow-opacity: 0.2;
+  shadow-radius: 4px;
+  elevation: 5;
+`;
+
+const ModalButtonText = styled.Text`
+  color: ${COLORS.white};
+  font-size: 20px;
+  font-weight: bold;
 `;
 
 const AudioContainer = styled.View`
@@ -115,18 +177,30 @@ const AudioContainer = styled.View`
   margin-top: 20px;
 `;
 
-const ProgressBarContainer = styled.View`
+const PlayPauseButton = styled.TouchableOpacity`
+  padding: 10px;
+`;
+
+const PlayPauseImage = styled.Image`
+  width: 40px;
+  height: 40px;
+`;
+
+const ProgressWrapper = styled.View`
   flex: 1;
-  height: 10px;
-  background-color: #d3d3d3;
-  border-radius: 5px;
   margin-left: 10px;
+`;
+
+const ProgressBarContainer = styled.Pressable`
+  height: 10px;
+  background-color: ${COLORS.progressBackground};
+  border-radius: 5px;
   justify-content: center;
 `;
 
 const ProgressBar = styled.View`
   height: 100%;
-  background-color: #000000;
+  background-color: ${COLORS.progressBar};
   border-radius: 5px;
   width: ${(props) => props.width}%;
 `;
@@ -140,46 +214,10 @@ const TimeContainer = styled.View`
 
 const TimeText = styled.Text`
   font-size: 12px;
-  color: #555;
+  color: ${COLORS.textSecondary};
 `;
 
-// New Styled Components for Replacing Inline Styles
-const CloseButton = styled.TouchableOpacity`
-  position: absolute;
-  top: 30px;
-  right: 25px;
-`;
-
-const ProgressWrapper = styled.View`
-  flex: 1;
-  margin-left: 10px;
-`;
-
-const ModalButton = styled.TouchableOpacity`
-  background-color: #4caf50;
-  padding: 10px;
-  border-radius: 8px;
-`;
-
-const ModalText = styled.Text`
-  font-size: 24px;
-  margin-bottom: 20px;
-`;
-
-const PlayPauseImage = styled.Image`
-  width: 40px;
-  height: 40px;
-`;
-
-const ProgressBarContainerBlack = styled(ProgressBarContainer)`
-  background-color: black;
-`;
-
-const ResultText = styled.Text`
-  font-size: 24px;
-  margin-bottom: 20px;
-`;
-
+// Main Component
 const Exercise = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -192,10 +230,14 @@ const Exercise = () => {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   const router = useRouter();
   const route = useRoute();
   const [selectedSet, setSelectedSet] = useState(route.params?.set || "set1");
+  const dispatch = useDispatch();
+  const { currentUser } = useSelector(userSelector);
 
+  // Fetch Questions
   useEffect(() => {
     const fetchQuestions = async () => {
       if (!selectedSet) return;
@@ -216,6 +258,7 @@ const Exercise = () => {
     fetchQuestions();
   }, [selectedSet]);
 
+  // Cleanup Audio on Unmount
   useEffect(() => {
     return () => {
       if (playbackInstance) {
@@ -224,24 +267,41 @@ const Exercise = () => {
     };
   }, [playbackInstance]);
 
-  const loadAudio = async (url) => {
-    // Unload previous sound if any
-    if (playbackInstance) {
-      await playbackInstance.unloadAsync();
-      setPlaybackInstance(null);
+  // Load Audio when Current Question Changes
+  useEffect(() => {
+    if (questions.length > 0) {
+      const currentQuestionData = questions[currentQuestion];
+      if (currentQuestionData?.audioUrl) {
+        loadAudio(currentQuestionData.audioUrl);
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentQuestion, questions]);
 
-    const { sound } = await Audio.Sound.createAsync(
-      { uri: url },
-      { shouldPlay: false },
-      onPlaybackStatusUpdate
-    );
-    setPlaybackInstance(sound);
-    const status = await sound.getStatusAsync();
-    setDuration(status.durationMillis || 0);
-    setPosition(status.positionMillis || 0);
+  // Load Audio Function
+  const loadAudio = async (url) => {
+    try {
+      // Unload previous sound if any
+      if (playbackInstance) {
+        await playbackInstance.unloadAsync();
+        setPlaybackInstance(null);
+      }
+
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: url },
+        { shouldPlay: false },
+        onPlaybackStatusUpdate
+      );
+      setPlaybackInstance(sound);
+      const status = await sound.getStatusAsync();
+      setDuration(status.durationMillis || 0);
+      setPosition(status.positionMillis || 0);
+    } catch (error) {
+      console.error("Error loading audio:", error);
+    }
   };
 
+  // Playback Status Update Handler
   const onPlaybackStatusUpdate = (status) => {
     if (status.isLoaded) {
       setPosition(status.positionMillis);
@@ -251,9 +311,12 @@ const Exercise = () => {
         setIsPlaying(false);
         playbackInstance.setPositionAsync(0);
       }
+    } else if (status.error) {
+      console.error(`Playback Error: ${status.error}`);
     }
   };
 
+  // Play/Pause Handler
   const handlePlayPause = async () => {
     if (playbackInstance) {
       if (isPlaying) {
@@ -264,6 +327,7 @@ const Exercise = () => {
     }
   };
 
+  // Progress Bar Press Handler
   const handleProgressBarPress = async (event) => {
     if (playbackInstance && duration) {
       const { locationX, nativeEvent } = event;
@@ -274,6 +338,7 @@ const Exercise = () => {
     }
   };
 
+  // Format Time in mm:ss
   const formatTime = (milliseconds) => {
     const totalSeconds = Math.floor(milliseconds / 1000);
     const minutes = Math.floor(totalSeconds / 60);
@@ -281,6 +346,7 @@ const Exercise = () => {
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
+  // Handle Answer Selection
   const handleAnswerButtonClick = (isCorrect, index) => {
     setSelectedAnswer({ index, isCorrect });
     if (isCorrect) {
@@ -305,30 +371,49 @@ const Exercise = () => {
     }, 400);
   };
 
+  // Handle Navigation Back to Stories
   const handleBackToStories = () => {
     setShowModal(false); // Hide the modal
     router.push("stories");
   };
 
+  // Handle Take Home Action
+  const handleTakeHome = async () => {
+    try {
+      if (currentUser && currentUser._id) {
+        // Dispatch updateScore to increment by 1
+        await dispatch(
+          updateExercise({ userId: currentUser._id, incrementBy: 1 })
+        ).unwrap();
+
+        // Optionally, refetch the score to ensure the latest value
+        dispatch(fetchExercise(currentUser._id));
+      }
+      // Navigate back to stories
+      setShowModal(false);
+      router.push("stories");
+    } catch (error) {
+      console.error("Failed to update score:", error);
+      // Optionally, handle the error in the UI without using an alert
+    }
+  };
+
+  // Current Question Data
   const currentQuestionData = questions[currentQuestion];
 
-  useEffect(() => {
-    if (currentQuestionData?.audioUrl) {
-      loadAudio(currentQuestionData.audioUrl);
-    }
-  }, [currentQuestionData]);
-
-  // Calculate progress percentage
+  // Calculate Progress Percentage
   const progressPercentage = duration > 0 ? (position / duration) * 100 : 0;
 
   return (
     <ScreenContainer>
       {loading ? (
         <LoadingContainer>
-          <ActivityIndicator size="large" color="#0a9be3" />
+          <ActivityIndicator size="large" color={COLORS.secondary} />
         </LoadingContainer>
       ) : error ? (
-        <Text>{error}</Text>
+        <LoadingContainer>
+          <Text style={{ color: COLORS.incorrect }}>{error}</Text>
+        </LoadingContainer>
       ) : (
         <QuizBody>
           <CloseButton onPress={handleBackToStories}>
@@ -339,14 +424,14 @@ const Exercise = () => {
           </CloseButton>
           <QuestionSection>
             <QuestionCount>
-              Question {currentQuestion + 1}/{questions.length}
+              Question {currentQuestion + 1} / {questions.length}
             </QuestionCount>
             <QuestionText>{currentQuestionData?.questionText}</QuestionText>
 
             {/* Audio Player */}
             {currentQuestionData?.audioUrl && (
               <AudioContainer>
-                <TouchableOpacity onPress={handlePlayPause}>
+                <PlayPauseButton onPress={handlePlayPause}>
                   <PlayPauseImage
                     source={
                       isPlaying
@@ -355,13 +440,11 @@ const Exercise = () => {
                     }
                     resizeMode="contain"
                   />
-                </TouchableOpacity>
+                </PlayPauseButton>
                 <ProgressWrapper>
-                  <Pressable onPress={handleProgressBarPress}>
-                    <ProgressBarContainerBlack>
-                      <ProgressBar width={progressPercentage} />
-                    </ProgressBarContainerBlack>
-                  </Pressable>
+                  <ProgressBarContainer onPress={handleProgressBarPress}>
+                    <ProgressBar width={progressPercentage} />
+                  </ProgressBarContainer>
                   <TimeContainer>
                     <TimeText>{formatTime(position)}</TimeText>
                     <TimeText>{formatTime(duration)}</TimeText>
@@ -380,7 +463,11 @@ const Exercise = () => {
                   selected={selectedAnswer && selectedAnswer.index === index}
                   isCorrect={selectedAnswer?.isCorrect}
                 >
-                  <AnswerText>{answerOption.answerText}</AnswerText>
+                  <AnswerText
+                    selected={selectedAnswer && selectedAnswer.index === index}
+                  >
+                    {answerOption.answerText}
+                  </AnswerText>
                 </QuizButton>
               ))}
             </AnswerSection>
@@ -388,7 +475,8 @@ const Exercise = () => {
         </QuizBody>
       )}
 
-      <Modal visible={showModal} transparent={true} animationType="slide">
+      {/* Result Modal */}
+      <Modal visible={showModal} transparent animationType="fade">
         <ModalContainer>
           <ModalContent>
             <ResultImage
@@ -396,12 +484,11 @@ const Exercise = () => {
               resizeMode="contain"
             />
             <ResultText>
-              You got {correctAnswers} out of {questions.length} correct!
+              Congratulations!{"\n"}You scored {correctAnswers} out of{" "}
+              {questions.length}
             </ResultText>
-            <ModalButton onPress={handleBackToStories}>
-              <AnswerText style={{ color: "#fff", fontSize: 18 }}>
-                Back to Stories
-              </AnswerText>
+            <ModalButton onPress={handleTakeHome}>
+              <ModalButtonText>Back to Stories</ModalButtonText>
             </ModalButton>
           </ModalContent>
         </ModalContainer>

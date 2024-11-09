@@ -72,6 +72,7 @@ const HeaderContainer = styled.View`
   align-items: center;
   justify-content: space-between;
   margin-bottom: 20px;
+  margin-top: 20px;
 `;
 
 const ProgressBarContainer = styled.View`

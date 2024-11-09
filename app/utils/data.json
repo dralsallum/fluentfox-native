@@ -49,34 +49,40 @@
       "value": 2,
       "words": [
         {
-          "text": "See you",
-          "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary/vocabulary"
+          "text": "علم الطاقة!",
+          "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/supermarkets.png",
+          "navigateTo": "vocabulary/vocabulary",
+          "set": "set7"
         },
         {
-          "text": "Welcome",
-          "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary/vocabulary"
+          "text": "العلوم الاساسية",
+          "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/house.png",
+          "navigateTo": "vocabulary/vocabulary",
+          "set": "set8"
         },
         {
-          "text": "Sorry",
-          "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary/vocabulary"
+          "text": "المحكمة والقضاء",
+          "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/kitchen.png",
+          "navigateTo": "vocabulary/vocabulary",
+          "set": "set9"
         },
         {
-          "text": "Excuse me",
-          "imagePath": "../../assets/images/superhero.png",
-          "navigateTo": "vocabulary/vocabulary"
+          "text": "مصطلحات مدرسية",
+          "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/school.png",
+          "navigateTo": "vocabulary/vocabulary",
+          "set": "set10"
         },
         {
-          "text": "Can I help you?",
-          "imagePath": "../../assets/images/empty.png",
-          "navigateTo": "vocabulary/vocabulary"
+          "text": "كلمات متشابهه",
+          "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/location.png",
+          "navigateTo": "vocabulary/vocabulary",
+          "set": "set11"
         },
         {
-          "text": "Nice to meet you",
-          "imagePath": "../../assets/images/profile.png",
-          "navigateTo": "vocabulary/vocabulary"
+          "text": "كلمات جوهرية",
+          "imagePath": "https://alsallum.s3.eu-north-1.amazonaws.com/atom.png",
+          "navigateTo": "vocabulary/vocabulary",
+          "set": "set12"
         }
       ]
     },

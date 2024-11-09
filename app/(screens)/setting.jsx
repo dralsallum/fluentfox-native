@@ -7,7 +7,10 @@ import {
   Alert,
   Text,
   Image,
+  Platform,
 } from "react-native";
+import * as Linking from "expo-linking";
+
 import {
   userSelector,
   updateUserProfile,
@@ -19,6 +22,7 @@ import { useRouter } from "expo-router";
 import styled from "styled-components/native";
 import StreakIcon from "../../assets/icons/fire.png";
 import * as Notifications from "expo-notifications";
+import axios from "axios";
 
 // Styled components
 const Container = styled.SafeAreaView`
@@ -170,7 +174,6 @@ const SettingsPage = () => {
   const router = useRouter();
   const { currentUser } = useSelector(userSelector);
   const profileImage = require("../../assets/images/profile.png");
-
   const [country, setCountry] = useState(currentUser?.country || "");
   const [city, setCity] = useState(currentUser?.city || "");
   const [language, setLanguage] = useState(currentUser?.language || "");
@@ -187,19 +190,87 @@ const SettingsPage = () => {
 
   const handleOptInNotifications = async () => {
     try {
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status === "granted") {
-        console.log("Notification permissions granted.");
+      // Check existing permissions
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+
+      // If permissions are not granted or are undetermined, request them
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync({
+          ios: {
+            allowAlert: true,
+            allowBadge: true,
+            allowSound: true,
+            allowAnnouncements: true,
+          },
+          android: {},
+        });
+        finalStatus = status;
+      }
+
+      if (finalStatus !== "granted") {
+        Alert.alert(
+          "الإشعارات معطلة",
+          "لتلقي الإشعارات، يرجى تفعيل الأذونات في الإعدادات.",
+          [
+            {
+              text: "إلغاء",
+              style: "cancel",
+            },
+            {
+              text: "فتح الإعدادات",
+              onPress: () => {
+                // Open app settings
+                if (Platform.OS === "ios") {
+                  Linking.openURL("app-settings:");
+                } else {
+                  Linking.openSettings();
+                }
+              },
+            },
+          ]
+        );
+        return;
+      }
+
+      // Permissions granted, proceed to get the token
+      const tokenData = await Notifications.getExpoPushTokenAsync();
+      const expoPushToken = tokenData.data;
+
+      // Send the expoPushToken to the backend
+      if (currentUser && currentUser._id && currentUser.accessToken) {
+        const userId = currentUser._id;
+        const accessToken = currentUser.accessToken;
+
+        // Make an API call to update the user's profile with the expoPushToken
+        await axios.put(
+          `https://quizeng-022517ad949b.herokuapp.com/api/users/profile/${userId}`,
+          { expoPushToken },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+
+        // Update the user in Redux
+        dispatch(updateUserProfile({ userId, updates: { expoPushToken } }));
+
+        Alert.alert("تم", "تم تفعيل الإشعارات بنجاح.");
       } else {
-        console.log("Notification permissions not granted.");
+        console.error("Current user is not defined.");
       }
     } catch (error) {
       console.error("Error requesting notification permissions:", error);
+      Alert.alert(
+        "خطأ",
+        "حدث خطأ أثناء تفعيل الإشعارات. يرجى المحاولة لاحقًا."
+      );
     } finally {
       setNotificationModalVisible(false);
     }
   };
-
   const handleOptOutNotifications = () => {
     setNotificationModalVisible(false);
   };
@@ -426,7 +497,7 @@ const SettingsPage = () => {
         <ModalContainer>
           <ModalContent>
             <Text style={{ fontSize: 18, marginBottom: 20 }}>
-              هل ترغب في تشغيل الإشعارات؟
+              لتلقي التذكيرات والتحديثات، يرجى تفعيل الإشعارات.
             </Text>
             <ButtonGroup>
               <NotificationButton
@@ -436,7 +507,7 @@ const SettingsPage = () => {
                 <ButtonText style={{ color: "#000" }}>ربما لاحقًا</ButtonText>
               </NotificationButton>
               <NotificationButton onPress={handleOptInNotifications}>
-                <ButtonText>تشغيل التذكيرات</ButtonText>
+                <ButtonText>تفعيل الإشعارات</ButtonText>
               </NotificationButton>
             </ButtonGroup>
           </ModalContent>

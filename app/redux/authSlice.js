@@ -1,7 +1,11 @@
+// redux/authSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { fetchUnlockedSets } from "./lessonsSlice";
+import { fetchScore, updateScore } from "./scoreSlice";
+import { fetchExercise, updateExercise } from "./exerciseSlice";
 
+// Thunk to update streak count
 export const updateStreakCount = createAsyncThunk(
   "user/updateStreakCount",
   async ({ userId }, thunkAPI) => {
@@ -17,6 +21,7 @@ export const updateStreakCount = createAsyncThunk(
   }
 );
 
+// Thunk to update user profile
 export const updateUserProfile = createAsyncThunk(
   "user/updateUserProfile",
   async ({ userId, updates }, thunkAPI) => {
@@ -43,6 +48,7 @@ export const updateUserProfile = createAsyncThunk(
   }
 );
 
+// Thunk to delete user
 export const deleteUser = createAsyncThunk(
   "user/deleteUser",
   async ({ userId }, thunkAPI) => {
@@ -71,6 +77,7 @@ export const deleteUser = createAsyncThunk(
   }
 );
 
+// Thunk for user login
 export const login = createAsyncThunk(
   "user/login",
   async (credentials, thunkAPI) => {
@@ -85,6 +92,12 @@ export const login = createAsyncThunk(
 
       // Dispatch updateStreakCount after successful login
       thunkAPI.dispatch(updateStreakCount({ userId: response.data._id }));
+
+      // Dispatch fetchScore to get the user's score
+      thunkAPI.dispatch(fetchScore(response.data._id));
+
+      // Dispatch fetchExercise to get the user's score
+      thunkAPI.dispatch(fetchExercise(response.data._id));
 
       return response.data;
     } catch (error) {
@@ -109,6 +122,9 @@ export const register = createAsyncThunk(
 
       // Dispatch updateStreakCount after successful registration
       thunkAPI.dispatch(updateStreakCount({ userId: response.data._id }));
+
+      // Dispatch fetchScore to get the user's score
+      thunkAPI.dispatch(fetchScore(response.data._id));
 
       return response.data;
     } catch (error) {
@@ -151,6 +167,7 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Handle login
       .addCase(login.pending, (state) => {
         state.isFetching = true;
         state.isError = false;
@@ -168,6 +185,7 @@ const userSlice = createSlice({
         state.isError = true;
         state.errorMessage = action.payload;
       })
+      // Handle register
       .addCase(register.pending, (state) => {
         state.isFetching = true;
         state.isError = false;
@@ -185,15 +203,17 @@ const userSlice = createSlice({
         state.isError = true;
         state.errorMessage = action.payload;
       })
+      // Handle updateStreakCount
       .addCase(updateStreakCount.fulfilled, (state, action) => {
         if (state.currentUser) {
-          state.currentUser.streak = action.payload;
+          state.currentUser.streak = action.payload.streak; // Adjust according to your backend response
         }
       })
       .addCase(updateStreakCount.rejected, (state, action) => {
         state.isError = true;
         state.errorMessage = action.payload;
       })
+      // Handle updateUserProfile
       .addCase(updateUserProfile.pending, (state) => {
         state.isFetching = true;
         state.isError = false;
@@ -216,6 +236,7 @@ const userSlice = createSlice({
         state.isError = true;
         state.errorMessage = action.payload;
       })
+      // Handle deleteUser
       .addCase(deleteUser.pending, (state) => {
         state.isFetching = true;
         state.isError = false;
@@ -224,6 +245,7 @@ const userSlice = createSlice({
       .addCase(deleteUser.fulfilled, (state) => {
         state.isFetching = false;
         state.isSuccess = true;
+        state.currentUser = null;
         state.isError = false;
         state.errorMessage = "";
       })
@@ -234,6 +256,7 @@ const userSlice = createSlice({
       });
   },
 });
+
 // Export the actions
 export const { clearState, signOut, setUser } = userSlice.actions;
 

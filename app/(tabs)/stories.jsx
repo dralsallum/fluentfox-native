@@ -5,7 +5,9 @@ import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 import categories from "../utils/categories.json";
 import { InterstitialAd, AdEventType } from "react-native-google-mobile-ads";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { selectScore, updateScore } from "../redux/scoreSlice"; // Import selectScore and updateScore
+import { selectExercise, updateExercise } from "../redux/exerciseSlice"; // Import selectExercise and updateScore
 
 const adUnitId = "ca-app-pub-7167740558520278/7250402342";
 const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
@@ -143,7 +145,9 @@ const Stories = () => {
   const [activeTab, setActiveTab] = useState("stories");
   const data =
     activeTab === "stories" ? categories.stories : categories.exercises;
-
+  const score = useSelector(selectScore);
+  const exercise = useSelector(selectExercise);
+  const dispatch = useDispatch();
   // Access the currentUser directly from Redux
   const currentUser = useSelector((state) => state.user.currentUser);
   const isPaid = currentUser?.isPaid; // Access the isPaid status
@@ -177,6 +181,9 @@ const Stories = () => {
       });
     }
   };
+
+  const final = score + exercise;
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <Container>
@@ -197,21 +204,21 @@ const Stories = () => {
         <BoxCon>
           <TopCon>
             <TopText>نقاطي</TopText>
-            <TopText>١ نقطة</TopText>
+            <TopText>{final} نقطة</TopText>
           </TopCon>
           <MidCon>
             <EleCon>
               <ChatIcon source={require("../../assets/icons/chat.png")} />
               <MidText>استمع إلى قصة</MidText>
             </EleCon>
-            <MidText>١ نقطة</MidText>
+            <MidText>{score} نقطة</MidText>
           </MidCon>
           <BotCon>
             <EleCon>
               <ChatIcon source={require("../../assets/icons/loud.png")} />
               <BotText>استخدم اختبار</BotText>
             </EleCon>
-            <BotText>١ نقطة</BotText>
+            <BotText>{exercise} نقطة</BotText>
           </BotCon>
         </BoxCon>
 

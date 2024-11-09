@@ -1,13 +1,24 @@
+// components/Listen.js
 import React, { useState, useEffect, useRef } from "react";
 import { Audio } from "expo-av";
 import styled from "styled-components/native";
-import { SafeAreaView, ScrollView, TouchableOpacity, View } from "react-native";
+import {
+  SafeAreaView,
+  ScrollView,
+  TouchableOpacity,
+  View,
+  Modal,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { useRoute } from "@react-navigation/native";
+import { useDispatch, useSelector } from "react-redux";
+import { updateScore, fetchScore } from "../redux/scoreSlice";
+import { userSelector } from "../redux/authSlice";
 
 const ScreenContainer = styled(SafeAreaView)`
   flex: 1;
   background-color: #f8f9fa;
+  margin-top: 20px;
 `;
 
 const ContentContainer = styled(ScrollView)`
@@ -140,17 +151,93 @@ const StoryText = styled.Text`
   text-align: justify;
 `;
 
+// Styled components for the Exam Modal
+const ModalContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+`;
+
+const ExamContent = styled.View`
+  width: 90%;
+  max-height: 80%;
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+`;
+
+const QuestionText = styled.Text`
+  font-size: 18px;
+  margin-bottom: 20px;
+`;
+
+const OptionButton = styled.TouchableOpacity`
+  padding: 10px;
+  background-color: ${({ isSelected }) => (isSelected ? "#d1e7dd" : "#e0e0e8")};
+  border-radius: 5px;
+  margin-bottom: 10px;
+`;
+
+const OptionText = styled.Text`
+  font-size: 16px;
+`;
+
+const NextButton = styled.TouchableOpacity`
+  padding: 10px 20px;
+  background-color: #3b5998;
+  border-radius: 5px;
+  align-items: center;
+  margin-top: 20px;
+  opacity: ${({ disabled }) => (disabled ? 0.6 : 1)};
+`;
+
+const NextButtonText = styled.Text`
+  color: #fff;
+  font-size: 16px;
+`;
+
+const ScoreText = styled.Text`
+  font-size: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+`;
+
+const TakeHomeButton = styled.TouchableOpacity`
+  padding: 10px 20px;
+  background-color: #3b5998;
+  border-radius: 5px;
+  align-items: center;
+`;
+
+const TakeHomeButtonText = styled.Text`
+  color: #fff;
+  font-size: 16px;
+`;
+
 const Listen = () => {
   const [progress, setProgress] = useState(0);
   const [sound, setSound] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isContainerHidden, setIsContainerHidden] = useState(false);
-  const [storyData, setStoryData] = useState({ story: [], audioUrl: "" });
+  const [storyData, setStoryData] = useState({
+    story: [],
+    audioUrl: "",
+    exam: [],
+  }); // Include exam data
 
   const router = useRouter();
   const route = useRoute();
   const scrollViewRef = useRef(null);
   const [selectedSet, setSelectedSet] = useState(route.params?.set || "set1");
+
+  // State for Exam Modal
+  const [isExamVisible, setIsExamVisible] = useState(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [userAnswers, setUserAnswers] = useState([]);
+  const [localScore, setLocalScore] = useState(0);
+  const dispatch = useDispatch();
+  const { currentUser } = useSelector(userSelector);
 
   useEffect(() => {
     const fetchStoryData = async () => {
@@ -168,7 +255,7 @@ const Listen = () => {
         }
 
         const data = await response.json();
-        setStoryData(data);
+        setStoryData(data); // data includes story, audioUrl, and exam
       } catch (error) {
         console.error("Error fetching story data:", error);
       }
@@ -236,7 +323,10 @@ const Listen = () => {
     if (sound) {
       sound.getStatusAsync().then((status) => {
         if (status.isLoaded) {
-          const newPosition = status.positionMillis + change;
+          let newPosition = status.positionMillis + change;
+          if (newPosition < 0) newPosition = 0;
+          if (newPosition > status.durationMillis)
+            newPosition = status.durationMillis;
           sound.setPositionAsync(newPosition);
           const newProgress = newPosition / status.durationMillis;
           setProgress(newProgress);
@@ -263,6 +353,60 @@ const Listen = () => {
     }
   };
 
+  // Exam Handlers
+  const toggleExamModal = () => {
+    setIsExamVisible((prev) => !prev);
+    // Reset exam state when opening the modal
+    if (!isExamVisible) {
+      setCurrentQuestionIndex(0);
+      setUserAnswers([]);
+      setLocalScore(0);
+    }
+  };
+
+  const handleOptionSelect = (option) => {
+    const updatedAnswers = [...userAnswers];
+    updatedAnswers[currentQuestionIndex] = option;
+    setUserAnswers(updatedAnswers);
+  };
+
+  const handleNextQuestion = () => {
+    // Check if the selected answer is correct
+    const selectedAnswer = userAnswers[currentQuestionIndex];
+    if (selectedAnswer === storyData.exam[currentQuestionIndex].correctAnswer) {
+      setLocalScore((prev) => prev + 1);
+    }
+
+    if (currentQuestionIndex < storyData.exam.length - 1) {
+      setCurrentQuestionIndex((prev) => prev + 1);
+    } else {
+      // Exam finished, proceed to show the score without updating Redux
+      setCurrentQuestionIndex(currentQuestionIndex + 1); // Move past the last question to show the score
+    }
+  };
+
+  // Modified handleTakeHome Function (Removed Alert and Increment by One Only)
+  const handleTakeHome = async () => {
+    try {
+      if (currentUser && currentUser._id) {
+        // Dispatch updateScore to increment by 1
+        await dispatch(
+          updateScore({ userId: currentUser._id, incrementBy: 1 })
+        ).unwrap();
+
+        // Optionally, refetch the score to ensure the latest value
+        dispatch(fetchScore(currentUser._id));
+      }
+      // Navigate back to home
+      toggleExamModal();
+      await stopSound();
+      router.push("stories"); // Navigate back to "stories" home screen
+    } catch (error) {
+      console.error("Failed to update score:", error);
+      // Optionally, handle the error in the UI without using an alert
+    }
+  };
+
   return (
     <ScreenContainer>
       <Header>
@@ -273,6 +417,7 @@ const Listen = () => {
           />
         </TouchableOpacity>
       </Header>
+
       <ContentContainer
         ref={scrollViewRef}
         onScroll={handleScroll}
@@ -288,14 +433,22 @@ const Listen = () => {
       <Container isHidden={isContainerHidden}>
         <ReCon>
           <TalCon onPress={toggleContainerVisibility}>
-            <TimeText>Read</TimeText>
+            <TimeText>اقرا</TimeText>
             <TopImg
               source={require("../../assets/icons/talking.png")}
               resizeMode="contain"
             />
           </TalCon>
+          {/* Added Exam Button */}
+          <TalCon onPress={toggleExamModal}>
+            <TimeText>اختبار</TimeText>
+            <TopImg
+              source={require("../../assets/icons/badge.png")} // Ensure you have an exam icon in your assets
+              resizeMode="contain"
+            />
+          </TalCon>
           <LisCon>
-            <TimeText>Listen</TimeText>
+            <TimeText>استمع</TimeText>
             <TopImg
               source={require("../../assets/icons/listening.png")}
               resizeMode="contain"
@@ -342,6 +495,56 @@ const Listen = () => {
           />
         </FloatingButton>
       )}
+
+      {/* Exam Modal */}
+      <Modal
+        visible={isExamVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={toggleExamModal}
+      >
+        <ModalContainer>
+          <ExamContent>
+            {currentQuestionIndex < storyData.exam.length ? (
+              <>
+                <QuestionText>
+                  {storyData.exam[currentQuestionIndex].question}
+                </QuestionText>
+                {storyData.exam[currentQuestionIndex].options.map(
+                  (option, idx) => (
+                    <OptionButton
+                      key={idx}
+                      onPress={() => handleOptionSelect(option)}
+                      isSelected={userAnswers[currentQuestionIndex] === option}
+                    >
+                      <OptionText>{option}</OptionText>
+                    </OptionButton>
+                  )
+                )}
+                <NextButton
+                  onPress={handleNextQuestion}
+                  disabled={!userAnswers[currentQuestionIndex]}
+                >
+                  <NextButtonText>
+                    {currentQuestionIndex === storyData.exam.length - 1
+                      ? "Submit"
+                      : "Next"}
+                  </NextButtonText>
+                </NextButton>
+              </>
+            ) : (
+              <>
+                <ScoreText>
+                  Your Exam Score: {localScore}/{storyData.exam.length}
+                </ScoreText>
+                <TakeHomeButton onPress={handleTakeHome}>
+                  <TakeHomeButtonText>Take Me Home</TakeHomeButtonText>
+                </TakeHomeButton>
+              </>
+            )}
+          </ExamContent>
+        </ModalContainer>
+      </Modal>
     </ScreenContainer>
   );
 };

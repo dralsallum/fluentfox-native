@@ -22,7 +22,7 @@ export const CenteredContainer = styled.View`
 export const Header = styled.View`
   flex-direction: row-reverse;
   align-items: center;
-  margin: 20px;
+  margin: 30px;
 `;
 
 export const BackButton = styled.TouchableOpacity``;

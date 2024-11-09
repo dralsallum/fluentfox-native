@@ -62,7 +62,6 @@ const Vocabulary = () => {
     };
     fetchVoices();
   }, []);
-
   const flipCard = () => {
     Animated.timing(animatedValue, {
       toValue: isFlipped ? 0 : 180,
@@ -259,20 +258,15 @@ const Vocabulary = () => {
           voice.quality === "Default" && voice.language.startsWith("en")
       ) ||
       voices.find((voice) => voice.language.startsWith("en"));
-
     const options = bestVoice
       ? { voice: bestVoice.identifier }
       : { language: "en-US" };
-
     const textToSpeak = isFlipped
       ? currentCardData.answer
       : currentCardData.word;
-
     Speech.speak(textToSpeak, options);
   };
-
   const pronounceButtonText = isFlipped ? "استمع للجملة" : "استمع للكلمة";
-
   return (
     <SafeArea>
       <CroBut onPress={() => router.back()}>
@@ -405,7 +399,6 @@ const VocFoPronounceButton = styled.TouchableOpacity`
   justify-content: center;
   margin-top: 10px;
 `;
-
 export const VocWra = styled.View`
   padding: 1rem;
   margin-bottom: 1.5rem;

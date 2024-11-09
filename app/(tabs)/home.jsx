@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchUnlockedSets } from "../redux/lessonsSlice";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   TouchableOpacity,
   View,
@@ -18,11 +19,28 @@ import Navbar from "../components/navigation/navbar";
 const screenWidth = Dimensions.get("window").width;
 import styled from "styled-components/native";
 import { Image as ExpoImage } from "expo-image";
-import { InterstitialAd, AdEventType } from "react-native-google-mobile-ads";
-const adUnitId = "ca-app-pub-7167740558520278/7250402342";
-const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
-  requestNonPersonalizedAdsOnly: true,
-});
+import * as StoreReview from "expo-store-review";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import placeholderImage from "../../assets/images/placeholder.webp";
+
+const openStoreReviewPage = async () => {
+  const isAvailable = await StoreReview.isAvailableAsync();
+  if (isAvailable) {
+    await StoreReview.requestReview();
+  } else {
+    const appStoreId = "6673901781";
+    const playStoreId = "your-play-store-id";
+    if (Platform.OS === "ios") {
+      Linking.openURL(
+        `itms-apps://itunes.apple.com/app/id${appStoreId}?action=write-review`
+      );
+    } else {
+      Linking.openURL(
+        `itms-apps://itunes.apple.com/app/id${appStoreId}?action=write-review`
+      );
+    }
+  }
+};
 
 const LoadingAll = styled.View`
   flex: 1;
@@ -576,27 +594,13 @@ const ChapterItem = ({
 }) => {
   const isPaid = useSelector((state) => state.user.currentUser?.isPaid); // Access the isPaid status
 
-  useEffect(() => {
-    const loadInterstitialAd = () => {
-      interstitial.load();
-    };
-    loadInterstitialAd();
-  }, []);
   const handlePress = () => {
     if (isUnlocked && set) {
-      if (!isPaid) {
-        // Show interstitial ad if the user is not paid
-        if (interstitial.loaded) {
-          interstitial.show();
-        } else {
-          Alert.alert("Ad not ready yet", "Please try again in a few seconds.");
-        }
-        interstitial.addAdEventListener(AdEventType.CLOSED, () => {
-          // Navigate to the URL after the ad is closed
-          router.push({ pathname: url, params: { set } });
-        });
+      if (!isPaid && set !== "set1") {
+        // Redirect to subscription page if not paid and not set1
+        router.push("subscription");
       } else {
-        // Navigate directly if the user is paid
+        // Navigate to the URL
         router.push({ pathname: url, params: { set } });
       }
     }
@@ -633,6 +637,8 @@ const ChapterItem = ({
                   }}
                   contentFit="contain"
                   cachePolicy="memory"
+                  placeholder={placeholderImage}
+                  placeholderContentFit="contain"
                 />
               </QueChaPicSec>
 
@@ -733,22 +739,24 @@ const Home = () => {
     Animated.loop(scaling).start();
   }, [scaleValue]);
 
-  const openStoreReviewPage = () => {
-    const appStoreId = "6673901781";
-    const playStoreId = "your-play-store-id";
-    if (Platform.OS === "ios") {
-      Linking.openURL(
-        `itms-apps://itunes.apple.com/app/id${appStoreId}?action=write-review`
-      );
-    } else {
-      Linking.openURL(`market://details?id=${playStoreId}`);
-    }
-  };
-  useEffect(() => {
-    if (userXp === 5) {
-      openStoreReviewPage();
-    }
-  }, [userXp]);
+  useFocusEffect(
+    React.useCallback(() => {
+      const checkIfShouldShowReview = async () => {
+        if (userXp >= 5 && (userXp - 5) % 10 === 0) {
+          try {
+            const hasRatedApp = await AsyncStorage.getItem("hasRatedApp");
+            if (!hasRatedApp) {
+              await openStoreReviewPage();
+              await AsyncStorage.setItem("hasRatedApp", "true");
+            }
+          } catch (e) {
+            console.error("Error checking if user has rated the app", e);
+          }
+        }
+      };
+      checkIfShouldShowReview();
+    }, [userXp])
+  );
 
   useEffect(() => {
     if (userId) {

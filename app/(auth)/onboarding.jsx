@@ -1,4 +1,3 @@
-// src/components/Onboarding.js
 import React, { useState, useEffect } from "react";
 import styled from "styled-components/native";
 import {
@@ -7,7 +6,6 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
-  Modal,
   View,
   Text,
   TouchableOpacity,
@@ -17,9 +15,8 @@ import { register, clearState } from "../redux/authSlice";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Notifications from "expo-notifications";
-import privacyPolicy from "../utils/privacy.json"; // Import your privacy.json
-import Markdown from "react-native-markdown-display"; // To render markdown content
-// Styled Components
+import * as WebBrowser from "expo-web-browser";
+import { useNotification } from "../redux/NotificationContext";
 
 export const SafeArea = styled.SafeAreaView`
   flex: 1;
@@ -168,7 +165,30 @@ const NotificationButton = styled(ContinueButton)`
   margin-horizontal: 5px;
 `;
 
-// Define your onboarding questions
+const CheckBoxContainer = styled.TouchableOpacity`
+  flex-direction: row-reverse;
+  align-items: center;
+  margin-bottom: 15px;
+`;
+
+const CheckBox = styled.View`
+  width: 18px;
+  height: 18px;
+  border-width: 1px;
+  border-color: #ccc;
+  background-color: ${({ checked }) => (checked ? "#2196f3" : "#fff")};
+  margin-left: 10px;
+  justify-content: center;
+  align-items: center;
+`;
+
+const CheckBoxText = styled.Text`
+  text-align: right;
+  font-size: 12px;
+  color: #333;
+`;
+
+// Updated Onboarding Questions with Notification Prompt Before Sign-Up
 const questions = [
   {
     question: "حدد هدفك اليومي للدراسة",
@@ -213,17 +233,18 @@ const questions = [
     ],
     image: require("../../assets/images/goal.png"),
   },
-  {
-    question: "إنشاء حساب جديد",
-    subText: "قم بتعبئة التفاصيل الخاصة بك لإنشاء حساب.",
-    options: [], // No options for signup form
-    isSignUp: true, // Custom flag to detect signup step
-  },
+  // Moved Notification Prompt Before Sign-Up
   {
     question: "ابقَ على المسار مع التذكيرات اليومية",
     subText: "التذكيرات تساعد في بناء عادات تعلم أفضل",
     options: [], // No options, this is a notification prompt
     isNotificationPrompt: true, // Custom flag to detect notification prompt
+  },
+  {
+    question: "إنشاء حساب جديد",
+    subText: "قم بتعبئة التفاصيل الخاصة بك لإنشاء حساب.",
+    options: [], // No options for signup form
+    isSignUp: true, // Custom flag to detect signup step
   },
 ];
 
@@ -234,14 +255,25 @@ const Onboarding = () => {
     username: "",
     email: "",
     password: "",
+    mailchimpOptIn: true,
   });
-  const [showTermsModal, setShowTermsModal] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const dispatch = useDispatch();
   const router = useRouter();
   const { isFetching, isError, errorMessage, isSuccess } = useSelector(
     (state) => state.user
   );
+
+  // Use the useNotification hook to get expoPushToken
+  const { notification, expoPushToken, error } = useNotification();
+
+  // Handle potential errors from the notification hook
+  useEffect(() => {
+    if (error) {
+      console.error("Notification Error:", error);
+      // Optionally, you can set an error state or notify the user
+    }
+  }, [error]);
 
   const progress = (currentQuestionIndex / (questions.length - 1)) * 100;
 
@@ -255,18 +287,28 @@ const Onboarding = () => {
 
   const handleContinue = async () => {
     const currentQuestion = questions[currentQuestionIndex];
-    if (currentQuestion.isSignUp) {
+
+    if (currentQuestion.isNotificationPrompt) {
+      await requestNotifications();
+      // Proceed to the next step (sign-up)
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else if (currentQuestion.isSignUp) {
       if (!termsAccepted) {
-        // Terms are not accepted yet; modal should already be visible
+        alert("يجب قبول الشروط والأحكام للمتابعة.");
         return;
       }
       if (!inputs.username || !inputs.email || !inputs.password) {
-        // You can add more validation or display errors here
+        alert("يرجى ملء جميع الحقول المطلوبة.");
         return;
       }
-      dispatch(register(inputs));
-    } else if (currentQuestion.isNotificationPrompt) {
-      await requestNotifications();
+
+      // Include expoPushToken in the registration data
+      const registrationData = {
+        ...inputs,
+        expoPushToken: expoPushToken || null, // Handle cases where token might not be available
+      };
+
+      dispatch(register(registrationData));
     } else if (selectedOptionIndex !== null) {
       if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -287,27 +329,25 @@ const Onboarding = () => {
   };
 
   const requestNotifications = async () => {
-    const { status } = await Notifications.requestPermissionsAsync();
-    router.push("home");
+    try {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== "granted") {
+        alert("إذن الإشعارات غير ممنوح. يمكنك تفعيلها في الإعدادات.");
+      }
+      // The useNotification hook should handle obtaining the token
+    } catch (err) {
+      console.error("Failed to request notifications permissions:", err);
+    }
   };
 
   useEffect(() => {
     if (isSuccess) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      // After successful registration, navigate to home
+      router.push("home");
       dispatch(clearState());
     }
   }, [isSuccess]);
 
-  const acceptTerms = () => {
-    setTermsAccepted(true);
-    setShowTermsModal(false);
-  };
-  // Automatically show the Terms Modal when entering the sign-up step
-  useEffect(() => {
-    if (questions[currentQuestionIndex].isSignUp) {
-      setShowTermsModal(true);
-    }
-  }, [currentQuestionIndex]);
   return (
     <SafeArea>
       <KeyboardAvoidingView
@@ -365,7 +405,6 @@ const Onboarding = () => {
                       onChangeText={(text) =>
                         handleInputChange("username", text)
                       }
-                      editable={termsAccepted}
                     />
                   </InputContainer>
                   <InputContainer>
@@ -377,7 +416,6 @@ const Onboarding = () => {
                       onChangeText={(text) => handleInputChange("email", text)}
                       keyboardType="email-address"
                       autoCapitalize="none"
-                      editable={termsAccepted}
                     />
                   </InputContainer>
                   <InputContainer>
@@ -394,110 +432,54 @@ const Onboarding = () => {
                       onChangeText={(text) =>
                         handleInputChange("password", text)
                       }
-                      editable={termsAccepted}
                     />
                   </InputContainer>
-                </Form>
-                {/* Terms and Conditions Modal */}
-                <Modal
-                  animationType="slide"
-                  transparent={true}
-                  visible={showTermsModal}
-                  onRequestClose={() => {
-                    // Prevent modal from closing without acceptance
-                  }}
-                >
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: "center",
-                      alignItems: "center",
-                      backgroundColor: "rgba(0,0,0,0.5)",
-                    }}
+                  {/* Terms Acceptance Checkbox */}
+                  <CheckBoxContainer
+                    onPress={() => setTermsAccepted(!termsAccepted)}
                   >
-                    <View
-                      style={{
-                        width: "90%",
-                        height: "80%",
-                        backgroundColor: "#fff",
-                        borderRadius: 20,
-                        padding: 20,
-                      }}
-                    >
+                    <CheckBox checked={termsAccepted}>
+                      {termsAccepted && (
+                        <Ionicons name="checkmark" size={12} color="#fff" />
+                      )}
+                    </CheckBox>
+                    <CheckBoxText>
+                      لقد قرأت ووافقت على{" "}
                       <Text
                         style={{
-                          fontSize: 20,
-                          fontWeight: "bold",
-                          marginBottom: 10,
-                          textAlign: "center",
+                          color: "#1e90ff",
+                          textDecorationLine: "underline",
                         }}
+                        onPress={() =>
+                          WebBrowser.openBrowserAsync(
+                            "https://fluentfox.net/privacy-policy"
+                          )
+                        }
                       >
-                        شروط الخدمة
+                        شروط الاستخدام وسياسة الخصوصية
                       </Text>
-                      <ScrollView style={{ marginBottom: 20 }}>
-                        {privacyPolicy.sections.map((section, index) => (
-                          <View key={index} style={{ marginBottom: 15 }}>
-                            <Text
-                              style={{
-                                fontSize: 18,
-                                fontWeight: "bold",
-                                color: "#333",
-                                marginBottom: 5,
-                                textAlign: "left",
-                              }}
-                            >
-                              {section.title}
-                            </Text>
-                            <Markdown
-                              style={{
-                                body: {
-                                  fontSize: 16,
-                                  color: "#555",
-                                  textAlign: "left",
-                                },
-                                strong: {
-                                  fontWeight: "bold",
-                                  color: "#333",
-                                },
-                                bullet_list: {
-                                  marginLeft: 10,
-                                },
-                                bullet_item: {
-                                  flexDirection: "row",
-                                  alignItems: "flex-start",
-                                  marginBottom: 5,
-                                },
-                                list_item: {
-                                  flexDirection: "row",
-                                  alignItems: "flex-start",
-                                  marginBottom: 5,
-                                },
-                                link: {
-                                  color: "#1e90ff",
-                                },
-                              }}
-                            >
-                              {section.content.join("\n\n")}
-                            </Markdown>
-                          </View>
-                        ))}
-                      </ScrollView>
-                      <TouchableOpacity
-                        onPress={acceptTerms}
-                        style={{
-                          backgroundColor: "#2196f3",
-                          padding: 15,
-                          borderRadius: 10,
-                          alignItems: "center",
-                        }}
-                      >
-                        <Text style={{ color: "#fff", fontSize: 18 }}>
-                          أوافق على الشروط
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </Modal>
+                    </CheckBoxText>
+                  </CheckBoxContainer>
+                  {/* MailChimp Opt-In Checkbox */}
+                  <CheckBoxContainer
+                    onPress={() =>
+                      handleInputChange(
+                        "mailchimpOptIn",
+                        !inputs.mailchimpOptIn
+                      )
+                    }
+                  >
+                    <CheckBox checked={inputs.mailchimpOptIn}>
+                      {inputs.mailchimpOptIn && (
+                        <Ionicons name="checkmark" size={12} color="#fff" />
+                      )}
+                    </CheckBox>
+                    <CheckBoxText>
+                      أوافق على تلقي رسائل بريد إلكتروني تحتوي على نصائح تعليمية
+                      ومحتوى تسويقي لتحسين لغتي الإنجليزية
+                    </CheckBoxText>
+                  </CheckBoxContainer>
+                </Form>
               </>
             ) : (
               <NotificationContainer>
@@ -508,7 +490,10 @@ const Onboarding = () => {
 
                 <ButtonGroup>
                   <NotificationButton
-                    onPress={() => router.push("home")}
+                    onPress={() => {
+                      // Proceed to the next step even if the user declines notifications
+                      setCurrentQuestionIndex(currentQuestionIndex + 1);
+                    }}
                     style={{ backgroundColor: "#f0f0f0", opacity: 0.5 }}
                   >
                     <ButtonText style={{ color: "#000" }}>
@@ -531,12 +516,20 @@ const Onboarding = () => {
                 onPress={handleContinue}
                 enabled={
                   questions[currentQuestionIndex].isSignUp
-                    ? !isFetching && termsAccepted
+                    ? !isFetching &&
+                      termsAccepted &&
+                      inputs.username &&
+                      inputs.email &&
+                      inputs.password
                     : selectedOptionIndex !== null
                 }
                 style={{
                   opacity: questions[currentQuestionIndex].isSignUp
-                    ? !isFetching && termsAccepted
+                    ? !isFetching &&
+                      termsAccepted &&
+                      inputs.username &&
+                      inputs.email &&
+                      inputs.password
                       ? 1
                       : 0.5
                     : selectedOptionIndex !== null

@@ -10,7 +10,7 @@
         "gradleCommand": ":app:assembleDebug"
       },
       "ios": {
-        "buildConfiguration": "Debug"
+        "simulator": true
       }
     },
     "preview": {

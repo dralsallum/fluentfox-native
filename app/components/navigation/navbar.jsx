@@ -357,8 +357,7 @@ const Navbar = () => {
     router.push("setting");
   };
 
-  /* Handle Privacy */
-  const handlePrivacy = async () => {
+  const handleTerms = async () => {
     const url =
       "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
 
@@ -501,11 +500,12 @@ const Navbar = () => {
                 <ProfileButton onPress={handleSetting}>
                   <ProfileButtonText>الإعدادات</ProfileButtonText>
                 </ProfileButton>
-                <ProfileButton onPress={handlePrivacy}>
+                <ProfileButton onPress={handleTerms}>
                   <ProfileButtonText>
                     الشروط والاحكام - terms of services
                   </ProfileButtonText>
                 </ProfileButton>
+
                 <ProfileButton onPress={handleSignOut}>
                   <ProfileButtonText>تسجيل الخروج</ProfileButtonText>
                 </ProfileButton>
