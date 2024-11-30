@@ -11,10 +11,14 @@ import {
   Animated,
   SafeAreaView,
   Alert,
+  Modal,
 } from "react-native";
 import data from "../utils/data.json";
-import { InterstitialAd, AdEventType } from "react-native-google-mobile-ads";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchAds, selectAds } from "../redux/adsSlice";
+import { Image as ExpoImage } from "expo-image";
+import AdsImage from "../../assets/icons/ads.png";
+import PremiumImage from "../../assets/icons/premium.png";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width / 3.5;
@@ -22,52 +26,40 @@ const CARD_WIDTH = width / 3.5;
 const Create = () => {
   const [activeTab, setActiveTab] = useState("Vocabulary");
   const [selectedLevel, setSelectedLevel] = useState(data.vocabularyLevels[0]);
+  const [secondModalVisible, setSecondModalVisible] = useState(false);
+  const [selectedNavigateTo, setSelectedNavigateTo] = useState(null);
+  const [selectedSet, setSelectedSet] = useState(null);
 
   const currentUser = useSelector((state) => state.user.currentUser);
-  const isPaid = currentUser?.isPaid; // Access the isPaid status
+  const isPaid = currentUser?.isPaid;
+  const userId = currentUser?._id;
 
-  const adUnitId = "ca-app-pub-7167740558520278/7250402342";
-  const interstitial = useRef(
-    InterstitialAd.createForAdRequest(adUnitId, {
-      requestNonPersonalizedAdsOnly: true,
-    })
-  ).current;
-  const [nextNavigation, setNextNavigation] = useState(null);
+  const ads = useSelector(selectAds);
+  const maxAds = 3;
+  const filledAds = Math.min(ads, maxAds);
+  const dispatch = useDispatch();
+
   useEffect(() => {
-    interstitial.load();
-    const adEventListener = interstitial.addAdEventListener(
-      AdEventType.CLOSED,
-      () => {
-        interstitial.load(); // Load a new ad when the previous one is closed
-        if (nextNavigation) {
-          const { navigateTo, set, text } = nextNavigation;
-          if (set) {
-            router.push({
-              pathname: navigateTo,
-              params: { set },
-            });
-          } else {
-            console.warn(`Set parameter is missing for word: ${text}`);
-          }
-          setNextNavigation(null); // Reset the next navigation
+    const loadAds = async () => {
+      if (userId) {
+        try {
+          await dispatch(fetchAds(userId)).unwrap();
+        } catch (err) {
+          console.error("Failed to load ads data. Please try again.");
         }
       }
-    );
-    return () => {
-      adEventListener(); // Clean up the listener
     };
-  }, [nextNavigation]);
-  const handleAdShowAndNavigate = (navigateTo, set, text) => {
-    if (!isPaid) {
-      // User is not paid, show interstitial ad
-      if (interstitial.loaded) {
-        setNextNavigation({ navigateTo, set, text });
-        interstitial.show();
-      } else {
-        Alert.alert("Ad not ready yet", "Please try again in a few seconds.");
-      }
+
+    loadAds();
+  }, [dispatch, userId]);
+
+  const handleNavigation = (navigateTo, set, text) => {
+    const allowedSets = ["set1"];
+    if (!isPaid && !allowedSets.includes(set)) {
+      setSelectedNavigateTo(navigateTo);
+      setSelectedSet(set);
+      setSecondModalVisible(true);
     } else {
-      // If the user is paid, proceed directly to the exercise
       if (set) {
         router.push({
           pathname: navigateTo,
@@ -81,6 +73,34 @@ const Create = () => {
 
   const handleCardPress = (level) => {
     setSelectedLevel(level);
+  };
+
+  const handleWatchAds = async () => {
+    if (ads > 0) {
+      setSecondModalVisible(false);
+      router.push({
+        pathname: "/ads",
+        params: {
+          lessonUrl: selectedNavigateTo,
+          set: selectedSet,
+        },
+      });
+    } else {
+      Alert.alert(
+        "تم الوصول إلى الحد اليومي",
+        "يمكنك أخذ الدروس مرة أخرى خلال 24 ساعة أو الاشتراك.",
+        [{ text: "حسنًا" }]
+      );
+    }
+  };
+
+  const handleSubscription = () => {
+    setSecondModalVisible(false);
+    router.push("subscription");
+  };
+
+  const handleCloseSecondModal = () => {
+    setSecondModalVisible(false);
   };
 
   return (
@@ -112,15 +132,59 @@ const Create = () => {
         <VocabularyContent
           selectedLevel={selectedLevel}
           onCardPress={handleCardPress}
-          handleAdShowAndNavigate={handleAdShowAndNavigate}
+          handleNavigation={handleNavigation}
         />
       ) : (
         <GrammarContent
           selectedLevel={selectedLevel}
           onCardPress={handleCardPress}
-          handleAdShowAndNavigate={handleAdShowAndNavigate}
+          handleNavigation={handleNavigation}
         />
       )}
+
+      {/* Ads Modal */}
+      <StyledSecModal
+        animationType="slide"
+        transparent={true}
+        visible={secondModalVisible}
+        onRequestClose={handleCloseSecondModal}
+      >
+        <ModalSecContainer>
+          <ModalContent>
+            <ModalSecHeader>
+              <CrossButtonAds onPress={handleCloseSecondModal}>
+                <CrossIcon
+                  source={require("../../assets/icons/grayCross.png")}
+                />
+              </CrossButtonAds>
+              <ModalTitleCentered>الحد اليومي</ModalTitleCentered>
+              <View style={{ width: 40 }} />
+            </ModalSecHeader>
+            <NumberDisplay>{ads}</NumberDisplay>
+            <ProgressContainer>
+              {[...Array(maxAds)].map((_, index) => (
+                <ProgressBox key={index} filled={index < filledAds} />
+              ))}
+            </ProgressContainer>
+            <ModalText>لديك {ads} استخدامات متاحة يوميًا.</ModalText>
+            <UpgradeText>اشترك لتحصل على استخدام غير محدود!</UpgradeText>
+            <PrimaryButton onPress={handleWatchAds}>
+              <PrimaryButtonText>مشاهدة اعلان </PrimaryButtonText>
+              <ExpoImage
+                source={AdsImage}
+                style={{ width: 22, height: 22, marginLeft: 6 }}
+              />
+            </PrimaryButton>
+            <SecondaryButton onPress={handleSubscription}>
+              <SecondaryButtonText>اشترك</SecondaryButtonText>
+              <ExpoImage
+                source={PremiumImage}
+                style={{ width: 22, height: 22, marginLeft: 6 }}
+              />
+            </SecondaryButton>
+          </ModalContent>
+        </ModalSecContainer>
+      </StyledSecModal>
     </SafeAreaView>
   );
 };
@@ -128,7 +192,7 @@ const Create = () => {
 const VocabularyContent = ({
   selectedLevel,
   onCardPress,
-  handleAdShowAndNavigate,
+  handleNavigation,
 }) => (
   <StyledScrollView>
     <HorizontalCardList
@@ -146,18 +210,14 @@ const VocabularyContent = ({
           imagePath={word.imagePath}
           navigateTo={word.navigateTo}
           set={word.set}
-          handleAdShowAndNavigate={handleAdShowAndNavigate}
+          handleNavigation={handleNavigation}
         />
       ))}
     </SavedWords>
   </StyledScrollView>
 );
 
-const GrammarContent = ({
-  selectedLevel,
-  onCardPress,
-  handleAdShowAndNavigate,
-}) => (
+const GrammarContent = ({ selectedLevel, onCardPress, handleNavigation }) => (
   <StyledScrollView>
     <HorizontalCardList
       data={data.grammarLevels}
@@ -174,7 +234,7 @@ const GrammarContent = ({
           imagePath={word.imagePath}
           navigateTo={word.navigateTo}
           set={word.set}
-          handleAdShowAndNavigate={handleAdShowAndNavigate}
+          handleNavigation={handleNavigation}
         />
       ))}
     </SavedWords>
@@ -187,10 +247,10 @@ const WordItem = ({
   imagePath,
   navigateTo,
   set,
-  handleAdShowAndNavigate,
+  handleNavigation,
 }) => {
   const handleCategoryPress = () => {
-    handleAdShowAndNavigate(navigateTo, set, text);
+    handleNavigation(navigateTo, set, text);
   };
 
   return (
@@ -354,6 +414,119 @@ const SavedWordsHeader = styled.Text`
   text-align: right;
   color: #106dee;
   font-weight: 500;
+`;
+
+/* Modal Styled Components */
+const StyledSecModal = styled.Modal``;
+
+const ModalSecContainer = styled.View`
+  flex: 1;
+  justify-content: flex-end;
+  background-color: rgba(0, 0, 0, 0.5);
+`;
+
+const ModalContent = styled.View`
+  background-color: white;
+  padding: 20px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+`;
+
+const ModalSecHeader = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 15px;
+  margin-left: 30px;
+  height: 50px;
+`;
+
+const CrossButtonAds = styled.TouchableOpacity`
+  position: absolute;
+  left: 0;
+  z-index: 1;
+`;
+
+const CrossIcon = styled(ExpoImage)`
+  width: 25px;
+  height: 25px;
+  margin-right: 15px;
+`;
+
+const ModalTitleCentered = styled.Text`
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  flex: 1;
+  color: #4c47e9;
+`;
+
+const NumberDisplay = styled.Text`
+  font-size: 48px;
+  font-weight: bold;
+  color: #4c47e9;
+  text-align: center;
+  margin-bottom: 10px;
+`;
+
+const ProgressContainer = styled.View`
+  flex-direction: row;
+  justify-content: center;
+  margin-bottom: 10px;
+`;
+
+const ProgressBox = styled.View`
+  width: 40px;
+  height: 10px;
+  margin: 0 5px;
+  background-color: ${({ filled }) => (filled ? "#4c47e9" : "#d3d3d3")};
+  border-radius: 4px;
+`;
+
+const ModalText = styled.Text`
+  font-size: 16px;
+  color: #4c4f69;
+  text-align: center;
+  margin-bottom: 20px;
+`;
+
+const UpgradeText = styled.Text`
+  font-size: 16px;
+  color: #4c4f69;
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: bold;
+`;
+
+const ActionButton = styled.TouchableOpacity`
+  width: 100%;
+  padding: 15px;
+  border-radius: 25px;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-direction: row;
+  justify-content: center;
+`;
+
+const PrimaryButton = styled(ActionButton)`
+  background-color: #4c47e9;
+`;
+
+const PrimaryButtonText = styled.Text`
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+`;
+
+const SecondaryButton = styled(ActionButton)`
+  background-color: #f5c853;
+`;
+
+const SecondaryButtonText = styled.Text`
+  color: #805c19;
+  font-size: 18px;
+  font-weight: bold;
 `;
 
 export default Create;

@@ -1,18 +1,27 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components/native";
-import { SafeAreaView, ScrollView, Alert } from "react-native";
+import {
+  SafeAreaView,
+  ScrollView,
+  View,
+  Alert,
+  Modal,
+  TouchableOpacity,
+} from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 import { router } from "expo-router";
 import categories from "../utils/categories.json";
-import { InterstitialAd, AdEventType } from "react-native-google-mobile-ads";
 import { useSelector, useDispatch } from "react-redux";
-import { selectScore, updateScore } from "../redux/scoreSlice"; // Import selectScore and updateScore
-import { selectExercise, updateExercise } from "../redux/exerciseSlice"; // Import selectExercise and updateScore
+import { selectScore } from "../redux/scoreSlice";
+import { selectExercise } from "../redux/exerciseSlice";
+import { fetchAds, selectAds } from "../redux/adsSlice";
+import { Image as ExpoImage } from "expo-image";
+import AdsImage from "../../assets/icons/ads.png";
+import PremiumImage from "../../assets/icons/premium.png";
 
-const adUnitId = "ca-app-pub-7167740558520278/7250402342";
-const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
-  requestNonPersonalizedAdsOnly: true,
-});
+// Styled Components
+
 const Container = styled.View`
   flex: 1;
   background-color: #fff;
@@ -53,6 +62,22 @@ const CategoryItemContainer = styled.TouchableOpacity`
   shadow-offset: 0px 4px;
   shadow-opacity: 0.15;
   shadow-radius: 1.5px;
+  position: relative;
+  opacity: ${(props) =>
+    props.disabled ? 0.5 : 1}; /* Adjust opacity for locked lessons */
+`;
+
+const CheckmarkContainer = styled.View`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+`;
+
+const IconImage = styled.Image`
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
 `;
 
 const CategoryTextContainer = styled.View`
@@ -135,11 +160,119 @@ const ChatIcon = styled.Image`
   height: 24px;
 `;
 
-const IconImage = styled.Image`
-  width: 50px;
-  height: 50px;
-  border-radius: 10px;
+const StyledSecModal = styled.Modal``;
+
+const ModalSecContainer = styled.View`
+  flex: 1;
+  justify-content: flex-end;
+  background-color: rgba(0, 0, 0, 0.5);
 `;
+
+const ModalContent = styled.View`
+  background-color: white;
+  padding: 20px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+`;
+
+const ModalSecHeader = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 15px;
+  margin-left: 30px;
+  height: 50px;
+`;
+
+const CrossButtonAds = styled.TouchableOpacity`
+  position: absolute;
+  left: 0;
+  z-index: 1;
+`;
+
+const CrossIcon = styled(ExpoImage)`
+  width: 25px;
+  height: 25px;
+  margin-right: 15px;
+`;
+
+const ModalTitleCentered = styled.Text`
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  flex: 1;
+  color: #4c47e9;
+`;
+
+const NumberDisplay = styled.Text`
+  font-size: 48px;
+  font-weight: bold;
+  color: #4c47e9;
+  text-align: center;
+  margin-bottom: 10px;
+`;
+
+const ProgressContainer = styled.View`
+  flex-direction: row;
+  justify-content: center;
+  margin-bottom: 10px;
+`;
+
+const ProgressBox = styled.View`
+  width: 40px;
+  height: 10px;
+  margin: 0 5px;
+  background-color: ${({ filled }) => (filled ? "#4c47e9" : "#d3d3d3")};
+  border-radius: 4px;
+`;
+
+const ModalText = styled.Text`
+  font-size: 16px;
+  color: #4c4f69;
+  text-align: center;
+  margin-bottom: 20px;
+`;
+
+const UpgradeText = styled.Text`
+  font-size: 16px;
+  color: #4c4f69;
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: bold;
+`;
+
+const ActionButton = styled.TouchableOpacity`
+  width: 100%;
+  padding: 15px;
+  border-radius: 25px;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-direction: row;
+  justify-content: center;
+`;
+
+const PrimaryButton = styled(ActionButton)`
+  background-color: #4c47e9;
+`;
+
+const PrimaryButtonText = styled.Text`
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+`;
+
+const SecondaryButton = styled(ActionButton)`
+  background-color: #f5c853;
+`;
+
+const SecondaryButtonText = styled.Text`
+  color: #805c19;
+  font-size: 18px;
+  font-weight: bold;
+`;
+
+// Stories Component
 
 const Stories = () => {
   const [activeTab, setActiveTab] = useState("stories");
@@ -148,38 +281,77 @@ const Stories = () => {
   const score = useSelector(selectScore);
   const exercise = useSelector(selectExercise);
   const dispatch = useDispatch();
-  // Access the currentUser directly from Redux
   const currentUser = useSelector((state) => state.user.currentUser);
-  const isPaid = currentUser?.isPaid; // Access the isPaid status
+  const isPaid = currentUser?.isPaid;
+  const userId = currentUser?._id;
+
+  const [secondModalVisible, setSecondModalVisible] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const ads = useSelector(selectAds);
+  const maxAds = 3;
+  const filledAds = Math.min(ads, maxAds);
 
   useEffect(() => {
-    const loadInterstitialAd = () => {
-      interstitial.load();
-    };
-    loadInterstitialAd();
-  }, []);
-  const handleCategoryPress = (category) => {
-    if (!isPaid) {
-      // User is not paid, show interstitial ad
-      if (interstitial.loaded) {
-        interstitial.show();
-      } else {
-        Alert.alert("Ad not ready yet", "Please try again in a few seconds.");
+    const loadAds = async () => {
+      if (userId) {
+        try {
+          await dispatch(fetchAds(userId)).unwrap();
+        } catch (err) {
+          console.error("Failed to load ads data. Please try again.");
+        }
       }
-      interstitial.addAdEventListener(AdEventType.CLOSED, () => {
-        // Navigate to the exercise after the ad is closed
-        router.push({
-          pathname: category.navigateTo,
-          params: { set: category.set },
-        });
-      });
+    };
+
+    loadAds();
+  }, [dispatch, userId]);
+
+  const handleCategoryPress = (category, index) => {
+    const completedCount = activeTab === "stories" ? score : exercise;
+    const isUnlocked = index <= completedCount;
+
+    if (!isUnlocked) {
+      Alert.alert(
+        "الدروس مغلقة",
+        "يجب عليك إكمال الدرس السابق لفتح هذا الدرس.",
+        [{ text: "حسنًا" }]
+      );
+      return;
+    }
+
+    if (!isPaid && category.set !== "set1") {
+      setSelectedCategory(category);
+      setSecondModalVisible(true);
     } else {
-      // If the user is paid, proceed directly to the exercise
       router.push({
         pathname: category.navigateTo,
         params: { set: category.set },
       });
     }
+  };
+
+  const handleWatchAds = async () => {
+    if (ads > 0) {
+      setSecondModalVisible(false);
+      router.push({
+        pathname: "/ads",
+        params: {
+          lessonUrl: selectedCategory.navigateTo,
+          set: selectedCategory.set,
+        },
+      });
+    } else {
+      Alert.alert(
+        "تم الوصول إلى الحد اليومي",
+        "يمكنك أخذ الدروس مرة أخرى خلال 24 ساعة أو الاشتراك.",
+        [{ text: "حسنًا" }]
+      );
+    }
+  };
+
+  const handleSubscription = () => {
+    setSecondModalVisible(false);
+    router.push("subscription");
   };
 
   const final = score + exercise;
@@ -223,35 +395,92 @@ const Stories = () => {
         </BoxCon>
 
         <ScrollView>
-          {data.map((category, index) => (
-            <CategoryItemContainer
-              key={index}
-              borderColor={category.borderColor}
-              onPress={() => handleCategoryPress(category)}
-            >
-              <IconImage source={{ uri: category.icon }} />
-              <CategoryTextContainer>
-                <CategoryText>{category.title}</CategoryText>
-                <CatText>{category.subTitle}</CatText>
-              </CategoryTextContainer>
+          {data.map((category, index) => {
+            const completedCount = activeTab === "stories" ? score : exercise;
+            const isCompleted = index < completedCount;
+            const isUnlocked = index <= completedCount;
 
-              {category.locked ? (
-                <FontAwesome
-                  name="lock"
-                  size={24}
-                  color={category.borderColor}
-                />
-              ) : (
-                <FontAwesome
-                  name="unlock"
-                  size={24}
-                  color={category.borderColor}
-                />
-              )}
-            </CategoryItemContainer>
-          ))}
+            return (
+              <CategoryItemContainer
+                key={index}
+                borderColor={category.borderColor}
+                isCompleted={isCompleted}
+                onPress={() => handleCategoryPress(category, index)}
+                disabled={!isUnlocked} // Disable press if locked
+              >
+                {isCompleted && (
+                  <CheckmarkContainer>
+                    <AntDesign name="checkcircle" size={24} color="#00FF00" />
+                  </CheckmarkContainer>
+                )}
+                <IconImage source={{ uri: category.icon }} />
+                <CategoryTextContainer>
+                  <CategoryText>{category.title}</CategoryText>
+                  <CatText>{category.subTitle}</CatText>
+                </CategoryTextContainer>
+
+                {isUnlocked ? (
+                  <FontAwesome
+                    name="unlock"
+                    size={24}
+                    color={category.borderColor}
+                  />
+                ) : (
+                  <FontAwesome
+                    name="lock"
+                    size={24}
+                    color={category.borderColor}
+                  />
+                )}
+              </CategoryItemContainer>
+            );
+          })}
         </ScrollView>
       </Container>
+
+      {/* Ads Modal */}
+      <StyledSecModal
+        animationType="slide"
+        transparent={true}
+        visible={secondModalVisible}
+        onRequestClose={() => setSecondModalVisible(false)}
+      >
+        <ModalSecContainer>
+          <ModalContent>
+            <ModalSecHeader>
+              <CrossButtonAds onPress={() => setSecondModalVisible(false)}>
+                <CrossIcon
+                  source={require("../../assets/icons/grayCross.png")}
+                />
+              </CrossButtonAds>
+              <ModalTitleCentered>الحد اليومي</ModalTitleCentered>
+              <View style={{ width: 40 }} />
+            </ModalSecHeader>
+            <NumberDisplay>{ads}</NumberDisplay>
+            <ProgressContainer>
+              {[...Array(maxAds)].map((_, index) => (
+                <ProgressBox key={index} filled={index < filledAds} />
+              ))}
+            </ProgressContainer>
+            <ModalText>لديك {ads} استخدامات متاحة يوميًا.</ModalText>
+            <UpgradeText>اشترك لتحصل على استخدام غير محدود!</UpgradeText>
+            <PrimaryButton onPress={handleWatchAds}>
+              <PrimaryButtonText>مشاهدة اعلان </PrimaryButtonText>
+              <ExpoImage
+                source={AdsImage}
+                style={{ width: 22, height: 22, marginLeft: 6 }}
+              />
+            </PrimaryButton>
+            <SecondaryButton onPress={handleSubscription}>
+              <SecondaryButtonText>اشترك</SecondaryButtonText>
+              <ExpoImage
+                source={PremiumImage}
+                style={{ width: 22, height: 22, marginLeft: 6 }}
+              />
+            </SecondaryButton>
+          </ModalContent>
+        </ModalSecContainer>
+      </StyledSecModal>
     </SafeAreaView>
   );
 };

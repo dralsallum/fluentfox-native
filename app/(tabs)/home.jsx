@@ -1,46 +1,29 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchUnlockedSets } from "../redux/lessonsSlice";
-import { useFocusEffect } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { fetchAds, selectAds } from "../redux/adsSlice"; // Removed updateAdsThunk
 import {
   TouchableOpacity,
   View,
-  Alert,
   ScrollView,
   Dimensions,
   Animated,
   Linking,
   Platform,
+  Alert,
 } from "react-native";
 import { router } from "expo-router";
 import chapterItems from "../utils/chapterItems";
 import CustomLoadingIndicator from "../components/LoadingIndicator";
 import Navbar from "../components/navigation/navbar";
-const screenWidth = Dimensions.get("window").width;
 import styled from "styled-components/native";
 import { Image as ExpoImage } from "expo-image";
-import * as StoreReview from "expo-store-review";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import placeholderImage from "../../assets/images/placeholder.webp";
+import AdsImage from "../../assets/icons/ads.png";
+import PremiumImage from "../../assets/icons/premium.png"; // Ensure you have these icons
 
-const openStoreReviewPage = async () => {
-  const isAvailable = await StoreReview.isAvailableAsync();
-  if (isAvailable) {
-    await StoreReview.requestReview();
-  } else {
-    const appStoreId = "6673901781";
-    const playStoreId = "your-play-store-id";
-    if (Platform.OS === "ios") {
-      Linking.openURL(
-        `itms-apps://itunes.apple.com/app/id${appStoreId}?action=write-review`
-      );
-    } else {
-      Linking.openURL(
-        `itms-apps://itunes.apple.com/app/id${appStoreId}?action=write-review`
-      );
-    }
-  }
-};
+const screenWidth = Dimensions.get("window").width;
 
 const LoadingAll = styled.View`
   flex: 1;
@@ -61,7 +44,7 @@ const QueMa = styled.View`
   width: 100%;
 `;
 
-const QueWra = styled(ScrollView)`
+const QueWra = styled.ScrollView`
   flex: 1;
 `;
 
@@ -355,6 +338,8 @@ const QueChaPic = styled(ExpoImage)`
   width: 100%;
   height: 100%;
   border-radius: 50px;
+  /* Ensure the image is contained */
+  resize-mode: contain;
 `;
 
 const QueChaPicMai = styled.View`
@@ -523,6 +508,8 @@ const ActionButton = styled.TouchableOpacity`
   border-radius: 25px;
   align-items: center;
   margin-bottom: 10px;
+  flex-direction: row; /* Added to align icon and text horizontally */
+  justify-content: center; /* Center the content */
 `;
 
 const PrimaryButton = styled(ActionButton)`
@@ -531,17 +518,18 @@ const PrimaryButton = styled(ActionButton)`
 
 const PrimaryButtonText = styled.Text`
   color: white;
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: bold;
 `;
 
 const SecondaryButton = styled(ActionButton)`
-  background-color: transparent;
-  border: 1px solid #4c47e9;
+  background-color: #f5c853;
 `;
 
 const SecondaryButtonText = styled.Text`
-  color: #4c47e9;
-  font-size: 16px;
+  color: #805c19;
+  font-size: 18px;
+  font-weight: bold;
 `;
 
 const ModalSecContainer = styled.View`
@@ -550,10 +538,58 @@ const ModalSecContainer = styled.View`
   background-color: rgba(0, 0, 0, 0.5);
 `;
 
+const ModalTitleCentered = styled.Text`
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  flex: 1;
+  color: #4c47e9;
+`;
+
 const ModalSecHeader = styled.View`
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  justify-content: center;
+  position: relative;
   margin-bottom: 15px;
+  margin-left: 30px;
+  height: 50px;
+`;
+
+const CrossButtonAds = styled.TouchableOpacity`
+  position: absolute;
+  left: 0;
+  z-index: 1;
+`;
+
+const NumberDisplay = styled.Text`
+  font-size: 48px;
+  font-weight: bold;
+  color: #4c47e9;
+  text-align: center;
+  margin-bottom: 10px;
+`;
+
+const ProgressContainer = styled.View`
+  flex-direction: row;
+  justify-content: center;
+  margin-bottom: 10px;
+`;
+
+const ProgressBox = styled.View`
+  width: 40px;
+  height: 10px;
+  margin: 0 5px;
+  background-color: ${({ filled }) => (filled ? "#4c47e9" : "#d3d3d3")};
+  border-radius: 4px;
+`;
+
+const UpgradeText = styled.Text`
+  font-size: 16px;
+  color: #4c4f69;
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: bold;
 `;
 
 const filterChaptersByLevel = (level) => {
@@ -591,16 +627,19 @@ const ChapterItem = ({
   lessonId,
   set,
   isUnlocked,
+  setSecondModalVisible,
+  setSelectedLessonUrl,
+  setSelectedLessonSet,
 }) => {
-  const isPaid = useSelector((state) => state.user.currentUser?.isPaid); // Access the isPaid status
+  const isPaid = useSelector((state) => state.user.currentUser?.isPaid);
 
   const handlePress = () => {
     if (isUnlocked && set) {
-      if (!isPaid && set !== "set1") {
-        // Redirect to subscription page if not paid and not set1
-        router.push("subscription");
+      if (!isPaid) {
+        setSelectedLessonUrl(url);
+        setSelectedLessonSet(set);
+        setSecondModalVisible(true);
       } else {
-        // Navigate to the URL
         router.push({ pathname: url, params: { set } });
       }
     }
@@ -631,10 +670,9 @@ const ChapterItem = ({
               </QueChaPicCon>
 
               <QueChaPicSec>
+                {/* Use placeholder image if imgSrc is not provided */}
                 <QueChaPic
-                  source={{
-                    uri: imgSrc,
-                  }}
+                  source={imgSrc ? { uri: imgSrc } : placeholderImage}
                   contentFit="contain"
                   cachePolicy="memory"
                   placeholder={placeholderImage}
@@ -662,8 +700,15 @@ const ChapterItem = ({
   );
 };
 
-const Chapter = ({ chapterNumber, chapterItems }) => {
-  const unlockedSets = useSelector((state) => state.lessons.unlockedSets); // Use Redux state
+// Chapter Component (as defined earlier)
+const Chapter = ({
+  chapterNumber,
+  chapterItems,
+  setSecondModalVisible,
+  setSelectedLessonUrl,
+  setSelectedLessonSet,
+}) => {
+  const unlockedSets = useSelector((state) => state.lessons.unlockedSets);
   const totalLessons = chapterItems.length;
   const completedLessonsCount = unlockedSets[chapterNumber]?.length || 0;
   const lastUnlockedLessonId = unlockedSets[chapterNumber]?.slice(-1)[0];
@@ -704,6 +749,9 @@ const Chapter = ({ chapterNumber, chapterItems }) => {
           set={item.set}
           isUnlocked={unlockedSets[chapterNumber]?.includes(item.lessonId)}
           isLastUnlocked={item.lessonId === lastUnlockedLessonId}
+          setSecondModalVisible={setSecondModalVisible}
+          setSelectedLessonUrl={setSelectedLessonUrl}
+          setSelectedLessonSet={setSelectedLessonSet}
         />
       ))}
     </QueChaOneCon>
@@ -713,14 +761,34 @@ const Chapter = ({ chapterNumber, chapterItems }) => {
 const Home = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [secondModalVisible, setSecondModalVisible] = useState(false);
-  const [selectedLevel, setSelectedLevel] = useState("مبتدى أ١"); // Default level
+  const [selectedLevel, setSelectedLevel] = useState("مبتدى أ١");
   const unlockedSets = useSelector((state) => state.lessons.unlockedSets);
   const userId = useSelector((state) => state.user.currentUser?._id);
   const isPaid = useSelector((state) => state.user.currentUser?.isPaid);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const userXp = useSelector((state) => state.user.currentUser?.xp ?? 0);
+  const userXp = useSelector((state) => state.lessons.xp ?? 0);
+  const [selectedLessonUrl, setSelectedLessonUrl] = useState(null);
+  const [selectedLessonSet, setSelectedLessonSet] = useState(null);
+  const ads = useSelector(selectAds);
+  const maxAds = 3;
+  const filledAds = Math.min(ads, maxAds);
+  const [hasRatedApp, setHasRatedApp] = useState(false);
+
+  useEffect(() => {
+    const loadHasRatedApp = async () => {
+      try {
+        const value = await AsyncStorage.getItem("hasRatedApp");
+        if (value !== null) {
+          setHasRatedApp(value === "true");
+        }
+      } catch (e) {
+        // Handle error if needed
+      }
+    };
+    loadHasRatedApp();
+  }, []);
 
   const scaleValue = useRef(new Animated.Value(1)).current;
   useEffect(() => {
@@ -739,51 +807,65 @@ const Home = () => {
     Animated.loop(scaling).start();
   }, [scaleValue]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      const checkIfShouldShowReview = async () => {
-        if (userXp >= 5 && (userXp - 5) % 10 === 0) {
-          try {
-            const hasRatedApp = await AsyncStorage.getItem("hasRatedApp");
-            if (!hasRatedApp) {
-              await openStoreReviewPage();
-              await AsyncStorage.setItem("hasRatedApp", "true");
-            }
-          } catch (e) {
-            console.error("Error checking if user has rated the app", e);
-          }
-        }
-      };
-      checkIfShouldShowReview();
-    }, [userXp])
-  );
+  const openStoreReviewPage = async () => {
+    const appStoreId = "6673901781";
+    const playStoreId = "your-play-store-id";
+    if (Platform.OS === "ios") {
+      Linking.openURL(
+        `itms-apps://itunes.apple.com/app/id${appStoreId}?action=write-review`
+      );
+    } else {
+      Linking.openURL(`market://details?id=${playStoreId}`);
+    }
+
+    // Set hasRatedApp to true and save it
+    setHasRatedApp(true);
+    try {
+      await AsyncStorage.setItem("hasRatedApp", "true");
+    } catch (e) {
+      // Handle error if needed
+    }
+  };
 
   useEffect(() => {
-    if (userId) {
-      dispatch(fetchUnlockedSets(userId))
-        .then(() => setLoading(false))
-        .catch((err) => {
-          setError("Failed to load data. Please try again.");
-          setLoading(false);
-        });
+    if ([3, 8, 13].includes(userXp) && !hasRatedApp) {
+      openStoreReviewPage();
     }
+  }, [userXp, hasRatedApp]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (userId) {
+        try {
+          // Dispatch fetchUnlockedSets and wait for it to complete
+          await dispatch(fetchUnlockedSets(userId)).unwrap();
+        } catch (err) {
+          setError("Failed to load lessons data. Please try again.");
+        }
+
+        try {
+          // Dispatch fetchAds and wait for it to complete
+          await dispatch(fetchAds(userId)).unwrap();
+        } catch (err) {
+          setError("Failed to load ads data. Please try again.");
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadData();
   }, [dispatch, userId]);
 
   const handleToggleModal = () => {
     setModalVisible(!modalVisible);
   };
   const handleCloseSecondModal = () => {
-    setSecondModalVisible(!secondModalVisible);
+    setSecondModalVisible(false);
   };
 
-  useEffect(() => {
-    if (!isPaid) {
-      setSecondModalVisible(true);
-    }
-  }, [isPaid]);
-
   const handleToggleSecondModal = () => {
-    setSecondModalVisible(!secondModalVisible);
+    setSecondModalVisible(false);
     router.push("subscription");
   };
   const handlePayment = () => {
@@ -793,6 +875,30 @@ const Home = () => {
   const handleSelectLevel = (level) => {
     setSelectedLevel(level);
     setModalVisible(false);
+  };
+
+  const handleWatchAds = async () => {
+    if (ads > 0) {
+      setSecondModalVisible(false);
+      // Navigate to the Ads screen where the ad is watched
+      router.push({
+        pathname: "/ads",
+        params: { lessonUrl: selectedLessonUrl, set: selectedLessonSet },
+      });
+
+      // No need to dispatch here unless you want to optimistically update
+    } else {
+      Alert.alert(
+        "تم الوصول إلى الحد اليومي",
+        "يمكنك أخذ الدروس مرة أخرى خلال 24 ساعة أو الاشتراك.",
+        [{ text: "حسنًا" }]
+      );
+    }
+  };
+
+  const handleSubscription = () => {
+    setSecondModalVisible(false);
+    router.push("subscription");
   };
 
   const filteredChapters = filterChaptersByLevel(selectedLevel);
@@ -882,7 +988,9 @@ const Home = () => {
                         key={chapterId}
                         chapterNumber={parseInt(chapterId, 10)}
                         chapterItems={currentChapterItems}
-                        unlockedSets={unlockedSets}
+                        setSecondModalVisible={setSecondModalVisible}
+                        setSelectedLessonUrl={setSelectedLessonUrl}
+                        setSelectedLessonSet={setSelectedLessonSet}
                       />
                     );
                   })}
@@ -893,7 +1001,7 @@ const Home = () => {
         </QueWra>
       </QueMa>
 
-      {/* Modal Popup */}
+      {/* Level Selection Modal */}
       <StyledModal
         animationType="slide"
         transparent={true}
@@ -933,26 +1041,50 @@ const Home = () => {
           </ModalContent>
         </ModalContainer>
       </StyledModal>
+
+      {/* Ads Modal */}
       <StyledSecModal
         animationType="slide"
         transparent={true}
         visible={secondModalVisible}
-        onRequestClose={handleToggleSecondModal}
+        onRequestClose={handleCloseSecondModal}
       >
         <ModalSecContainer>
           <ModalContent>
             <ModalSecHeader>
-              <CrownIcon source={require("../../assets/images/crown.png")} />
-              <ModalTitle>طور لغتك الإنجليزية</ModalTitle>
+              <CrossButtonAds onPress={handleCloseSecondModal}>
+                <CrossIcon
+                  source={require("../../assets/icons/grayCross.png")}
+                />
+              </CrossButtonAds>
+              <ModalTitleCentered>الحد اليومي</ModalTitleCentered>
+              {/* Optional: Add a placeholder to balance the layout */}
+              <View style={{ width: 40 }} />
             </ModalSecHeader>
-            <ModalText>
-              تعلم ما تحتاجه من خلال الوصول إلى الدورات المميزة المركزة فقط.
-            </ModalText>
-            <PrimaryButton onPress={handleToggleSecondModal}>
-              <PrimaryButtonText>احصل على خصم ٦٠%</PrimaryButtonText>
+            <NumberDisplay>{ads}</NumberDisplay>
+            <ProgressContainer>
+              {[...Array(maxAds)].map((_, index) => (
+                <ProgressBox
+                  key={index}
+                  filled={index < filledAds} // Fill based on ads count
+                />
+              ))}
+            </ProgressContainer>
+            <ModalText>لديك {ads} استخدامات متاحة يوميًا.</ModalText>
+            <UpgradeText>اشترك لتحصل على استخدام غير محدود!</UpgradeText>
+            <PrimaryButton onPress={handleWatchAds}>
+              <PrimaryButtonText>مشاهدة اعلان </PrimaryButtonText>
+              <ExpoImage
+                source={AdsImage}
+                style={{ width: 22, height: 22, marginLeft: 6 }}
+              />
             </PrimaryButton>
-            <SecondaryButton onPress={handleCloseSecondModal}>
-              <SecondaryButtonText>ليس الآن</SecondaryButtonText>
+            <SecondaryButton onPress={handleSubscription}>
+              <SecondaryButtonText>اشترك</SecondaryButtonText>
+              <ExpoImage
+                source={PremiumImage}
+                style={{ width: 22, height: 22, marginLeft: 6 }}
+              />
             </SecondaryButton>
           </ModalContent>
         </ModalSecContainer>

@@ -37,13 +37,58 @@
       "set": "set4"
     },
     {
-      "title": "سر البوصلة الذهبية",
+      "title": "البوصلة الذهبية",
       "subTitle": "حكاية عن مغامرة البحث عن الذهب",
       "borderColor": "#FFD700",
       "locked": true,
       "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/The+Mystery+of+the+Golden+Compass.jpg",
       "navigateTo": "listen",
       "set": "set5"
+    },
+    {
+      "title": "القناع الفضي",
+      "subTitle": "رحلة شاب لاكتشاف الشجاعة وإنقاذ قريته",
+      "borderColor": "#a0a0a0",
+      "locked": true,
+      "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/The_Silver_Mask.jpg",
+      "navigateTo": "listen",
+      "set": "set6"
+    },
+    {
+      "title": "الفتاة التي خدعت النهر",
+      "subTitle": "الصدق وعواقب الكذب",
+      "borderColor": "#c10000",
+      "locked": true,
+      "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/The_Girl_Who_Fooled_the_River.jpg",
+      "navigateTo": "listen",
+      "set": "set7"
+    },
+    {
+      "title": "الشجرة السحرية",
+      "subTitle": "قصة عن الطمع والصبر في مواجهة الإغراء",
+      "borderColor": "#228B22",
+      "locked": true,
+      "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/The_Magical_Tree.jpg",
+      "navigateTo": "listen",
+      "set": "set8"
+    },
+    {
+      "title": "رحلة عبر البرد",
+      "subTitle": "مواجهة قسوة الطبيعة والتعلم من الأخطاء",
+      "borderColor": "#4682B4",
+      "locked": true,
+      "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/The_Cold_Journey.jpg",
+      "navigateTo": "listen",
+      "set": "set9"
+    },
+    {
+      "title": "العبور إلى الجانب الآخر",
+      "subTitle": "الشجاعة واكتشاف الذات من خلال التغلب على المخاوف",
+      "borderColor": "#1E90FF",
+      "locked": true,
+      "icon": "https://alsallum.s3.eu-north-1.amazonaws.com/The_Passage_to_the_Other_Side.jpg",
+      "navigateTo": "listen",
+      "set": "set10"
     }
   ],
   "exercises": [

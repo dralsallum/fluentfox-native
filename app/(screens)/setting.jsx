@@ -358,7 +358,7 @@ const SettingsPage = () => {
         <HeaderTitle>الإعدادات</HeaderTitle>
         <BackButton onPress={handleBackPress}>
           <Image
-            source={require("../../assets/icons/back.png")}
+            source={require("../../assets/icons/forword.png")}
             style={{ width: 24, height: 24 }}
           />
         </BackButton>

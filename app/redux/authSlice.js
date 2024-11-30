@@ -3,6 +3,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { fetchUnlockedSets } from "./lessonsSlice";
 import { fetchScore, updateScore } from "./scoreSlice";
+import { fetchAds, updateAds } from "./adsSlice";
 import { fetchExercise, updateExercise } from "./exerciseSlice";
 
 // Thunk to update streak count
@@ -95,6 +96,9 @@ export const login = createAsyncThunk(
 
       // Dispatch fetchScore to get the user's score
       thunkAPI.dispatch(fetchScore(response.data._id));
+
+      // Dispatch fetchScore to get the user's score
+      thunkAPI.dispatch(fetchAds(response.data._id));
 
       // Dispatch fetchExercise to get the user's score
       thunkAPI.dispatch(fetchExercise(response.data._id));
@@ -260,8 +264,9 @@ const userSlice = createSlice({
 // Export the actions
 export const { clearState, signOut, setUser } = userSlice.actions;
 
-// Selector to get user state
+// **Selectors**
 export const userSelector = (state) => state.user;
+export const selectCurrentUser = (state) => state.user.currentUser;
 
 // Export the reducer
 export default userSlice.reducer;

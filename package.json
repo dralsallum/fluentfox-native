@@ -19,7 +19,7 @@
     "@expo/metro-config": "~0.18.11",
     "@expo/prebuild-config": "~7.0.0",
     "@expo/vector-icons": "^14.0.2",
-    "@react-native-async-storage/async-storage": "1.23.1",
+    "@react-native-async-storage/async-storage": "^2.0.0",
     "@react-native-picker/picker": "2.7.5",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/stack": "^6.4.1",
@@ -63,12 +63,13 @@
     "react-native-swiper": "^1.6.0",
     "react-native-tracking-transparency": "^0.1.2",
     "react-native-tts": "^4.1.1",
+    "react-native-video": "^6.7.0",
     "react-native-web": "~0.19.12",
     "react-redux": "^9.1.2",
     "redux": "^5.0.1",
+    "redux-persist": "^6.0.0",
     "styled-components": "^6.1.13",
-    "typescript": "~5.3.3",
-    "expo-linear-gradient": "~13.0.2"
+    "typescript": "~5.3.3"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

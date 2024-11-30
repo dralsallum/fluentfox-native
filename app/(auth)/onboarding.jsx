@@ -9,6 +9,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { register, clearState } from "../redux/authSlice";
@@ -16,6 +17,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Notifications from "expo-notifications";
 import * as WebBrowser from "expo-web-browser";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNotification } from "../redux/NotificationContext";
 
 export const SafeArea = styled.SafeAreaView`
@@ -251,6 +253,7 @@ const questions = [
 const Onboarding = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(null);
+  const [needTestFirst, setNeedTestFirst] = useState(false);
   const [inputs, setInputs] = useState({
     username: "",
     email: "",
@@ -263,6 +266,11 @@ const Onboarding = () => {
   const { isFetching, isError, errorMessage, isSuccess } = useSelector(
     (state) => state.user
   );
+
+  const capitalizeFirstLetter = (text) => {
+    if (!text) return "";
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  };
 
   // Use the useNotification hook to get expoPushToken
   const { notification, expoPushToken, error } = useNotification();
@@ -294,11 +302,11 @@ const Onboarding = () => {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else if (currentQuestion.isSignUp) {
       if (!termsAccepted) {
-        alert("يجب قبول الشروط والأحكام للمتابعة.");
+        Alert.alert("التحقق مطلوب", "يجب قبول الشروط والأحكام للمتابعة.");
         return;
       }
       if (!inputs.username || !inputs.email || !inputs.password) {
-        alert("يرجى ملء جميع الحقول المطلوبة.");
+        Alert.alert("حقول ناقصة", "يرجى ملء جميع الحقول المطلوبة.");
         return;
       }
 
@@ -308,13 +316,71 @@ const Onboarding = () => {
         expoPushToken: expoPushToken || null, // Handle cases where token might not be available
       };
 
-      dispatch(register(registrationData));
+      // Dispatch the register action
+      const resultAction = await dispatch(register(registrationData));
+
+      if (register.fulfilled.match(resultAction)) {
+        // Save the username to AsyncStorage
+        try {
+          const storedAccounts = await AsyncStorage.getItem("savedAccounts");
+          let parsedAccounts = storedAccounts ? JSON.parse(storedAccounts) : [];
+
+          // Capitalize the first letter of the username
+          const capitalizeFirstLetter = (text) => {
+            if (!text) return "";
+            return text.charAt(0).toUpperCase() + text.slice(1);
+          };
+          const newUsername = capitalizeFirstLetter(inputs.username);
+
+          // Check if the username already exists
+          const accountExists = parsedAccounts.some(
+            (account) => account.username === newUsername
+          );
+
+          if (!accountExists) {
+            const updatedAccounts = [
+              ...parsedAccounts,
+              { username: newUsername },
+            ];
+            await AsyncStorage.setItem(
+              "savedAccounts",
+              JSON.stringify(updatedAccounts)
+            );
+          }
+        } catch (error) {
+          console.error("Error saving account to AsyncStorage:", error);
+          Alert.alert(
+            "خطأ",
+            "حدث خطأ أثناء حفظ الحساب. يرجى المحاولة مرة أخرى."
+          );
+          return;
+        }
+
+        // Navigate based on needTestFirst
+        if (needTestFirst) {
+          router.push("test");
+        } else {
+          router.push("home");
+        }
+        dispatch(clearState());
+      } else {
+        // Handle registration failure
+        Alert.alert("فشل التسجيل", resultAction.payload || "حدث خطأ.");
+      }
     } else if (selectedOptionIndex !== null) {
+      // Check if the current question is "مرحبًا، كم تعرف من اللغة الإنجليزية؟"
+      if (currentQuestion.question === "مرحبًا، كم تعرف من اللغة الإنجليزية؟") {
+        const selectedOption = currentQuestion.options[selectedOptionIndex];
+        if (selectedOption.text === "أعرف بعض الإنجليزية") {
+          setNeedTestFirst(true);
+        } else {
+          setNeedTestFirst(false); // Ensure it's false if another option is selected
+        }
+      }
+
       if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
         setSelectedOptionIndex(null);
-      } else {
-        router.push("home");
       }
     }
   };
@@ -332,7 +398,10 @@ const Onboarding = () => {
     try {
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== "granted") {
-        alert("إذن الإشعارات غير ممنوح. يمكنك تفعيلها في الإعدادات.");
+        Alert.alert(
+          "إذن الإشعارات",
+          "إذن الإشعارات غير ممنوح. يمكنك تفعيلها في الإعدادات."
+        );
       }
       // The useNotification hook should handle obtaining the token
     } catch (err) {
@@ -403,8 +472,12 @@ const Onboarding = () => {
                       placeholderTextColor="#888"
                       value={inputs.username}
                       onChangeText={(text) =>
-                        handleInputChange("username", text)
+                        handleInputChange(
+                          "username",
+                          capitalizeFirstLetter(text)
+                        )
                       }
+                      autoCapitalize="none"
                     />
                   </InputContainer>
                   <InputContainer>

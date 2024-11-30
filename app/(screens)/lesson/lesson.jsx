@@ -101,6 +101,27 @@ import { Audio } from "expo-av";
 import CustomLoadingIndicator from "../../components/LoadingIndicator";
 import { userSelector } from "../../redux/authSlice";
 
+let samanthaVoice = null;
+
+const getSamanthaVoice = async () => {
+  if (samanthaVoice) {
+    return samanthaVoice;
+  }
+  const voices = await Speech.getAvailableVoicesAsync();
+  samanthaVoice = voices.find((voice) => voice.name.includes("Samantha"));
+  return samanthaVoice;
+};
+
+const speakSentence = async (sentence) => {
+  const selectedVoice = await getSamanthaVoice();
+  const speechOptions = {
+    rate: 0.9,
+    pitch: 1.0,
+    voice: selectedVoice?.identifier,
+  };
+  Speech.speak(sentence, speechOptions);
+};
+
 const WriteAnswerQuestion = ({
   currentQuestion,
   userAnswer,
@@ -108,7 +129,7 @@ const WriteAnswerQuestion = ({
 }) => {
   useEffect(() => {
     if (/^[a-zA-Z\s]+$/.test(currentQuestion.sentence)) {
-      Speech.speak(currentQuestion.sentence);
+      speakSentence(currentQuestion.sentence);
     }
   }, [currentQuestion.sentence]);
 
@@ -150,7 +171,7 @@ const MultipleQuestion = ({
 }) => {
   useEffect(() => {
     if (/^[a-zA-Z\s]+$/.test(currentQuestion.sentence)) {
-      Speech.speak(currentQuestion.sentence);
+      speakSentence(currentQuestion.sentence);
     }
   }, [currentQuestion.sentence]);
 
@@ -211,20 +232,19 @@ const RegularQuestion = ({
 }) => {
   useEffect(() => {
     if (/^[a-zA-Z\s]+$/.test(currentQuestion.sentence)) {
-      Speech.speak(currentQuestion.sentence);
+      speakSentence(currentQuestion.sentence);
     }
   }, [currentQuestion.sentence]);
 
   const handleSpeakerPress = () => {
-    Speech.speak(currentQuestion.sentence);
+    speakSentence(currentQuestion.sentence);
   };
 
-  const handleOptionPress = (index) => {
+  const handleOptionPress = async (index) => {
     const selectedAnswerText = currentQuestion.answerOptions[index].answerText;
 
-    // Check if the text is in English
     if (/^[a-zA-Z\s]+$/.test(selectedAnswerText)) {
-      Speech.speak(selectedAnswerText);
+      await speakSentence(selectedAnswerText);
     }
 
     handleOptionSelect(index);
@@ -296,20 +316,14 @@ const RealQuestion = ({
   handleOptionSelect,
   showResult,
 }) => {
-  const speakSentence = () => {
-    if (currentQuestion.sentence) {
-      Speech.speak(currentQuestion.sentence);
-    }
-  };
-
   useEffect(() => {
     if (currentQuestion.sentence) {
-      speakSentence();
+      speakSentence(currentQuestion.sentence);
     }
   }, [currentQuestion.sentence]);
 
   const handleSpeakerPress = () => {
-    Speech.speak(currentQuestion.sentence);
+    speakSentence(currentQuestion.sentence);
   };
 
   return (
@@ -362,18 +376,15 @@ const ImageQuizQuestion = ({
   handleOptionSelect,
   showResult,
 }) => {
-  const speakSentence = () => {
-    if (currentQuestion.sentence) {
-      Speech.speak(currentQuestion.sentence);
-    }
-  };
-
-  // Automatically speak the sentence when the question is loaded
   useEffect(() => {
     if (currentQuestion.sentence) {
-      speakSentence();
+      speakSentence(currentQuestion.sentence);
     }
   }, [currentQuestion.sentence]);
+
+  const handleSpeakerPress = () => {
+    speakSentence(currentQuestion.sentence);
+  };
 
   return (
     <>
@@ -416,6 +427,7 @@ const ImageQuizQuestion = ({
 
 const Lesson = () => {
   const [questions, setQuestions] = useState([]);
+  const [explanation, setExplanation] = useState("");
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(null);
   const [selectedOptions, setSelectedOptions] = useState([]);
@@ -442,7 +454,6 @@ const Lesson = () => {
   const { currentUser } = useSelector(userSelector);
 
   useEffect(() => {
-    // Fetch user data from Redux store
     if (currentUser?.streakCount) {
       setStreakCount(currentUser.streakCount);
     }
@@ -450,7 +461,6 @@ const Lesson = () => {
 
   const daysOfWeek = ["Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"];
 
-  // Preload sounds on component mount
   useEffect(() => {
     const loadSounds = async () => {
       const { sound: correct } = await Audio.Sound.createAsync({
@@ -471,7 +481,6 @@ const Lesson = () => {
 
     loadSounds();
 
-    // Cleanup on unmount
     return () => {
       if (correctSound.current) correctSound.current.unloadAsync();
       if (incorrectSound.current) incorrectSound.current.unloadAsync();
@@ -494,22 +503,23 @@ const Lesson = () => {
         );
         const fetchedQuestions = response.data.questions;
 
-        // Preload all images
-        const imagePromises = fetchedQuestions.map((question) => {
-          const imagePromises = [];
+        // Collect all image URLs
+        const imageUrls = [];
+        fetchedQuestions.forEach((question) => {
           if (question.ImageAvatar) {
-            imagePromises.push(Image.prefetch(question.ImageAvatar));
+            imageUrls.push(question.ImageAvatar);
           }
           if (question.answerOptions) {
             question.answerOptions.forEach((option) => {
               if (option.imageUrl) {
-                imagePromises.push(Image.prefetch(option.imageUrl));
+                imageUrls.push(option.imageUrl);
               }
             });
           }
-          return Promise.all(imagePromises);
         });
 
+        // Preload all images
+        const imagePromises = imageUrls.map((url) => Image.prefetch(url));
         await Promise.all(imagePromises);
 
         setQuestions(fetchedQuestions);
@@ -570,20 +580,25 @@ const Lesson = () => {
 
     if (isCorrect) {
       setCorrectAnswersCount((prevCount) => prevCount + 1);
-      if (correctSound.current) correctSound.current.replayAsync(); // Play correct sound
+      if (correctSound.current) correctSound.current.replayAsync();
     } else {
-      setHearts((prevHearts) => Math.max(0, prevHearts - 1)); // Decrease hearts on incorrect answer
-      if (incorrectSound.current) incorrectSound.current.replayAsync(); // Play incorrect sound
+      setHearts((prevHearts) => Math.max(0, prevHearts - 1));
+      if (incorrectSound.current) incorrectSound.current.replayAsync();
+
+      setExplanation(
+        currentQuestion.explanation || "إجابة خاطئة! حاول مرة أخرى."
+      );
     }
 
-    setShowResult(true); // Show the correct/incorrect feedback
+    setShowResult(true);
     setModalVisible(true);
   };
 
   const handleNextQuestion = () => {
     setModalVisible(false);
-    setShowResult(false); // Reset for the next question
-    setUserAnswer(""); // Reset answer input for the next question
+    setShowResult(false);
+    setUserAnswer("");
+    setExplanation("");
 
     if (hearts === 0) {
       setShowTry(true);
@@ -611,7 +626,7 @@ const Lesson = () => {
   const handleTryAgain = () => {
     setShowTry(false);
     setCurrentQuestionIndex(0);
-    setHearts(5); // Reset hearts
+    setHearts(5);
     setProgress(0);
     setCorrectAnswersCount(0);
     setSelectedOptionIndex(null);
@@ -709,7 +724,7 @@ const Lesson = () => {
       >
         <BottomModalContainer isCorrect={isAnswerCorrect}>
           <ModalText>
-            {isAnswerCorrect ? "إجابة صحيحة!" : "إجابة خاطئة! حاول مرة أخرى."}
+            {isAnswerCorrect ? "إجابة صحيحة!" : explanation}
           </ModalText>
           <NextButton isCorrect={isAnswerCorrect} onPress={handleNextQuestion}>
             <NextButtonText>التالي</NextButtonText>

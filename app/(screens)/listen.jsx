@@ -1,5 +1,4 @@
-// components/Listen.js
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useRef as UseRef } from "react";
 import { Audio } from "expo-av";
 import styled from "styled-components/native";
 import {
@@ -8,6 +7,9 @@ import {
   TouchableOpacity,
   View,
   Modal,
+  Animated,
+  Easing,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useRoute } from "@react-navigation/native";
@@ -15,6 +17,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { updateScore, fetchScore } from "../redux/scoreSlice";
 import { userSelector } from "../redux/authSlice";
 
+/* Styled Components */
 const ScreenContainer = styled(SafeAreaView)`
   flex: 1;
   background-color: #f8f9fa;
@@ -46,8 +49,23 @@ const Container = styled.View`
 
 const Header = styled(View)`
   flex-direction: row;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between; /* Ensures space between left and right icons */
   padding: 10px;
+`;
+
+const ExplanationBox = styled.View`
+  flex: 1;
+  background-color: #cecece;
+  padding: 10px;
+  margin: 0 10px; /* Adds equal margin on left and right for balanced spacing */
+  border-radius: 5px;
+`;
+
+const ExplanationText = styled.Text`
+  font-size: 13px;
+  color: #fff;
+  text-align: center;
 `;
 
 const AllCon = styled.View`
@@ -76,10 +94,10 @@ const ButtonLabel = styled.Text`
   font-size: 12px;
 `;
 
-const TimeText = styled.Text`
+const AnimatedText = Animated.createAnimatedComponent(styled.Text`
   font-size: 14px;
   color: #666;
-`;
+`);
 
 const TalImg = styled.Image`
   width: 35px;
@@ -96,6 +114,12 @@ const TopImg = styled.Image`
 const CloseImg = styled.Image`
   width: 28px;
   height: 28px;
+  margin-right: 10px;
+`;
+
+const BadgeImg = styled.Image`
+  width: 24px;
+  height: 24px;
   margin-right: 10px;
 `;
 
@@ -144,6 +168,11 @@ const Progress = styled.View`
   width: ${({ progress }) => `${progress * 100}%`};
 `;
 
+/* New styled components for paragraphs and sentences */
+const Paragraph = styled.View`
+  margin-bottom: 15px;
+`;
+
 const StoryText = styled.Text`
   font-size: 16px;
   color: #333;
@@ -151,7 +180,14 @@ const StoryText = styled.Text`
   text-align: justify;
 `;
 
-// Styled components for the Exam Modal
+const SentenceTouchable = styled.TouchableOpacity``;
+
+const SentenceText = styled.Text`
+  font-size: 16px;
+  color: #333;
+`;
+
+/* Styled components for the Exam Modal */
 const ModalContainer = styled.View`
   flex: 1;
   justify-content: center;
@@ -165,11 +201,26 @@ const ExamContent = styled.View`
   background-color: #fff;
   border-radius: 10px;
   padding: 20px;
+  position: relative;
+`;
+
+const ExamHeader = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const ExamTitle = styled.Text`
+  font-size: 24px;
+  font-weight: bold;
+  color: #3b5998;
+  margin-bottom: 20px;
 `;
 
 const QuestionText = styled.Text`
   font-size: 18px;
   margin-bottom: 20px;
+  color: #333;
 `;
 
 const OptionButton = styled.TouchableOpacity`
@@ -177,10 +228,12 @@ const OptionButton = styled.TouchableOpacity`
   background-color: ${({ isSelected }) => (isSelected ? "#d1e7dd" : "#e0e0e8")};
   border-radius: 5px;
   margin-bottom: 10px;
+  border: ${({ isSelected }) => (isSelected ? "2px solid #2e8b57" : "none")};
 `;
 
 const OptionText = styled.Text`
   font-size: 16px;
+  color: #333;
 `;
 
 const NextButton = styled.TouchableOpacity`
@@ -201,6 +254,19 @@ const ScoreText = styled.Text`
   font-size: 20px;
   text-align: center;
   margin-bottom: 20px;
+  color: #333;
+`;
+
+const ConfettiText = styled.Text`
+  font-size: 28px;
+  text-align: center;
+  margin-bottom: 10px;
+`;
+
+const ScoreEmoji = styled.Text`
+  font-size: 60px;
+  text-align: center;
+  margin-bottom: 20px;
 `;
 
 const TakeHomeButton = styled.TouchableOpacity`
@@ -215,7 +281,103 @@ const TakeHomeButtonText = styled.Text`
   font-size: 16px;
 `;
 
+/* Enhanced styled components for Translation Modal */
+const TranslationContent = styled.View`
+  width: 90%;
+  max-height: 80%;
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  align-items: center;
+`;
+
+const TranslationHeader = styled.View`
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 15px;
+`;
+
+const TranslationIcon = styled.Image`
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+`;
+
+const TranslationTitle = styled.Text`
+  font-size: 20px;
+  font-weight: bold;
+  color: #3b5998;
+`;
+
+const TranslationText = styled.Text`
+  font-size: 18px;
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+`;
+
+const CloseButton = styled.TouchableOpacity`
+  padding: 10px 20px;
+  background-color: #3b5998;
+  border-radius: 30px;
+  align-items: center;
+`;
+
+const CloseButtonText = styled.Text`
+  color: #fff;
+  font-size: 16px;
+`;
+
+/* Styled Components for Time Modal */
+const TimeModalContent = styled.View`
+  width: 80%;
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  align-items: center;
+`;
+
+const TimeModalHeader = styled.View`
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 15px;
+`;
+
+const TimeModalIcon = styled.Image`
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+`;
+
+const TimeModalTitle = styled.Text`
+  font-size: 20px;
+  font-weight: bold;
+  color: #3b5998;
+`;
+
+const TimeModalText = styled.Text`
+  font-size: 18px;
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+`;
+
+const TimeCloseButton = styled.TouchableOpacity`
+  padding: 10px 20px;
+  background-color: #3b5998;
+  border-radius: 30px;
+  align-items: center;
+`;
+
+/* Animations using React Native's Animated API */
+const TimeCloseButtonText = styled.Text`
+  color: #fff;
+  font-size: 16px;
+`;
+
+/* Listen Component */
 const Listen = () => {
+  /* State Variables */
   const [progress, setProgress] = useState(0);
   const [sound, setSound] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -224,14 +386,14 @@ const Listen = () => {
     story: [],
     audioUrl: "",
     exam: [],
-  }); // Include exam data
+  });
 
   const router = useRouter();
   const route = useRoute();
   const scrollViewRef = useRef(null);
   const [selectedSet, setSelectedSet] = useState(route.params?.set || "set1");
 
-  // State for Exam Modal
+  /* State for Exam Modal */
   const [isExamVisible, setIsExamVisible] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState([]);
@@ -239,6 +401,36 @@ const Listen = () => {
   const dispatch = useDispatch();
   const { currentUser } = useSelector(userSelector);
 
+  /* State for Translation Modal */
+  const [selectedSentence, setSelectedSentence] = useState(null);
+  const [isTranslationVisible, setIsTranslationVisible] = useState(false);
+
+  /* State for Time Modal */
+  const [isTimeModalVisible, setIsTimeModalVisible] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState("0 seconds");
+  const [startTime, setStartTime] = useState(new Date());
+
+  /* Animation for the "اختبار" text */
+  const scaleValue = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(scaleValue, {
+          toValue: 1.1,
+          duration: 800,
+          useNativeDriver: false,
+        }),
+        Animated.timing(scaleValue, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: false,
+        }),
+      ])
+    ).start();
+  }, [scaleValue]);
+
+  /* Fetch Story Data */
   useEffect(() => {
     const fetchStoryData = async () => {
       if (!selectedSet) return;
@@ -255,7 +447,7 @@ const Listen = () => {
         }
 
         const data = await response.json();
-        setStoryData(data); // data includes story, audioUrl, and exam
+        setStoryData(data);
       } catch (error) {
         console.error("Error fetching story data:", error);
       }
@@ -264,10 +456,17 @@ const Listen = () => {
     fetchStoryData();
   }, [selectedSet]);
 
+  /* Unload Sound on Unmount */
   useEffect(() => {
     return sound ? () => sound.unloadAsync() : undefined;
   }, [sound]);
 
+  /* Start Timer on Component Mount */
+  useEffect(() => {
+    setStartTime(new Date());
+  }, []);
+
+  /* Audio Controls */
   const playSound = async () => {
     if (!sound) {
       const { sound: newSound } = await Audio.Sound.createAsync(
@@ -353,7 +552,7 @@ const Listen = () => {
     }
   };
 
-  // Exam Handlers
+  /* Exam Handlers */
   const toggleExamModal = () => {
     setIsExamVisible((prev) => !prev);
     // Reset exam state when opening the modal
@@ -385,7 +584,6 @@ const Listen = () => {
     }
   };
 
-  // Modified handleTakeHome Function (Removed Alert and Increment by One Only)
   const handleTakeHome = async () => {
     try {
       if (currentUser && currentUser._id) {
@@ -403,16 +601,72 @@ const Listen = () => {
       router.push("stories"); // Navigate back to "stories" home screen
     } catch (error) {
       console.error("Failed to update score:", error);
-      // Optionally, handle the error in the UI without using an alert
     }
+  };
+
+  /* Translation Handlers */
+  const handleSentencePress = (sentenceObj) => {
+    setSelectedSentence(sentenceObj);
+    setIsTranslationVisible(true);
+  };
+
+  /* Handler for Hourglass Icon Press */
+  const handleHourglassPress = () => {
+    const endTime = new Date();
+    const timeSpent = calculateElapsedTime(startTime, endTime);
+    setElapsedTime(timeSpent);
+    setIsTimeModalVisible(true);
+  };
+
+  /* Function to Calculate Elapsed Time */
+  const calculateElapsedTime = (start, end) => {
+    const diffMs = end - start; // Difference in milliseconds
+    const diffSeconds = Math.floor((diffMs / 1000) % 60);
+    const diffMinutes = Math.floor((diffMs / (1000 * 60)) % 60);
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+    let timeString = "";
+    if (diffHours > 0) {
+      timeString += `${diffHours} hour${diffHours > 1 ? "s" : ""} `;
+    }
+    if (diffMinutes > 0) {
+      timeString += `${diffMinutes} minute${diffMinutes > 1 ? "s" : ""} `;
+    }
+    timeString += `${diffSeconds} second${diffSeconds !== 1 ? "s" : ""}`;
+
+    return timeString;
   };
 
   return (
     <ScreenContainer>
       <Header>
-        <TouchableOpacity onPress={handleBackToStories}>
+        {/* Close Icon on the Left */}
+        <TouchableOpacity
+          onPress={handleBackToStories}
+          accessible
+          accessibilityLabel="Close"
+        >
           <CloseImg
             source={require("../../assets/icons/grayCross.png")}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+
+        {/* Explanation Box in the Center */}
+        <ExplanationBox>
+          <ExplanationText>
+            اضغط الجملة لرؤية الترجمة، واختبر بالنهاية
+          </ExplanationText>
+        </ExplanationBox>
+
+        {/* Hourglass Icon on the Right */}
+        <TouchableOpacity
+          onPress={handleHourglassPress}
+          accessible
+          accessibilityLabel="Time Spent"
+        >
+          <BadgeImg
+            source={require("../../assets/icons/hourglass.png")} // Ensure you have hourglass.png in your assets
             resizeMode="contain"
           />
         </TouchableOpacity>
@@ -423,32 +677,44 @@ const Listen = () => {
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
-        {storyData.story.map((paragraph, index) => (
-          <StoryText key={index}>
-            {paragraph}
-            {"\n\n"}
-          </StoryText>
+        {storyData.story.map((paragraph, pIndex) => (
+          <Paragraph key={pIndex}>
+            {paragraph.sentences.map((sentenceObj, sIndex) => (
+              <SentenceTouchable
+                key={sIndex}
+                onPress={() => handleSentencePress(sentenceObj)}
+              >
+                <SentenceText>{sentenceObj.sentence} </SentenceText>
+              </SentenceTouchable>
+            ))}
+          </Paragraph>
         ))}
       </ContentContainer>
+
       <Container isHidden={isContainerHidden}>
         <ReCon>
           <TalCon onPress={toggleContainerVisibility}>
-            <TimeText>اقرا</TimeText>
+            <AnimatedText>اقرأ</AnimatedText>
             <TopImg
               source={require("../../assets/icons/talking.png")}
               resizeMode="contain"
             />
           </TalCon>
-          {/* Added Exam Button */}
           <TalCon onPress={toggleExamModal}>
-            <TimeText>اختبار</TimeText>
+            <AnimatedText
+              style={{
+                transform: [{ scale: scaleValue }],
+              }}
+            >
+              اختبار
+            </AnimatedText>
             <TopImg
-              source={require("../../assets/icons/badge.png")} // Ensure you have an exam icon in your assets
+              source={require("../../assets/icons/badge.png")}
               resizeMode="contain"
             />
           </TalCon>
           <LisCon>
-            <TimeText>استمع</TimeText>
+            <AnimatedText>استمع</AnimatedText>
             <TopImg
               source={require("../../assets/icons/listening.png")}
               resizeMode="contain"
@@ -459,14 +725,22 @@ const Listen = () => {
           <Progress progress={progress} />
         </ProgressBarContainer>
         <AllCon>
-          <Button onPress={() => changeAudioPosition(-10000)}>
+          <Button
+            onPress={() => changeAudioPosition(-10000)}
+            accessible
+            accessibilityLabel="Backward"
+          >
             <TalImg
               source={require("../../assets/icons/backward.png")}
               resizeMode="contain"
             />
             <ButtonLabel>Backward</ButtonLabel>
           </Button>
-          <Button onPress={handlePressPlayPause}>
+          <Button
+            onPress={handlePressPlayPause}
+            accessible
+            accessibilityLabel={isPlaying ? "Pause" : "Play"}
+          >
             <TalImg
               source={
                 isPlaying
@@ -477,7 +751,11 @@ const Listen = () => {
             />
             <ButtonLabel>{isPlaying ? "Pause" : "Play"}</ButtonLabel>
           </Button>
-          <Button onPress={() => changeAudioPosition(10000)}>
+          <Button
+            onPress={() => changeAudioPosition(10000)}
+            accessible
+            accessibilityLabel="Forward"
+          >
             <TalImg
               source={require("../../assets/icons/backward.png")}
               resizeMode="contain"
@@ -488,7 +766,11 @@ const Listen = () => {
         </AllCon>
       </Container>
       {isContainerHidden && (
-        <FloatingButton onPress={toggleContainerVisibility}>
+        <FloatingButton
+          onPress={toggleContainerVisibility}
+          accessible
+          accessibilityLabel="Show Controls"
+        >
           <TopImg
             source={require("../../assets/icons/listening.png")}
             resizeMode="contain"
@@ -505,6 +787,19 @@ const Listen = () => {
       >
         <ModalContainer>
           <ExamContent>
+            <ExamHeader>
+              <ExamTitle>Let's Test Your Knowledge!</ExamTitle>
+              <TouchableOpacity
+                onPress={toggleExamModal}
+                accessible
+                accessibilityLabel="Close Exam"
+              >
+                <CloseImg
+                  source={require("../../assets/icons/grayCross.png")}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            </ExamHeader>
             {currentQuestionIndex < storyData.exam.length ? (
               <>
                 <QuestionText>
@@ -534,8 +829,24 @@ const Listen = () => {
               </>
             ) : (
               <>
+                {localScore === storyData.exam.length ? (
+                  <>
+                    <ConfettiText>🎉 Perfect Score! 🎉</ConfettiText>
+                    <ScoreEmoji>😃</ScoreEmoji>
+                  </>
+                ) : localScore > storyData.exam.length / 2 ? (
+                  <>
+                    <ConfettiText>Great Job!</ConfettiText>
+                    <ScoreEmoji>😊</ScoreEmoji>
+                  </>
+                ) : (
+                  <>
+                    <ConfettiText>Keep Trying!</ConfettiText>
+                    <ScoreEmoji>🤔</ScoreEmoji>
+                  </>
+                )}
                 <ScoreText>
-                  Your Exam Score: {localScore}/{storyData.exam.length}
+                  You scored {localScore} out of {storyData.exam.length}!
                 </ScoreText>
                 <TakeHomeButton onPress={handleTakeHome}>
                   <TakeHomeButtonText>Take Me Home</TakeHomeButtonText>
@@ -543,6 +854,56 @@ const Listen = () => {
               </>
             )}
           </ExamContent>
+        </ModalContainer>
+      </Modal>
+
+      {/* Time Modal */}
+      <Modal
+        visible={isTimeModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setIsTimeModalVisible(false)}
+      >
+        <ModalContainer>
+          <TimeModalContent>
+            <TimeModalHeader>
+              <TimeModalIcon
+                source={require("../../assets/icons/hourglass.png")} // Ensure you have hourglass.png
+                resizeMode="contain"
+              />
+              <TimeModalTitle>Time Spent</TimeModalTitle>
+            </TimeModalHeader>
+            <TimeModalText>
+              It has taken you {elapsedTime} to read this page.
+            </TimeModalText>
+            <TimeCloseButton onPress={() => setIsTimeModalVisible(false)}>
+              <TimeCloseButtonText>Close</TimeCloseButtonText>
+            </TimeCloseButton>
+          </TimeModalContent>
+        </ModalContainer>
+      </Modal>
+
+      {/* Enhanced Translation Modal */}
+      <Modal
+        visible={isTranslationVisible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setIsTranslationVisible(false)}
+      >
+        <ModalContainer>
+          <TranslationContent>
+            <TranslationHeader>
+              <TranslationIcon
+                source={require("../../assets/icons/translate.png")}
+                resizeMode="contain"
+              />
+              <TranslationTitle>Translation</TranslationTitle>
+            </TranslationHeader>
+            <TranslationText>{selectedSentence?.translation}</TranslationText>
+            <CloseButton onPress={() => setIsTranslationVisible(false)}>
+              <CloseButtonText>Close</CloseButtonText>
+            </CloseButton>
+          </TranslationContent>
         </ModalContainer>
       </Modal>
     </ScreenContainer>
