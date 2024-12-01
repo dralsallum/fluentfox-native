@@ -269,7 +269,7 @@ const Vocabulary = () => {
   const pronounceButtonText = isFlipped ? "استمع للجملة" : "استمع للكلمة";
   return (
     <SafeArea>
-      <CroBut onPress={() => router.back()}>
+      <CroBut onPress={() => router.push("create")}>
         <CrossIcon
           source={require("../../../assets/icons/grayCross.png")}
           resizeMode="contain"
@@ -278,8 +278,8 @@ const Vocabulary = () => {
       <AllWr>
         <VocWra>
           <VocHead>
-            Learn with Flashcards -
-            <VocHeadSpan>Tap the card to see the meaning and usage</VocHeadSpan>
+            تعلم باستخدام البطاقات التعليمية -
+            <VocHeadSpan>اضغط على البطاقة لرؤية المعنى والاستخدام</VocHeadSpan>
           </VocHead>
           <VocMain>
             <VocOn>

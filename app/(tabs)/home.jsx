@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchUnlockedSets } from "../redux/lessonsSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { fetchAds, selectAds } from "../redux/adsSlice"; // Removed updateAdsThunk
+import { fetchAds, selectAds } from "../redux/adsSlice";
 import {
   TouchableOpacity,
   View,
@@ -21,7 +21,7 @@ import styled from "styled-components/native";
 import { Image as ExpoImage } from "expo-image";
 import placeholderImage from "../../assets/images/placeholder.webp";
 import AdsImage from "../../assets/icons/ads.png";
-import PremiumImage from "../../assets/icons/premium.png"; // Ensure you have these icons
+import PremiumImage from "../../assets/icons/premium.png";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -38,14 +38,18 @@ const SafeArea = styled.SafeAreaView`
   direction: rtl;
 `;
 
+// Styled component for ScrollView with forwarded ref
+const QueWra = styled(
+  React.forwardRef((props, ref) => <ScrollView {...props} ref={ref} />)
+)`
+  flex: 1;
+  direction: rtl;
+`;
+
 const QueMa = styled.View`
   flex: 1;
   background-color: #ffffff;
   width: 100%;
-`;
-
-const QueWra = styled.ScrollView`
-  flex: 1;
 `;
 
 const QueCon = styled.View`
@@ -269,11 +273,6 @@ const QueChaProTe = styled.Text`
   font-size: 10px;
 `;
 
-const QueChaProText = styled.Text`
-  color: white;
-  font-size: 10px;
-`;
-
 const QueChaIteEle = styled.View`
   position: relative;
   align-items: center;
@@ -338,7 +337,6 @@ const QueChaPic = styled(ExpoImage)`
   width: 100%;
   height: 100%;
   border-radius: 50px;
-  /* Ensure the image is contained */
   resize-mode: contain;
 `;
 
@@ -387,39 +385,6 @@ const QueChaPoi = styled.View`
   width: 100%;
   height: 100%;
   background-color: #4c47e9;
-`;
-
-const FinChaProCon = styled.View`
-  position: relative;
-  border-radius: 16px;
-  width: 100%;
-  background-color: rgb(218, 225, 234);
-  margin-top: 10px;
-  height: 12px;
-`;
-
-const FinChaPro = styled.View`
-  position: absolute;
-  height: 100%;
-  background-color: #4c47e9;
-  border-radius: 16px;
-  left: 0;
-`;
-
-const FinChaProSpa = styled.View`
-  font-size: 10px;
-  align-items: center;
-  justify-content: center;
-  height: 20px;
-  border-radius: 20px;
-  background-color: #4c47e9;
-  color: #ffffff;
-  padding: 0 8px;
-  min-width: 30px;
-  position: absolute;
-  right: 0;
-  transform: translateX(50%);
-  bottom: 6px;
 `;
 
 const StyledModal = styled.Modal``;
@@ -508,8 +473,8 @@ const ActionButton = styled.TouchableOpacity`
   border-radius: 25px;
   align-items: center;
   margin-bottom: 10px;
-  flex-direction: row; /* Added to align icon and text horizontally */
-  justify-content: center; /* Center the content */
+  flex-direction: row;
+  justify-content: center;
 `;
 
 const PrimaryButton = styled(ActionButton)`
@@ -670,7 +635,6 @@ const ChapterItem = ({
               </QueChaPicCon>
 
               <QueChaPicSec>
-                {/* Use placeholder image if imgSrc is not provided */}
                 <QueChaPic
                   source={imgSrc ? { uri: imgSrc } : placeholderImage}
                   contentFit="contain"
@@ -700,13 +664,13 @@ const ChapterItem = ({
   );
 };
 
-// Chapter Component (as defined earlier)
 const Chapter = ({
   chapterNumber,
   chapterItems,
   setSecondModalVisible,
   setSelectedLessonUrl,
   setSelectedLessonSet,
+  onLayout,
 }) => {
   const unlockedSets = useSelector((state) => state.lessons.unlockedSets);
   const totalLessons = chapterItems.length;
@@ -721,6 +685,7 @@ const Chapter = ({
 
   return (
     <QueChaOneCon
+      onLayout={onLayout}
       style={{
         borderColor: isNextChapterFirstLessonUnlocked ? "#4c47e9" : "lightgray",
       }}
@@ -734,7 +699,7 @@ const Chapter = ({
         <QueChaProCon>
           <QueChaPro style={{ width: `${progress}%` }} />
           <QueChaProSpa progress={progress}>
-            <QueChaProTe>{`${progress}%`}</QueChaProTe>
+            <QueChaProTe>{`${progress.toFixed(0)}%`}</QueChaProTe>
           </QueChaProSpa>
         </QueChaProCon>
       </QueChaOneHeaCon>
@@ -775,6 +740,30 @@ const Home = () => {
   const maxAds = 3;
   const filledAds = Math.min(ads, maxAds);
   const [hasRatedApp, setHasRatedApp] = useState(false);
+
+  const scrollViewRef = useRef(null);
+  const chapterPositions = useRef({});
+  const [chaptersLaidOut, setChaptersLaidOut] = useState(0);
+
+  const filteredChapters = filterChaptersByLevel(selectedLevel);
+  const groupedChapters = filteredChapters.reduce((acc, item) => {
+    if (!acc[item.chapterId]) {
+      acc[item.chapterId] = [];
+    }
+    acc[item.chapterId].push(item);
+    return acc;
+  }, {});
+
+  const totalChapters = Object.keys(groupedChapters).length;
+
+  const unlockedChapterNumbers = Object.keys(unlockedSets)
+    .filter((chapterNumber) => unlockedSets[chapterNumber]?.length > 0)
+    .map((chapterNumStr) => parseInt(chapterNumStr, 10));
+
+  const lastUnlockedChapterNumber =
+    unlockedChapterNumbers.length > 0
+      ? Math.max(...unlockedChapterNumbers)
+      : null;
 
   useEffect(() => {
     const loadHasRatedApp = async () => {
@@ -818,7 +807,6 @@ const Home = () => {
       Linking.openURL(`market://details?id=${playStoreId}`);
     }
 
-    // Set hasRatedApp to true and save it
     setHasRatedApp(true);
     try {
       await AsyncStorage.setItem("hasRatedApp", "true");
@@ -837,14 +825,12 @@ const Home = () => {
     const loadData = async () => {
       if (userId) {
         try {
-          // Dispatch fetchUnlockedSets and wait for it to complete
           await dispatch(fetchUnlockedSets(userId)).unwrap();
         } catch (err) {
           setError("Failed to load lessons data. Please try again.");
         }
 
         try {
-          // Dispatch fetchAds and wait for it to complete
           await dispatch(fetchAds(userId)).unwrap();
         } catch (err) {
           setError("Failed to load ads data. Please try again.");
@@ -857,17 +843,31 @@ const Home = () => {
     loadData();
   }, [dispatch, userId]);
 
+  useEffect(() => {
+    if (
+      !loading &&
+      chaptersLaidOut === totalChapters &&
+      scrollViewRef.current &&
+      lastUnlockedChapterNumber
+    ) {
+      const yOffset = chapterPositions.current[lastUnlockedChapterNumber];
+      if (yOffset !== undefined) {
+        scrollViewRef.current.scrollTo({
+          y: yOffset,
+          animated: true,
+        });
+      }
+    }
+  }, [loading, chaptersLaidOut, totalChapters, lastUnlockedChapterNumber]);
+
   const handleToggleModal = () => {
     setModalVisible(!modalVisible);
   };
+
   const handleCloseSecondModal = () => {
     setSecondModalVisible(false);
   };
 
-  const handleToggleSecondModal = () => {
-    setSecondModalVisible(false);
-    router.push("subscription");
-  };
   const handlePayment = () => {
     router.push("subscription");
   };
@@ -880,13 +880,10 @@ const Home = () => {
   const handleWatchAds = async () => {
     if (ads > 0) {
       setSecondModalVisible(false);
-      // Navigate to the Ads screen where the ad is watched
       router.push({
         pathname: "/ads",
         params: { lessonUrl: selectedLessonUrl, set: selectedLessonSet },
       });
-
-      // No need to dispatch here unless you want to optimistically update
     } else {
       Alert.alert(
         "تم الوصول إلى الحد اليومي",
@@ -901,15 +898,6 @@ const Home = () => {
     router.push("subscription");
   };
 
-  const filteredChapters = filterChaptersByLevel(selectedLevel);
-  const groupedChapters = filteredChapters.reduce((acc, item) => {
-    if (!acc[item.chapterId]) {
-      acc[item.chapterId] = [];
-    }
-    acc[item.chapterId].push(item);
-    return acc;
-  }, {});
-
   if (loading) {
     return (
       <LoadingAll>
@@ -922,7 +910,7 @@ const Home = () => {
     <SafeArea>
       <Navbar />
       <QueMa>
-        <QueWra>
+        <QueWra ref={scrollViewRef}>
           <QueCon>
             <QueSubCon>
               <QueTiCon>
@@ -983,6 +971,11 @@ const Home = () => {
                   </QueTiBo>
                   {Object.keys(groupedChapters).map((chapterId) => {
                     const currentChapterItems = groupedChapters[chapterId];
+                    const handleChapterLayout = (chapterId) => (event) => {
+                      const layout = event.nativeEvent.layout;
+                      chapterPositions.current[chapterId] = layout.y;
+                      setChaptersLaidOut((prevCount) => prevCount + 1);
+                    };
                     return (
                       <Chapter
                         key={chapterId}
@@ -991,6 +984,7 @@ const Home = () => {
                         setSecondModalVisible={setSecondModalVisible}
                         setSelectedLessonUrl={setSelectedLessonUrl}
                         setSelectedLessonSet={setSelectedLessonSet}
+                        onLayout={handleChapterLayout(chapterId)}
                       />
                     );
                   })}
@@ -1058,16 +1052,12 @@ const Home = () => {
                 />
               </CrossButtonAds>
               <ModalTitleCentered>الحد اليومي</ModalTitleCentered>
-              {/* Optional: Add a placeholder to balance the layout */}
               <View style={{ width: 40 }} />
             </ModalSecHeader>
             <NumberDisplay>{ads}</NumberDisplay>
             <ProgressContainer>
               {[...Array(maxAds)].map((_, index) => (
-                <ProgressBox
-                  key={index}
-                  filled={index < filledAds} // Fill based on ads count
-                />
+                <ProgressBox key={index} filled={index < filledAds} />
               ))}
             </ProgressContainer>
             <ModalText>لديك {ads} استخدامات متاحة يوميًا.</ModalText>

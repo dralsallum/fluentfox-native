@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Text,
   TouchableOpacity,
@@ -7,6 +7,8 @@ import {
   SafeAreaView,
   Pressable,
   Image,
+  View,
+  Animated,
 } from "react-native";
 import styled from "styled-components/native";
 import { Audio } from "expo-av";
@@ -17,20 +19,20 @@ import { useDispatch, useSelector } from "react-redux";
 import { updateExercise, fetchExercise } from "../redux/exerciseSlice";
 import { userSelector } from "../redux/authSlice";
 
-// Color Palette
+// Fun Color Palette
 const COLORS = {
-  background: "#ccecff",
+  background: "#f9f5ff",
   white: "#ffffff",
-  primary: "#00796b",
-  secondary: "#0a9be3",
-  correct: "green",
-  incorrect: "red",
+  primary: "#6a1b9a",
+  secondary: "#ff6f61",
+  correct: "#4caf50",
+  incorrect: "#f44336",
   shadow: "#000",
   progressBackground: "#d3d3d3",
-  progressBar: "#000000",
+  progressBar: "#6a1b9a",
   modalOverlay: "rgba(0, 0, 0, 0.6)",
-  textPrimary: "#004d40",
-  textSecondary: "#555",
+  textPrimary: "#333",
+  textSecondary: "#777",
 };
 
 // Styled Components
@@ -57,61 +59,66 @@ const CrossIcon = styled.Image`
   height: 30px;
 `;
 
-const QuestionSection = styled.View`
+const QuestionSection = styled(Animated.View)`
   width: 100%;
   max-width: 600px;
-  padding: 20px;
+  padding: 25px;
   align-items: center;
   background-color: ${COLORS.white};
-  border-radius: 12px;
+  border-radius: 25px;
   shadow-color: ${COLORS.shadow};
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.1;
-  shadow-radius: 4px;
+  shadow-offset: 0px 5px;
+  shadow-opacity: 0.2;
+  shadow-radius: 10px;
   elevation: 5;
 `;
 
 const QuestionCount = styled.Text`
-  font-size: 24px;
-  margin-bottom: 10px;
-  color: ${COLORS.textPrimary};
+  font-size: 26px;
+  margin-bottom: 15px;
+  color: ${COLORS.primary};
+  font-weight: bold;
 `;
 
 const QuestionText = styled.Text`
-  font-size: 20px;
-  margin-bottom: 20px;
+  font-size: 24px;
+  margin-bottom: 25px;
   text-align: center;
   color: ${COLORS.textPrimary};
+  font-family: "Chalkboard SE";
 `;
 
 const AnswerSection = styled.View`
   width: 100%;
-  margin-top: 20px;
+  margin-top: 25px;
 `;
 
-const QuizButton = styled.TouchableOpacity`
+const QuizButton = styled(Animated.createAnimatedComponent(TouchableOpacity))`
   background-color: ${(props) =>
     props.selected
       ? props.isCorrect
         ? COLORS.correct
         : COLORS.incorrect
-      : "#f1fafe"};
-  padding: 12px;
-  border-radius: 12px;
+      : COLORS.white};
+  padding: 15px;
+  border-radius: 15px;
   margin: 10px 0;
   width: 90%;
   align-items: center;
   shadow-color: ${COLORS.shadow};
-  shadow-offset: 0px 2px;
+  shadow-offset: 0px 4px;
   shadow-opacity: 0.2;
-  shadow-radius: 4px;
-  elevation: 3;
+  shadow-radius: 5px;
+  elevation: 4;
+  border: ${(props) =>
+    props.selected ? "none" : `2px solid ${COLORS.primary}`};
 `;
 
 const AnswerText = styled.Text`
-  font-size: 18px;
-  font-weight: 500;
-  color: ${(props) => (props.selected ? "#fff" : COLORS.textPrimary)};
+  font-size: 20px;
+  font-weight: bold;
+  color: ${(props) => (props.selected ? COLORS.white : COLORS.primary)};
+  font-family: "Marker Felt";
 `;
 
 const LoadingContainer = styled.View`
@@ -129,52 +136,55 @@ const ModalContainer = styled.View`
 
 const ModalContent = styled.View`
   width: 85%;
-  padding: 25px;
+  padding: 35px;
   background-color: ${COLORS.white};
-  border-radius: 20px;
+  border-radius: 30px;
   align-items: center;
   shadow-color: ${COLORS.shadow};
-  shadow-offset: 0px 4px;
+  shadow-offset: 0px 6px;
   shadow-opacity: 0.3;
-  shadow-radius: 6px;
-  elevation: 10;
+  shadow-radius: 10px;
+  elevation: 12;
 `;
 
 const ResultImage = styled.Image`
-  width: 120px;
-  height: 120px;
-  margin-bottom: 25px;
+  width: 160px;
+  height: 160px;
+  margin-bottom: 30px;
 `;
 
 const ResultText = styled.Text`
-  font-size: 24px;
-  margin-bottom: 25px;
+  font-size: 28px;
+  margin-bottom: 30px;
   text-align: center;
-  color: ${COLORS.textPrimary};
+  color: ${COLORS.primary};
+  font-weight: bold;
+  font-family: "Chalkboard SE";
 `;
 
 const ModalButton = styled.TouchableOpacity`
-  background-color: ${COLORS.primary};
-  padding: 12px 25px;
-  border-radius: 12px;
+  background-color: ${COLORS.secondary};
+  padding: 15px 35px;
+  border-radius: 20px;
   shadow-color: ${COLORS.shadow};
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.2;
-  shadow-radius: 4px;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 0.25;
+  shadow-radius: 6px;
   elevation: 5;
 `;
 
 const ModalButtonText = styled.Text`
   color: ${COLORS.white};
-  font-size: 20px;
+  font-size: 22px;
   font-weight: bold;
+  font-family: "Marker Felt";
 `;
 
 const AudioContainer = styled.View`
   flex-direction: row;
   align-items: center;
   width: 100%;
-  margin-top: 20px;
+  margin-top: 25px;
 `;
 
 const PlayPauseButton = styled.TouchableOpacity`
@@ -182,27 +192,13 @@ const PlayPauseButton = styled.TouchableOpacity`
 `;
 
 const PlayPauseImage = styled.Image`
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
 `;
 
 const ProgressWrapper = styled.View`
   flex: 1;
-  margin-left: 10px;
-`;
-
-const ProgressBarContainer = styled.Pressable`
-  height: 10px;
-  background-color: ${COLORS.progressBackground};
-  border-radius: 5px;
-  justify-content: center;
-`;
-
-const ProgressBar = styled.View`
-  height: 100%;
-  background-color: ${COLORS.progressBar};
-  border-radius: 5px;
-  width: ${(props) => props.width}%;
+  margin-left: 15px;
 `;
 
 const TimeContainer = styled.View`
@@ -213,7 +209,7 @@ const TimeContainer = styled.View`
 `;
 
 const TimeText = styled.Text`
-  font-size: 12px;
+  font-size: 14px;
   color: ${COLORS.textSecondary};
 `;
 
@@ -221,7 +217,8 @@ const TimeText = styled.Text`
 const Exercise = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [playbackInstance, setPlaybackInstance] = useState(null);
+  const playbackInstance = useRef(null);
+  const progressBarWidth = useRef(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [position, setPosition] = useState(0); // in milliseconds
   const [duration, setDuration] = useState(0); // in milliseconds
@@ -230,6 +227,7 @@ const Exercise = () => {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [bounceAnim] = useState(new Animated.Value(1));
 
   const router = useRouter();
   const route = useRoute();
@@ -261,11 +259,11 @@ const Exercise = () => {
   // Cleanup Audio on Unmount
   useEffect(() => {
     return () => {
-      if (playbackInstance) {
-        playbackInstance.unloadAsync();
+      if (playbackInstance.current) {
+        playbackInstance.current.unloadAsync();
       }
     };
-  }, [playbackInstance]);
+  }, []);
 
   // Load Audio when Current Question Changes
   useEffect(() => {
@@ -273,6 +271,15 @@ const Exercise = () => {
       const currentQuestionData = questions[currentQuestion];
       if (currentQuestionData?.audioUrl) {
         loadAudio(currentQuestionData.audioUrl);
+      } else {
+        // If there's no audio for the current question, reset audio states
+        if (playbackInstance.current) {
+          playbackInstance.current.unloadAsync();
+          playbackInstance.current = null;
+        }
+        setIsPlaying(false);
+        setPosition(0);
+        setDuration(0);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -282,9 +289,9 @@ const Exercise = () => {
   const loadAudio = async (url) => {
     try {
       // Unload previous sound if any
-      if (playbackInstance) {
-        await playbackInstance.unloadAsync();
-        setPlaybackInstance(null);
+      if (playbackInstance.current) {
+        await playbackInstance.current.unloadAsync();
+        playbackInstance.current = null;
       }
 
       const { sound } = await Audio.Sound.createAsync(
@@ -292,7 +299,7 @@ const Exercise = () => {
         { shouldPlay: false },
         onPlaybackStatusUpdate
       );
-      setPlaybackInstance(sound);
+      playbackInstance.current = sound;
       const status = await sound.getStatusAsync();
       setDuration(status.durationMillis || 0);
       setPosition(status.positionMillis || 0);
@@ -309,7 +316,9 @@ const Exercise = () => {
       setIsPlaying(status.isPlaying);
       if (status.didJustFinish) {
         setIsPlaying(false);
-        playbackInstance.setPositionAsync(0);
+        if (playbackInstance.current) {
+          playbackInstance.current.setPositionAsync(0);
+        }
       }
     } else if (status.error) {
       console.error(`Playback Error: ${status.error}`);
@@ -318,23 +327,23 @@ const Exercise = () => {
 
   // Play/Pause Handler
   const handlePlayPause = async () => {
-    if (playbackInstance) {
+    if (playbackInstance.current) {
       if (isPlaying) {
-        await playbackInstance.pauseAsync();
+        await playbackInstance.current.pauseAsync();
       } else {
-        await playbackInstance.playAsync();
+        await playbackInstance.current.playAsync();
       }
     }
   };
 
   // Progress Bar Press Handler
   const handleProgressBarPress = async (event) => {
-    if (playbackInstance && duration) {
-      const { locationX, nativeEvent } = event;
-      const totalWidth = nativeEvent.layout.width;
+    if (playbackInstance.current && duration && progressBarWidth.current) {
+      const { locationX } = event.nativeEvent;
+      const totalWidth = progressBarWidth.current;
       const ratio = locationX / totalWidth;
       const newPosition = ratio * duration;
-      await playbackInstance.setPositionAsync(newPosition);
+      await playbackInstance.current.setPositionAsync(newPosition);
     }
   };
 
@@ -347,28 +356,46 @@ const Exercise = () => {
   };
 
   // Handle Answer Selection
-  const handleAnswerButtonClick = (isCorrect, index) => {
+  const handleAnswerButtonClick = async (isCorrect, index) => {
     setSelectedAnswer({ index, isCorrect });
     if (isCorrect) {
       setCorrectAnswers((prev) => prev + 1);
+      animateBounce();
     }
-    setTimeout(() => {
+    setTimeout(async () => {
       const nextQuestion = currentQuestion + 1;
       if (nextQuestion < questions.length) {
-        setCurrentQuestion(nextQuestion);
         // Reset audio states
-        if (playbackInstance) {
-          playbackInstance.unloadAsync();
-          setPlaybackInstance(null);
-          setIsPlaying(false);
-          setPosition(0);
-          setDuration(0);
+        if (playbackInstance.current) {
+          await playbackInstance.current.unloadAsync();
+          playbackInstance.current = null;
         }
+        setIsPlaying(false);
+        setPosition(0);
+        setDuration(0);
+        setCurrentQuestion(nextQuestion);
       } else {
         setShowModal(true); // Show the modal at the end of the quiz
       }
       setSelectedAnswer(null);
-    }, 400);
+    }, 1000);
+  };
+
+  // Animation for Correct Answer
+  const animateBounce = () => {
+    bounceAnim.setValue(1);
+    Animated.sequence([
+      Animated.timing(bounceAnim, {
+        toValue: 1.2,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.spring(bounceAnim, {
+        toValue: 1,
+        friction: 3,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
   // Handle Navigation Back to Stories
@@ -422,7 +449,11 @@ const Exercise = () => {
               resizeMode="contain"
             />
           </CloseButton>
-          <QuestionSection>
+          <QuestionSection
+            style={{
+              transform: [{ scale: bounceAnim }],
+            }}
+          >
             <QuestionCount>
               Question {currentQuestion + 1} / {questions.length}
             </QuestionCount>
@@ -442,9 +473,33 @@ const Exercise = () => {
                   />
                 </PlayPauseButton>
                 <ProgressWrapper>
-                  <ProgressBarContainer onPress={handleProgressBarPress}>
-                    <ProgressBar width={progressPercentage} />
-                  </ProgressBarContainer>
+                  <Pressable
+                    onPress={handleProgressBarPress}
+                    onLayout={(event) => {
+                      progressBarWidth.current = event.nativeEvent.layout.width;
+                    }}
+                    style={{
+                      flex: 1,
+                      justifyContent: "center",
+                    }}
+                  >
+                    <View
+                      style={{
+                        height: 10,
+                        backgroundColor: COLORS.progressBackground,
+                        borderRadius: 5,
+                      }}
+                    >
+                      <View
+                        style={{
+                          height: "100%",
+                          width: `${progressPercentage}%`,
+                          backgroundColor: COLORS.progressBar,
+                          borderRadius: 5,
+                        }}
+                      />
+                    </View>
+                  </Pressable>
                   <TimeContainer>
                     <TimeText>{formatTime(position)}</TimeText>
                     <TimeText>{formatTime(duration)}</TimeText>
@@ -461,7 +516,23 @@ const Exercise = () => {
                     handleAnswerButtonClick(answerOption.isCorrect, index)
                   }
                   selected={selectedAnswer && selectedAnswer.index === index}
-                  isCorrect={selectedAnswer?.isCorrect}
+                  isCorrect={
+                    selectedAnswer &&
+                    selectedAnswer.index === index &&
+                    selectedAnswer.isCorrect
+                  }
+                  style={{
+                    transform: [
+                      {
+                        scale:
+                          selectedAnswer &&
+                          selectedAnswer.index === index &&
+                          selectedAnswer.isCorrect
+                            ? bounceAnim
+                            : 1,
+                      },
+                    ],
+                  }}
                 >
                   <AnswerText
                     selected={selectedAnswer && selectedAnswer.index === index}
@@ -484,7 +555,7 @@ const Exercise = () => {
               resizeMode="contain"
             />
             <ResultText>
-              Congratulations!{"\n"}You scored {correctAnswers} out of{" "}
+              🎉 Congratulations! 🎉{"\n"}You scored {correctAnswers} out of{" "}
               {questions.length}
             </ResultText>
             <ModalButton onPress={handleTakeHome}>
