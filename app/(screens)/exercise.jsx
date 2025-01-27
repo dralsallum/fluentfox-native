@@ -386,7 +386,7 @@ const Exercise = () => {
     bounceAnim.setValue(1);
     Animated.sequence([
       Animated.timing(bounceAnim, {
-        toValue: 1.2,
+        toValue: 1.1,
         duration: 200,
         useNativeDriver: true,
       }),

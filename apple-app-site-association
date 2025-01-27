@@ -1,0 +1,14 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "3FTRLRVZ84.com.dralsallum.fluentfox",
+        "paths": [
+          "/subscription",
+          "/subscription/*"
+        ]
+      }
+    ]
+  }
+}

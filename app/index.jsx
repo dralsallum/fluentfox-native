@@ -1,12 +1,25 @@
+// index.jsx
 import { Link, Redirect, router } from "expo-router";
 import React, { useState } from "react";
+import { useSelector } from "react-redux"; // For accessing Redux state
+import { userSelector } from "../app/redux/authSlice"; // Adjust import path to your authSlice
 import { StatusBar } from "react-native";
 import styled from "styled-components/native";
 import LottieView from "lottie-react-native";
 
 const Index = () => {
+  // Local state for any loading you may do
   const [isLoading, setIsLoading] = useState(false);
 
+  // 1) Grab the user from Redux
+  const { currentUser } = useSelector(userSelector);
+
+  // 2) If logged in, redirect immediately
+  if (currentUser) {
+    return <Redirect href="home" />;
+  }
+
+  // Handlers for your buttons
   const handleButtonPress = () => {
     router.push("onboarding");
   };
@@ -23,11 +36,11 @@ const Index = () => {
           autoPlay
           loop
           style={{
-            width: 250, // Adjust the size as needed
+            width: 250,
             height: 250,
           }}
         />
-        <Subtitle>ابدأ رحلتك التعليمة. اليوم!</Subtitle>
+        <Subtitle>ابدأ رحلتك التعليمية. اليوم!</Subtitle>
         <ButtonContainer>
           <Button onPress={handleButtonPress} isLoading={isLoading}>
             <ButtonText>ابدأ الآن</ButtonText>
@@ -43,7 +56,8 @@ const Index = () => {
 
 export default Index;
 
-// Styled Components
+// --------------- Styled Components ---------------
+
 const SafeArea = styled.SafeAreaView`
   flex: 1;
   background-color: #f7f7f7;
@@ -54,11 +68,6 @@ const Container = styled.View`
   align-items: center;
   justify-content: center;
   padding-bottom: 50px;
-`;
-
-const Logo = styled.Image`
-  width: 350px;
-  height: 100px;
 `;
 
 const Subtitle = styled.Text`
@@ -103,7 +112,6 @@ const ButtonSign = styled.TouchableOpacity`
   shadow-opacity: 0.25;
   shadow-radius: 3.84px;
   elevation: 5;
-  opacity: ${(props) => (props.isLoading ? 0.5 : 1)};
   background-color: #ffffff;
 `;
 

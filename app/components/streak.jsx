@@ -4,50 +4,64 @@ import { useSelector } from "react-redux";
 import { userSelector } from "../redux/authSlice";
 import styled from "styled-components/native";
 import LottieView from "lottie-react-native";
-import { View, Image, Text } from "react-native";
+import { View, Image } from "react-native";
 
 // Styled Components
-const SafeArea = styled.SafeAreaView`
-  flex: 1;
-  background-color: #ffffff;
-  justify-content: space-between;
-`;
-
 const StreakContainer = styled.View`
-  flex: 1;
   justify-content: center;
   align-items: center;
   padding: 20px;
 `;
 
-const DayCircle = styled.View`
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
-  border: 2px solid ${({ completed }) => (completed ? "#4caf50" : "#e1e1e1")};
-  background-color: ${({ completed }) => (completed ? "#4caf50" : "#ffffff")};
-  justify-content: center;
+const StreakMessage = styled.Text`
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #ff6f61;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+`;
+
+const DaysRow = styled.View`
+  flex-direction: row;
+  justify-content: space-around;
+  width: 100%;
+  margin-vertical: 20px;
+`;
+
+const DayItem = styled.View`
   align-items: center;
 `;
 
-const DayText = styled.Text`
-  font-size: 12px;
-  color: ${({ completed }) => (completed ? "#000" : "#333333")};
-  margin-top: 5px;
+const DayCircle = styled.View`
+  width: 30px;
+  height: 30px;
+  border-radius: 25px;
+  border: 2px solid ${({ completed }) => (completed ? "#FFD700" : "#e1e1e1")};
+  background-color: ${({ completed }) => (completed ? "#FFD700" : "#ffffff")};
+  justify-content: center;
+  align-items: center;
+  margin: 5px;
+  elevation: ${({ completed }) => (completed ? 4 : 0)};
+  shadow-color: #000;
+  shadow-offset: 0px 2px;
+  shadow-opacity: 0.2;
+  shadow-radius: 2px;
 `;
 
-const StreakMessage = styled.Text`
-  font-size: 22px;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 10px;
+const DayText = styled.Text`
+  font-size: 14px;
+  color: ${({ completed }) => (completed ? "#000" : "#333333")};
+  margin-top: 5px;
 `;
 
 const Streak = () => {
   const { currentUser } = useSelector(userSelector);
   const streakCount = currentUser?.streak?.count || 0;
-  const lastUpdated = currentUser?.streak?.lastUpdated
-    ? new Date(currentUser.streak.lastUpdated)
+
+  // Get the timestamp instead of a Date object
+  const lastUpdatedTime = currentUser?.streak?.lastUpdated
+    ? new Date(currentUser.streak.lastUpdated).getTime()
     : null;
 
   const [rotatedDays, setRotatedDays] = useState([
@@ -61,89 +75,54 @@ const Streak = () => {
   ]);
 
   useEffect(() => {
-    if (lastUpdated && streakCount > 0) {
-      // Calculate the start date of the streak
-      const startDate = new Date(lastUpdated);
+    if (lastUpdatedTime && streakCount > 0) {
+      const startDate = new Date(lastUpdatedTime);
       startDate.setDate(startDate.getDate() - (streakCount - 1));
-
-      // Get the day of the week for the start date (0 = Sunday, 1 = Monday, ...)
       const startDayIndex = startDate.getDay();
-
-      // Original days of the week starting from Sunday
       const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-      // Rotate the daysOfWeek array so that it starts from the startDayIndex
       const rotated = [
         ...daysOfWeek.slice(startDayIndex),
         ...daysOfWeek.slice(0, startDayIndex),
       ];
-
-      // Only update state if rotatedDays is different to prevent unnecessary re-renders
-      const isDifferent =
-        rotated.length !== rotatedDays.length ||
-        rotated.some((day, index) => day !== rotatedDays[index]);
-
-      if (isDifferent) {
-        setRotatedDays(rotated);
-      }
+      setRotatedDays(rotated);
     } else {
-      // If no streak, show default order
-      const defaultDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-      const isDifferent =
-        defaultDays.length !== rotatedDays.length ||
-        defaultDays.some((day, index) => day !== rotatedDays[index]);
-
-      if (isDifferent) {
-        setRotatedDays(defaultDays);
-      }
+      setRotatedDays(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
     }
-  }, [lastUpdated, streakCount, rotatedDays]);
+  }, [lastUpdatedTime, streakCount]); // Use the timestamp here
 
-  // Function to determine if a particular day in the rotated array is completed
   const isDayCompleted = (index) => {
     return index < streakCount;
   };
 
   return (
-    <SafeArea>
-      <StreakContainer>
-        <LottieView
-          source={require("../utils/fireAnimation - 1724581924405.json")}
-          autoPlay
-          loop
-          style={{ width: 120, height: 120 }}
-        />
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-around",
-            width: "90%",
-            marginVertical: 20,
-          }}
-        >
-          {rotatedDays.map((day, index) => (
-            <View key={index} style={{ alignItems: "center" }}>
-              <DayCircle completed={isDayCompleted(index)}>
-                {isDayCompleted(index) && (
-                  <Image
-                    source={require("../../assets/icons/check.png")}
-                    style={{ width: 20, height: 20 }}
-                  />
-                )}
-              </DayCircle>
-              <DayText completed={isDayCompleted(index)}>{day}</DayText>
-            </View>
-          ))}
-        </View>
-        <StreakMessage>
-          {streakCount > 0
-            ? `You've started a streak of ${streakCount} day${
-                streakCount > 1 ? "s" : ""
-              }!`
-            : "Start your streak by signing in daily!"}
-        </StreakMessage>
-      </StreakContainer>
-    </SafeArea>
+    <StreakContainer>
+      <LottieView
+        source={require("../utils/fireAnimation - 1724581924405.json")}
+        autoPlay
+        loop
+        style={{ width: 120, height: 120 }}
+      />
+      <DaysRow>
+        {rotatedDays.map((day, index) => (
+          <DayItem key={index}>
+            <DayCircle completed={isDayCompleted(index)}>
+              {isDayCompleted(index) && (
+                <Image
+                  source={require("../../assets/icons/check.png")}
+                  style={{ width: 20, height: 20 }}
+                />
+              )}
+            </DayCircle>
+            <DayText completed={isDayCompleted(index)}>{day}</DayText>
+          </DayItem>
+        ))}
+      </DaysRow>
+      <StreakMessage>
+        {streakCount > 0
+          ? `حافظت على سلسلة من ${streakCount} أيام! استمر يابطل!`
+          : "ابدأ سلسلة تعلمك اليوم!"}
+      </StreakMessage>
+    </StreakContainer>
   );
 };
 

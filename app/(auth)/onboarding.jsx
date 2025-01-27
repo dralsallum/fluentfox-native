@@ -1,3 +1,4 @@
+// onboarding.jsx
 import React, { useState, useEffect } from "react";
 import styled from "styled-components/native";
 import {
@@ -229,7 +230,7 @@ const questions = [
     options: [
       { text: "أنا مبتدئ", icon: require("../../assets/icons/beginner.png") },
       {
-        text: "أعرف بعض الإنجليزية",
+        text: "لدي بعض المعرفة بالإنجليزي، أريد تحديد مستواي بالبداية!",
         icon: require("../../assets/icons/expert.png"),
       },
     ],
@@ -371,7 +372,10 @@ const Onboarding = () => {
       // Check if the current question is "مرحبًا، كم تعرف من اللغة الإنجليزية؟"
       if (currentQuestion.question === "مرحبًا، كم تعرف من اللغة الإنجليزية؟") {
         const selectedOption = currentQuestion.options[selectedOptionIndex];
-        if (selectedOption.text === "أعرف بعض الإنجليزية") {
+        if (
+          selectedOption.text ===
+          "لدي بعض المعرفة بالإنجليزي، أريد تحديد مستواي بالبداية!"
+        ) {
           setNeedTestFirst(true);
         } else {
           setNeedTestFirst(false); // Ensure it's false if another option is selected

@@ -1,28 +1,38 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { fetchUnlockedSets } from "../redux/lessonsSlice";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { fetchAds, selectAds } from "../redux/adsSlice";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   TouchableOpacity,
   View,
-  ScrollView,
   Dimensions,
   Animated,
   Linking,
   Platform,
   Alert,
+  RefreshControl, // <-- Import for Pull-to-Refresh
 } from "react-native";
 import { router } from "expo-router";
-import chapterItems from "../utils/chapterItems";
-import CustomLoadingIndicator from "../components/LoadingIndicator";
-import Navbar from "../components/navigation/navbar";
+import { useSelector, useDispatch } from "react-redux";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import styled from "styled-components/native";
 import { Image as ExpoImage } from "expo-image";
+
+// Redux actions & selectors
+import { fetchUnlockedSets } from "../redux/lessonsSlice";
+import { fetchAds, selectAds } from "../redux/adsSlice";
+
+// Components
+import Navbar from "../components/navigation/navbar";
+import CustomLoadingIndicator from "../components/LoadingIndicator";
+import Streak from "../components/streak";
+
+// Utils
+import chapterItems from "../utils/chapterItems";
+
+// Assets
 import placeholderImage from "../../assets/images/placeholder.webp";
 import AdsImage from "../../assets/icons/ads.png";
 import PremiumImage from "../../assets/icons/premium.png";
 
+// ----------------- Styled components -----------
 const screenWidth = Dimensions.get("window").width;
 
 const LoadingAll = styled.View`
@@ -38,9 +48,11 @@ const SafeArea = styled.SafeAreaView`
   direction: rtl;
 `;
 
-// Styled component for ScrollView with forwarded ref
+// We can attach RefreshControl to any ScrollView-based component (including this styled one).
 const QueWra = styled(
-  React.forwardRef((props, ref) => <ScrollView {...props} ref={ref} />)
+  React.forwardRef(({ refreshControl, ...props }, ref) => (
+    <Animated.ScrollView {...props} ref={ref} refreshControl={refreshControl} />
+  ))
 )`
   flex: 1;
   direction: rtl;
@@ -315,11 +327,8 @@ const QueChaPicSvg = styled.View`
 `;
 
 const QueChaPicDef = styled.View``;
-
 const QueChaPicLin = styled.View``;
-
 const QueChaPicSto = styled.View``;
-
 const QueChaPicCir = styled.View``;
 
 const QueChaPicSec = styled.View`
@@ -388,37 +397,26 @@ const QueChaPoi = styled.View`
 `;
 
 const StyledModal = styled.Modal``;
-
 const ModalContainer = styled.View`
   flex: 1;
   justify-content: flex-end;
   background-color: rgba(0, 0, 0, 0.5);
 `;
-
 const ModalContent = styled.View`
   background-color: white;
   padding: 20px;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
 `;
-
 const ModalHeader = styled.View`
   flex-direction: row;
   align-items: center;
   margin-bottom: 15px;
 `;
-
-const FlagIcon = styled(ExpoImage)`
-  width: 30px;
-  height: 30px;
-  margin-right: 10px;
-`;
-
 const ModalTitle = styled.Text`
   font-size: 18px;
   font-weight: bold;
 `;
-
 const LevelItem = styled.TouchableOpacity`
   flex-direction: row;
   align-items: center;
@@ -426,27 +424,14 @@ const LevelItem = styled.TouchableOpacity`
   border-bottom-width: 1px;
   border-bottom-color: #f0f0f0;
 `;
-
 const LevelIcon = styled(ExpoImage)`
   width: 40px;
   height: 40px;
   margin-right: 15px;
 `;
-
 const LevelText = styled.Text`
   font-size: 16px;
 `;
-
-const CloseButton = styled.TouchableOpacity`
-  align-items: center;
-  margin-top: 20px;
-`;
-
-const CloseButtonText = styled.Text`
-  font-size: 16px;
-  color: blue;
-`;
-
 const CrossIcon = styled(ExpoImage)`
   width: 25px;
   height: 25px;
@@ -454,19 +439,16 @@ const CrossIcon = styled(ExpoImage)`
 `;
 
 const StyledSecModal = styled.Modal``;
-
 const ModalText = styled.Text`
   font-size: 16px;
   color: #4c4f69;
   text-align: center;
   margin-bottom: 20px;
 `;
-
 const CrownIcon = styled(ExpoImage)`
   width: 50px;
   height: 50px;
 `;
-
 const ActionButton = styled.TouchableOpacity`
   width: 100%;
   padding: 15px;
@@ -476,33 +458,27 @@ const ActionButton = styled.TouchableOpacity`
   flex-direction: row;
   justify-content: center;
 `;
-
 const PrimaryButton = styled(ActionButton)`
   background-color: #4c47e9;
 `;
-
 const PrimaryButtonText = styled.Text`
   color: white;
   font-size: 18px;
   font-weight: bold;
 `;
-
 const SecondaryButton = styled(ActionButton)`
   background-color: #f5c853;
 `;
-
 const SecondaryButtonText = styled.Text`
   color: #805c19;
   font-size: 18px;
   font-weight: bold;
 `;
-
 const ModalSecContainer = styled.View`
   flex: 1;
   justify-content: flex-end;
   background-color: rgba(0, 0, 0, 0.5);
 `;
-
 const ModalTitleCentered = styled.Text`
   font-size: 24px;
   font-weight: bold;
@@ -510,7 +486,6 @@ const ModalTitleCentered = styled.Text`
   flex: 1;
   color: #4c47e9;
 `;
-
 const ModalSecHeader = styled.View`
   flex-direction: row;
   align-items: center;
@@ -520,13 +495,11 @@ const ModalSecHeader = styled.View`
   margin-left: 30px;
   height: 50px;
 `;
-
 const CrossButtonAds = styled.TouchableOpacity`
   position: absolute;
   left: 0;
   z-index: 1;
 `;
-
 const NumberDisplay = styled.Text`
   font-size: 48px;
   font-weight: bold;
@@ -534,13 +507,11 @@ const NumberDisplay = styled.Text`
   text-align: center;
   margin-bottom: 10px;
 `;
-
 const ProgressContainer = styled.View`
   flex-direction: row;
   justify-content: center;
   margin-bottom: 10px;
 `;
-
 const ProgressBox = styled.View`
   width: 40px;
   height: 10px;
@@ -548,7 +519,6 @@ const ProgressBox = styled.View`
   background-color: ${({ filled }) => (filled ? "#4c47e9" : "#d3d3d3")};
   border-radius: 4px;
 `;
-
 const UpgradeText = styled.Text`
   font-size: 16px;
   color: #4c4f69;
@@ -557,6 +527,60 @@ const UpgradeText = styled.Text`
   font-weight: bold;
 `;
 
+const StreakModal = styled.Modal``;
+const ModalOverlay = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+`;
+const CloseIcon = styled(ExpoImage)`
+  width: 24px;
+  height: 24px;
+`;
+const ModalStreakOverlay = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+`;
+const ModalStreakContent = styled.View`
+  background-color: white;
+  padding: 20px;
+  border-radius: 20px;
+  align-items: center;
+  width: 90%;
+  max-height: 80%;
+  elevation: 5;
+  shadow-color: #000;
+  shadow-offset: 0px 2px;
+  shadow-opacity: 0.3;
+  shadow-radius: 4px;
+`;
+const CloseStreakButton = styled.TouchableOpacity`
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 1;
+`;
+const CloseStreakIcon = styled(ExpoImage)`
+  width: 24px;
+  height: 24px;
+`;
+const ToggleButton = styled.TouchableOpacity`
+  padding: 10px 20px;
+  background-color: #4c47e9;
+  margin: 10px 20px;
+  border-radius: 10px;
+  align-items: center;
+`;
+const ToggleButtonText = styled.Text`
+  font-size: 16px;
+  color: #fff;
+  font-weight: bold;
+`;
+
+// -------- Helper to filter chapters by level --------
 const filterChaptersByLevel = (level) => {
   switch (level) {
     case "مبتدى أ١":
@@ -584,6 +608,7 @@ const filterChaptersByLevel = (level) => {
   }
 };
 
+// -------- ChapterItem component --------
 const ChapterItem = ({
   imgSrc,
   mainText,
@@ -601,10 +626,12 @@ const ChapterItem = ({
   const handlePress = () => {
     if (isUnlocked && set) {
       if (!isPaid) {
+        // show Ads modal if user is not paid
         setSelectedLessonUrl(url);
         setSelectedLessonSet(set);
         setSecondModalVisible(true);
       } else {
+        // user is paid -> go directly to lesson
         router.push({ pathname: url, params: { set } });
       }
     }
@@ -654,6 +681,7 @@ const ChapterItem = ({
           </QueChaIteEle>
         </View>
 
+        {/* The connecting line except for the last item in the chapter */}
         {lessonId !== 5 && (
           <QueChaPoiCon>
             <QueChaPoi />
@@ -664,6 +692,7 @@ const ChapterItem = ({
   );
 };
 
+// -------- Chapter component --------
 const Chapter = ({
   chapterNumber,
   chapterItems,
@@ -703,6 +732,7 @@ const Chapter = ({
           </QueChaProSpa>
         </QueChaProCon>
       </QueChaOneHeaCon>
+
       {chapterItems.map((item, index) => (
         <ChapterItem
           key={index}
@@ -723,63 +753,58 @@ const Chapter = ({
   );
 };
 
+// -------- Main Home component --------
 const Home = () => {
+  const dispatch = useDispatch();
+  const userId = useSelector((state) => state.user.currentUser?._id);
+  const ads = useSelector(selectAds); // The current ads count in Redux
+  const [selectedLessonUrl, setSelectedLessonUrl] = useState(null);
+  const [selectedLessonSet, setSelectedLessonSet] = useState(null);
+
+  // Local states
   const [modalVisible, setModalVisible] = useState(false);
   const [secondModalVisible, setSecondModalVisible] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState("مبتدى أ١");
-  const unlockedSets = useSelector((state) => state.lessons.unlockedSets);
-  const userId = useSelector((state) => state.user.currentUser?._id);
-  const isPaid = useSelector((state) => state.user.currentUser?.isPaid);
-  const dispatch = useDispatch();
+  const [isStreakModalVisible, setIsStreakModalVisible] = useState(false);
+  const [hasRatedApp, setHasRatedApp] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const userXp = useSelector((state) => state.lessons.xp ?? 0);
-  const [selectedLessonUrl, setSelectedLessonUrl] = useState(null);
-  const [selectedLessonSet, setSelectedLessonSet] = useState(null);
-  const ads = useSelector(selectAds);
-  const maxAds = 3;
-  const filledAds = Math.min(ads, maxAds);
-  const [hasRatedApp, setHasRatedApp] = useState(false);
-
-  const scrollViewRef = useRef(null);
-  const chapterPositions = useRef({});
   const [chaptersLaidOut, setChaptersLaidOut] = useState(0);
 
+  const userXp = useSelector((state) => state.lessons.xp ?? 0);
+  const unlockedSets = useSelector((state) => state.lessons.unlockedSets);
+
+  // Ads progress
+  const maxAds = 3;
+  const filledAds = Math.min(ads, maxAds);
+
+  // Refs
+  const scrollViewRef = useRef(null);
+  const chapterPositions = useRef({});
+  const scaleValue = useRef(new Animated.Value(1)).current;
+
+  // Pull-to-refresh
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Group chapters by ID
   const filteredChapters = filterChaptersByLevel(selectedLevel);
   const groupedChapters = filteredChapters.reduce((acc, item) => {
-    if (!acc[item.chapterId]) {
-      acc[item.chapterId] = [];
-    }
+    if (!acc[item.chapterId]) acc[item.chapterId] = [];
     acc[item.chapterId].push(item);
     return acc;
   }, {});
-
   const totalChapters = Object.keys(groupedChapters).length;
 
+  // Figure out last unlocked chapter for auto-scroll
   const unlockedChapterNumbers = Object.keys(unlockedSets)
     .filter((chapterNumber) => unlockedSets[chapterNumber]?.length > 0)
     .map((chapterNumStr) => parseInt(chapterNumStr, 10));
-
   const lastUnlockedChapterNumber =
     unlockedChapterNumbers.length > 0
       ? Math.max(...unlockedChapterNumbers)
       : null;
 
-  useEffect(() => {
-    const loadHasRatedApp = async () => {
-      try {
-        const value = await AsyncStorage.getItem("hasRatedApp");
-        if (value !== null) {
-          setHasRatedApp(value === "true");
-        }
-      } catch (e) {
-        // Handle error if needed
-      }
-    };
-    loadHasRatedApp();
-  }, []);
-
-  const scaleValue = useRef(new Animated.Value(1)).current;
+  // Animate scale for the "المستوى"
   useEffect(() => {
     const scaling = Animated.sequence([
       Animated.timing(scaleValue, {
@@ -796,6 +821,67 @@ const Home = () => {
     Animated.loop(scaling).start();
   }, [scaleValue]);
 
+  // Pull-to-refresh handler
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      if (userId) {
+        await dispatch(fetchUnlockedSets(userId)).unwrap();
+        await dispatch(fetchAds(userId)).unwrap();
+      }
+    } catch (err) {
+      Alert.alert("خطأ", "فشل تحديث البيانات");
+    } finally {
+      setRefreshing(false);
+    }
+  }, [dispatch, userId]);
+
+  // Periodic fetch every 30 seconds
+  useEffect(() => {
+    // Only if user is logged in
+    if (!userId) return;
+
+    const intervalId = setInterval(() => {
+      dispatch(fetchAds(userId));
+      dispatch(fetchUnlockedSets(userId));
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(intervalId);
+  }, [dispatch, userId]);
+
+  // Fetch user rating info
+  useEffect(() => {
+    const loadHasRatedApp = async () => {
+      try {
+        const value = await AsyncStorage.getItem("hasRatedApp");
+        if (value !== null) {
+          setHasRatedApp(value === "true");
+        }
+      } catch (e) {
+        // handle error if needed
+      }
+    };
+    loadHasRatedApp();
+  }, []);
+
+  // Show streak modal once every 24 hours
+  useEffect(() => {
+    const checkStreakModal = async () => {
+      try {
+        const lastShown = await AsyncStorage.getItem("lastStreakModalShown");
+        const now = new Date();
+        if (!lastShown || now - new Date(lastShown) >= 24 * 60 * 60 * 1000) {
+          setIsStreakModalVisible(true);
+          await AsyncStorage.setItem("lastStreakModalShown", now.toISOString());
+        }
+      } catch (error) {
+        console.error("Error accessing AsyncStorage:", error);
+      }
+    };
+    checkStreakModal();
+  }, []);
+
+  // Possibly open store review page if XP hits certain thresholds
   const openStoreReviewPage = async () => {
     const appStoreId = "6673901781";
     const playStoreId = "your-play-store-id";
@@ -806,43 +892,41 @@ const Home = () => {
     } else {
       Linking.openURL(`market://details?id=${playStoreId}`);
     }
-
     setHasRatedApp(true);
     try {
       await AsyncStorage.setItem("hasRatedApp", "true");
     } catch (e) {
-      // Handle error if needed
+      // handle error if needed
     }
   };
 
   useEffect(() => {
-    if ([3, 8, 13].includes(userXp) && !hasRatedApp) {
+    if ([3, 8, 13, 18].includes(userXp) && !hasRatedApp) {
       openStoreReviewPage();
     }
   }, [userXp, hasRatedApp]);
 
+  // Initial load of lessons & ads
   useEffect(() => {
     const loadData = async () => {
       if (userId) {
         try {
           await dispatch(fetchUnlockedSets(userId)).unwrap();
-        } catch (err) {
-          setError("Failed to load lessons data. Please try again.");
-        }
-
-        try {
           await dispatch(fetchAds(userId)).unwrap();
         } catch (err) {
-          setError("Failed to load ads data. Please try again.");
+          setError("Failed to load data. Please try again.");
         } finally {
           setLoading(false);
         }
+      } else {
+        // No user ID => no data
+        setLoading(false);
       }
     };
-
     loadData();
   }, [dispatch, userId]);
 
+  // Auto-scroll to last unlocked chapter
   useEffect(() => {
     if (
       !loading &&
@@ -860,36 +944,47 @@ const Home = () => {
     }
   }, [loading, chaptersLaidOut, totalChapters, lastUnlockedChapterNumber]);
 
-  const handleToggleModal = () => {
-    setModalVisible(!modalVisible);
-  };
+  // Modal toggles
+  const handleToggleModal = () => setModalVisible(!modalVisible);
+  const handleCloseSecondModal = () => setSecondModalVisible(false);
 
-  const handleCloseSecondModal = () => {
-    setSecondModalVisible(false);
-  };
-
+  // Payment flow
   const handlePayment = () => {
     router.push("subscription");
   };
 
+  // Level selection
   const handleSelectLevel = (level) => {
     setSelectedLevel(level);
     setModalVisible(false);
   };
 
+  // handleWatchAds
   const handleWatchAds = async () => {
-    if (ads > 0) {
-      setSecondModalVisible(false);
-      router.push({
-        pathname: "/ads",
-        params: { lessonUrl: selectedLessonUrl, set: selectedLessonSet },
-      });
-    } else {
-      Alert.alert(
-        "تم الوصول إلى الحد اليومي",
-        "يمكنك أخذ الدروس مرة أخرى خلال 24 ساعة أو الاشتراك.",
-        [{ text: "حسنًا" }]
-      );
+    try {
+      if (userId) {
+        // This updates Redux state => ads in the store changes automatically
+        await dispatch(fetchAds(userId)).unwrap();
+      }
+
+      // ✅ We can just use the latest `ads` here
+      //    (because after the dispatch finishes, Redux will have updated it).
+      if (ads > 0) {
+        setSecondModalVisible(false);
+        router.push({
+          pathname: "/ads",
+          params: { lessonUrl: selectedLessonUrl, set: selectedLessonSet },
+        });
+      } else {
+        Alert.alert(
+          "تم الوصول إلى الحد اليومي",
+          "يمكنك أخذ الدروس مرة أخرى خلال 24 ساعة أو الاشتراك.",
+          [{ text: "حسنًا" }]
+        );
+      }
+    } catch (err) {
+      console.log("Error refreshing ads:", err);
+      Alert.alert("خطأ", "حصل خطأ في التحقق من الاعلانات. حاول مرة أخرى.");
     }
   };
 
@@ -910,18 +1005,20 @@ const Home = () => {
     <SafeArea>
       <Navbar />
       <QueMa>
-        <QueWra ref={scrollViewRef}>
+        {/* We attach the RefreshControl to our styled ScrollView via props */}
+        <QueWra
+          ref={scrollViewRef}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
           <QueCon>
             <QueSubCon>
               <QueTiCon>
                 <QueTi>تعلم الانجليزي</QueTi>
                 <TouchableOpacity onPress={handleToggleModal}>
                   <QueSubTitCon>
-                    <QueSubTit
-                      style={{
-                        transform: [{ scale: scaleValue }],
-                      }}
-                    >
+                    <QueSubTit style={{ transform: [{ scale: scaleValue }] }}>
                       <QueLe>المستوى:</QueLe>
                       <QueLeCo> {selectedLevel} </QueLeCo>
                     </QueSubTit>
@@ -935,7 +1032,6 @@ const Home = () => {
                   </QueSubTitCon>
                 </TouchableOpacity>
               </QueTiCon>
-
               <QueTimline>
                 <QueTiBoCon>
                   <QueTiBo>
@@ -969,6 +1065,8 @@ const Home = () => {
                       </QueTimKey>
                     </QueTiKeyCon>
                   </QueTiBo>
+
+                  {/* Render chapters */}
                   {Object.keys(groupedChapters).map((chapterId) => {
                     const currentChapterItems = groupedChapters[chapterId];
                     const handleChapterLayout = (chapterId) => (event) => {
@@ -976,6 +1074,7 @@ const Home = () => {
                       chapterPositions.current[chapterId] = layout.y;
                       setChaptersLaidOut((prevCount) => prevCount + 1);
                     };
+
                     return (
                       <Chapter
                         key={chapterId}
@@ -1014,27 +1113,44 @@ const Home = () => {
             </ModalHeader>
             <LevelItem onPress={() => handleSelectLevel("مبتدى أ١")}>
               <LevelIcon source={require("../../assets/icons/chat.png")} />
-              <LevelText>مبتدى أ ١ - الوحدة 1 - 5</LevelText>
+              <LevelText>مبتدى أ١ - الوحدة 1 - 5</LevelText>
             </LevelItem>
             <LevelItem onPress={() => handleSelectLevel("ابتدائي أ٢")}>
               <LevelIcon source={require("../../assets/icons/chat.png")} />
-              <LevelText>ابتدائي أ2 - الفصول 3 و 4</LevelText>
+              <LevelText>ابتدائي أ٢ - الفصول 6 - 10</LevelText>
             </LevelItem>
             <LevelItem onPress={() => handleSelectLevel("متوسط ب١")}>
               <LevelIcon source={require("../../assets/icons/chat.png")} />
-              <LevelText>متوسط ب1 - الفصول 5 و 6</LevelText>
+              <LevelText>متوسط ب١ - الفصول 11 - 15</LevelText>
             </LevelItem>
             <LevelItem onPress={() => handleSelectLevel("فوق المتوسط ب٢")}>
               <LevelIcon source={require("../../assets/icons/chat.png")} />
-              <LevelText>فوق المتوسط ب2 - الفصول 7 و 8</LevelText>
+              <LevelText>فوق المتوسط ب٢ - الفصول 16 - 20</LevelText>
             </LevelItem>
             <LevelItem onPress={() => handleSelectLevel("متقدم ج١")}>
               <LevelIcon source={require("../../assets/icons/chat.png")} />
-              <LevelText>متقدم ج1 - الفصول 9 و 10</LevelText>
+              <LevelText>متقدم ج١ - الفصول 21 - 25</LevelText>
             </LevelItem>
           </ModalContent>
         </ModalContainer>
       </StyledModal>
+
+      {/* Streak Modal */}
+      <StreakModal
+        transparent={true}
+        visible={isStreakModalVisible}
+        animationType="fade"
+        onRequestClose={() => setIsStreakModalVisible(false)}
+      >
+        <ModalStreakOverlay>
+          <ModalStreakContent>
+            <CloseStreakButton onPress={() => setIsStreakModalVisible(false)}>
+              <CloseIcon source={require("../../assets/icons/grayCross.png")} />
+            </CloseStreakButton>
+            <Streak />
+          </ModalStreakContent>
+        </ModalStreakOverlay>
+      </StreakModal>
 
       {/* Ads Modal */}
       <StyledSecModal
@@ -1054,14 +1170,17 @@ const Home = () => {
               <ModalTitleCentered>الحد اليومي</ModalTitleCentered>
               <View style={{ width: 40 }} />
             </ModalSecHeader>
+
             <NumberDisplay>{ads}</NumberDisplay>
             <ProgressContainer>
               {[...Array(maxAds)].map((_, index) => (
                 <ProgressBox key={index} filled={index < filledAds} />
               ))}
             </ProgressContainer>
+
             <ModalText>لديك {ads} استخدامات متاحة يوميًا.</ModalText>
             <UpgradeText>اشترك لتحصل على استخدام غير محدود!</UpgradeText>
+
             <PrimaryButton onPress={handleWatchAds}>
               <PrimaryButtonText>مشاهدة اعلان </PrimaryButtonText>
               <ExpoImage
@@ -1069,6 +1188,7 @@ const Home = () => {
                 style={{ width: 22, height: 22, marginLeft: 6 }}
               />
             </PrimaryButton>
+
             <SecondaryButton onPress={handleSubscription}>
               <SecondaryButtonText>اشترك</SecondaryButtonText>
               <ExpoImage

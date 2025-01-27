@@ -2,7 +2,7 @@
   "expo": {
     "name": "FluentFox",
     "slug": "fluentfox",
-    "version": "4.3.1",
+    "version": "4.6.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "fluentfox",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dralsallum.fluentfox",
-      "buildNumber": "127",
+      "buildNumber": "160",
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -105,20 +105,14 @@
       "expo-router",
       "react-native-iap",
       [
-        "react-native-google-mobile-ads",
-        {
-          "androidAppId": "ca-app-pub-7167740558520278~3989253100",
-          "iosAppId": "ca-app-pub-7167740558520278~3899158731"
-        }
-      ],
-      [
         "react-native-appsflyer",
         {
           "devKey": "qoAEWsD3N2Eb245wdusrJH",
           "appId": "6673901781"
         }
       ],
-      "react-native-video"
+      "react-native-video",
+      "expo-secure-store"
     ],
     "extra": {
       "router": {

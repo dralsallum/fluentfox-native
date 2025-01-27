@@ -1,15 +1,17 @@
 // Ads.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Dimensions,
-  ImageBackground,
   ActivityIndicator,
   Alert,
+  Image,
+  TouchableOpacity,
+  Linking,
+  Animated,
 } from "react-native";
 import { Video } from "expo-av";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, Link } from "expo-router";
 import styled from "styled-components/native";
-import TestSubImage from "../../assets/images/final.png"; // Adjust the path if necessary
 import { useDispatch, useSelector } from "react-redux";
 import { updateAds as updateAdsRedux, selectAds } from "../redux/adsSlice";
 import { createUserRequest } from "../../requestMethods"; // Adjust the path based on your project structure
@@ -18,6 +20,9 @@ const Ads = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { lessonUrl, set } = useLocalSearchParams();
+
+  // Reference to the Video component
+  const videoRef = useRef(null);
 
   // Access the current user's ID from Redux
   const userId = useSelector((state) => state.user.currentUser?._id);
@@ -29,35 +34,62 @@ const Ads = () => {
   const [countdown, setCountdown] = useState(15);
   const [showSubscription, setShowSubscription] = useState(false);
   const [isVideoReady, setIsVideoReady] = useState(false);
-  const [videoUrl, setVideoUrl] = useState(null); // New state for video URL
+  const [videoUrl, setVideoUrl] = useState(null); // Video URL
+  const [adDestination, setAdDestination] = useState(null); // Ad Destination
+  const [subscriptionImage, setSubscriptionImage] = useState(null); // Subscription Image URL
+  const [subscribeText, setSubscribeText] = useState("اشترك الآن"); // Default text
+  const [isImageLoaded, setIsImageLoaded] = useState(false); // Image Loading State
+  const [imageLoadError, setImageLoadError] = useState(false); // Image Load Error State
 
   // Create an instance of userRequest
   const userRequest = createUserRequest();
 
   useEffect(() => {
-    // Fetch the random video URL when the component mounts
-    const fetchVideoUrl = async () => {
+    // Fetch the random ad data when the component mounts
+    const fetchAdData = async () => {
       try {
         const response = await userRequest.get("/ads/random");
-        setVideoUrl(response.data.url);
+        const { videoUrl, destination, subscriptionImage, subscribeText } =
+          response.data;
+        setVideoUrl(videoUrl);
+        setAdDestination(destination);
+        setSubscriptionImage(subscriptionImage);
+        setSubscribeText(subscribeText); // Set the dynamic subscribe text
+
+        // Start preloading the subscription image in parallel
+        if (subscriptionImage) {
+          Image.prefetch(subscriptionImage)
+            .then(() => {
+              setIsImageLoaded(true);
+            })
+            .catch((error) => {
+              console.error("Error preloading subscription image:", error);
+              setImageLoadError(true);
+              // Optionally, set a fallback image or handle the error
+            });
+        }
       } catch (error) {
-        console.error("Error fetching video URL:", error);
-        Alert.alert("خطأ", "حدث خطأ أثناء جلب الفيديو.");
+        console.error("Error fetching ad data:", error);
+        Alert.alert("خطأ", "حدث خطأ أثناء جلب الإعلان.");
       }
     };
 
-    fetchVideoUrl();
+    fetchAdData();
   }, []);
 
   useEffect(() => {
     let timer;
     if (countdown > 0 && videoUrl) {
-      // Start the countdown only after the video URL is fetched
+      // Start the countdown immediately after video URL is set
       timer = setTimeout(() => {
         setCountdown((prevCountdown) => prevCountdown - 1);
       }, 1000);
     } else if (countdown === 0) {
       setShowSubscription(true);
+      // Pause the video when countdown reaches zero
+      if (videoRef.current) {
+        videoRef.current.pauseAsync();
+      }
     }
     return () => clearTimeout(timer);
   }, [countdown, videoUrl]);
@@ -93,12 +125,6 @@ const Ads = () => {
     }
   };
 
-  // Handler for Subscribe Button
-  const handleSubscribe = async () => {
-    // Navigate to the subscription screen
-    router.push("/subscription");
-  };
-
   // Handler for Close Ad Button
   const handleCloseAd = async () => {
     // Decrement ads count
@@ -108,11 +134,33 @@ const Ads = () => {
     router.push({ pathname: lessonUrl, params: { set } });
   };
 
+  // Function to handle Subscribe action
+  const handleSubscribe = () => {
+    if (!adDestination) {
+      Alert.alert("خطأ", "وجهة الإعلان غير متوفرة.");
+      return;
+    }
+
+    if (
+      adDestination.startsWith("http://") ||
+      adDestination.startsWith("https://")
+    ) {
+      // External URL - Open using Linking
+      Linking.openURL(adDestination).catch((err) =>
+        console.error("Failed to open URL:", err)
+      );
+    } else {
+      // Internal route - Navigate using router.push
+      router.push(adDestination);
+    }
+  };
+
   return (
     <Container>
       {/* Video Player */}
-      {videoUrl ? (
+      {!showSubscription && videoUrl ? (
         <StyledVideo
+          ref={videoRef}
           source={{
             uri: videoUrl,
           }}
@@ -126,15 +174,10 @@ const Ads = () => {
           onLoad={handleVideoLoaded}
           onError={handleVideoError}
         />
-      ) : (
-        // Show a loading indicator while fetching the video URL
-        <LoadingOverlay>
-          <ActivityIndicator size="large" color="#ffffff" />
-        </LoadingOverlay>
-      )}
+      ) : null}
 
       {/* Loading Indicator */}
-      {!isVideoReady && videoUrl && (
+      {!isVideoReady && videoUrl && !showSubscription && (
         <LoadingOverlay>
           <ActivityIndicator size="large" color="#ffffff" />
         </LoadingOverlay>
@@ -146,29 +189,71 @@ const Ads = () => {
           <CountdownText>{countdown}</CountdownText>
         </CountdownContainer>
       ) : (
-        <SubscriptionImageBackground
-          source={TestSubImage} // Using the imported local image
-          resizeMode="cover"
-        >
-          {/* Subscribe Button */}
-          <SubscribeButton
-            onPress={handleSubscribe}
-            accessibilityLabel="Subscribe Now"
-          >
-            <SubscribeButtonText>اشترك الان</SubscribeButtonText>
-          </SubscribeButton>
+        <>
+          {subscriptionImage && isImageLoaded && !imageLoadError ? (
+            <SubscriptionImageBackground
+              source={{ uri: subscriptionImage }} // Use the URL directly
+              resizeMode="cover"
+            >
+              {/* Subscribe Button */}
+              <SubscribeButton
+                onPress={handleSubscribe}
+                accessibilityLabel="Subscribe Now"
+              >
+                <SubscribeButtonText>{subscribeText}</SubscribeButtonText>
+              </SubscribeButton>
 
-          {/* Close Button in the Same Position as Countdown */}
-          <CloseButton onPress={handleCloseAd} accessibilityLabel="Close Ad">
-            <CloseButtonText>✕</CloseButtonText>
-          </CloseButton>
-        </SubscriptionImageBackground>
+              {/* Close Button in the Same Position as Countdown */}
+              <CloseButton
+                onPress={handleCloseAd}
+                accessibilityLabel="Close Ad"
+              >
+                <CloseButtonText>✕</CloseButtonText>
+              </CloseButton>
+            </SubscriptionImageBackground>
+          ) : imageLoadError ? (
+            // Fallback if subscriptionImage failed to load
+            <FallbackSubscription>
+              {/* Subscribe Button using Link for Internal Routes */}
+              {!adDestination ||
+              adDestination.startsWith("http://") ||
+              adDestination.startsWith("https://") ? (
+                <SubscribeButton
+                  onPress={handleSubscribe}
+                  accessibilityLabel="Subscribe Now"
+                >
+                  <SubscribeButtonText>{subscribeText}</SubscribeButtonText>
+                </SubscribeButton>
+              ) : (
+                <Link href={adDestination} passHref>
+                  <StyledLink>
+                    <SubscribeButtonText>{subscribeText}</SubscribeButtonText>
+                  </StyledLink>
+                </Link>
+              )}
+
+              {/* Close Button */}
+              <CloseButton
+                onPress={handleCloseAd}
+                accessibilityLabel="Close Ad"
+              >
+                <CloseButtonText>✕</CloseButtonText>
+              </CloseButton>
+            </FallbackSubscription>
+          ) : (
+            // Show loading indicator if image is not yet loaded
+            <LoadingOverlay>
+              <ActivityIndicator size="large" color="#ffffff" />
+            </LoadingOverlay>
+          )}
+        </>
       )}
     </Container>
   );
 };
 
 export default Ads;
+
 // Styled Components
 
 const Container = styled.View`
@@ -208,7 +293,7 @@ const CountdownText = styled.Text`
   font-weight: bold;
 `;
 
-const SubscriptionImageBackground = styled(ImageBackground)`
+const SubscriptionImageBackground = styled.ImageBackground`
   position: absolute;
   top: 0;
   left: 0;
@@ -218,9 +303,20 @@ const SubscriptionImageBackground = styled(ImageBackground)`
   align-items: center;
 `;
 
+const FallbackSubscription = styled.View`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: ${Dimensions.get("window").width}px;
+  height: ${Dimensions.get("window").height}px;
+  background-color: rgba(0, 0, 0, 0.8);
+  justify-content: center;
+  align-items: center;
+`;
+
 const SubscribeButton = styled.TouchableOpacity`
   background-color: #ff6347;
-  padding: 15px 30px;
+  padding: 15px 35px;
   border-radius: 25px;
   /* Positioning the button at the center */
   position: absolute;
@@ -229,14 +325,14 @@ const SubscribeButton = styled.TouchableOpacity`
 
 const SubscribeButtonText = styled.Text`
   color: #fff;
-  font-size: 18px;
+  font-size: 24px;
   font-weight: bold;
 `;
 
 const CloseButton = styled.TouchableOpacity`
   position: absolute;
   top: 40px;
-  left: 20px; /* Same position as CountdownContainer */
+  left: 20px;
   background-color: rgba(0, 0, 0, 0.5);
   padding: 10px;
   border-radius: 20px;
@@ -245,4 +341,15 @@ const CloseButton = styled.TouchableOpacity`
 const CloseButtonText = styled.Text`
   color: #fff;
   font-size: 18px;
+`;
+
+const StyledLink = styled.TouchableOpacity`
+  background-color: #ff6347;
+  padding: 15px 30px;
+  border-radius: 25px;
+  /* Positioning the button at the center */
+  position: absolute;
+  bottom: 100px;
+  justify-content: center;
+  align-items: center;
 `;

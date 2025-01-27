@@ -5,6 +5,7 @@ import { fetchUnlockedSets } from "./lessonsSlice";
 import { fetchScore, updateScore } from "./scoreSlice";
 import { fetchAds, updateAds } from "./adsSlice";
 import { fetchExercise, updateExercise } from "./exerciseSlice";
+import * as SecureStore from "expo-secure-store";
 
 // Thunk to update streak count
 export const updateStreakCount = createAsyncThunk(
@@ -92,7 +93,6 @@ export const login = createAsyncThunk(
       thunkAPI.dispatch(fetchUnlockedSets(response.data._id));
 
       // Dispatch updateStreakCount after successful login
-      thunkAPI.dispatch(updateStreakCount({ userId: response.data._id }));
 
       // Dispatch fetchScore to get the user's score
       thunkAPI.dispatch(fetchScore(response.data._id));
@@ -125,7 +125,6 @@ export const register = createAsyncThunk(
       thunkAPI.dispatch(fetchUnlockedSets(response.data._id));
 
       // Dispatch updateStreakCount after successful registration
-      thunkAPI.dispatch(updateStreakCount({ userId: response.data._id }));
 
       // Dispatch fetchScore to get the user's score
       thunkAPI.dispatch(fetchScore(response.data._id));
@@ -158,6 +157,9 @@ const userSlice = createSlice({
       state.isSuccess = false;
       state.isError = false;
       state.errorMessage = "";
+      SecureStore.deleteItemAsync("refreshToken").catch((err) =>
+        console.log("Error removing refreshToken:", err)
+      );
     },
     clearState: (state) => {
       state.isError = false;
@@ -181,6 +183,12 @@ const userSlice = createSlice({
         state.isFetching = false;
         state.isSuccess = true;
         state.currentUser = action.payload;
+        if (action.payload.refreshToken) {
+          SecureStore.setItemAsync(
+            "refreshToken",
+            action.payload.refreshToken
+          ).catch((err) => console.log("Error storing refreshToken:", err));
+        }
         state.isError = false;
         state.errorMessage = "";
       })
@@ -199,6 +207,13 @@ const userSlice = createSlice({
         state.isFetching = false;
         state.isSuccess = true;
         state.currentUser = action.payload;
+        if (action.payload.refreshToken) {
+          SecureStore.setItemAsync(
+            "refreshToken",
+            action.payload.refreshToken
+          ).catch((err) => console.log("Error storing refreshToken:", err));
+        }
+
         state.isError = false;
         state.errorMessage = "";
       })

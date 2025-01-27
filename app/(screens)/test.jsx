@@ -389,7 +389,7 @@ const Test = () => {
     bounceAnim.setValue(1);
     Animated.sequence([
       Animated.timing(bounceAnim, {
-        toValue: 1.2,
+        toValue: 1.1,
         duration: 200,
         useNativeDriver: true,
       }),
@@ -399,12 +399,6 @@ const Test = () => {
         useNativeDriver: true,
       }),
     ]).start();
-  };
-
-  // Handle Navigation Back to Stories
-  const handleBackToStories = () => {
-    setShowModal(false); // Hide the modal
-    router.push("home");
   };
 
   // Handle Take Home Action
@@ -417,10 +411,10 @@ const Test = () => {
         // Determine how many lessons to unlock
         let unlockTimes = 0;
 
-        if (scorePercentage >= 50 && scorePercentage <= 70) {
-          unlockTimes = 3;
-        } else if (scorePercentage >= 71 && scorePercentage <= 100) {
+        if (scorePercentage >= 50 && scorePercentage <= 80) {
           unlockTimes = 5;
+        } else if (scorePercentage >= 81 && scorePercentage <= 100) {
+          unlockTimes = 9;
         }
 
         // Dispatch unlockNextLesson the required number of times
@@ -437,9 +431,9 @@ const Test = () => {
         // Optionally, refetch the exercise data to ensure the latest value
         dispatch(fetchExercise(currentUser._id));
       }
-      // Navigate back to stories
+
       setShowModal(false);
-      router.push("stories");
+      router.push("home");
     } catch (error) {
       console.error("Failed to update score:", error);
       // Optionally, handle the error in the UI without using an alert
@@ -464,12 +458,6 @@ const Test = () => {
         </LoadingContainer>
       ) : (
         <QuizBody>
-          <CloseButton onPress={handleBackToStories}>
-            <CrossIcon
-              source={require("../../assets/icons/grayCross.png")}
-              resizeMode="contain"
-            />
-          </CloseButton>
           <QuestionSection
             style={{
               transform: [{ scale: bounceAnim }],

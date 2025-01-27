@@ -1,3 +1,4 @@
+// Stories.jsx
 import React, { useState, useEffect } from "react";
 import styled from "styled-components/native";
 import {
@@ -5,23 +6,21 @@ import {
   ScrollView,
   View,
   Alert,
-  Modal,
-  TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 import { router } from "expo-router";
 import categories from "../utils/categories.json";
 import { useSelector, useDispatch } from "react-redux";
-import { selectScore } from "../redux/scoreSlice";
-import { selectExercise } from "../redux/exerciseSlice";
+import { selectScore, fetchScore } from "../redux/scoreSlice";
+import { selectExercise, fetchExercise } from "../redux/exerciseSlice";
 import { fetchAds, selectAds } from "../redux/adsSlice";
 import { Image as ExpoImage } from "expo-image";
 import AdsImage from "../../assets/icons/ads.png";
 import PremiumImage from "../../assets/icons/premium.png";
 
 // Styled Components
-
 const Container = styled.View`
   flex: 1;
   background-color: #fff;
@@ -63,8 +62,7 @@ const CategoryItemContainer = styled.TouchableOpacity`
   shadow-opacity: 0.15;
   shadow-radius: 1.5px;
   position: relative;
-  opacity: ${(props) =>
-    props.disabled ? 0.5 : 1}; /* Adjust opacity for locked lessons */
+  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
 `;
 
 const CheckmarkContainer = styled.View`
@@ -272,8 +270,6 @@ const SecondaryButtonText = styled.Text`
   font-weight: bold;
 `;
 
-// Stories Component
-
 const Stories = () => {
   const [activeTab, setActiveTab] = useState("stories");
   const data =
@@ -292,18 +288,45 @@ const Stories = () => {
   const maxAds = 3;
   const filledAds = Math.min(ads, maxAds);
 
+  // Fetch Ads on Mount
   useEffect(() => {
     const loadAds = async () => {
       if (userId) {
         try {
           await dispatch(fetchAds(userId)).unwrap();
+          console.log("Ads loaded successfully.");
         } catch (err) {
-          console.error("Failed to load ads data. Please try again.");
+          console.error("Failed to load ads data. Please try again.", err);
         }
       }
     };
 
     loadAds();
+  }, [dispatch, userId]);
+
+  // **New:** Fetch score and exercise when Stories is accessed
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (userId) {
+        try {
+          console.log("Dispatching fetchScore for user:", userId);
+          await dispatch(fetchScore(userId)).unwrap();
+          console.log("Score fetched and stored.");
+        } catch (err) {
+          console.error("Failed to fetch score:", err);
+        }
+
+        try {
+          console.log("Dispatching fetchExercise for user:", userId);
+          await dispatch(fetchExercise(userId)).unwrap();
+          console.log("Exercise fetched and stored.");
+        } catch (err) {
+          console.error("Failed to fetch exercise:", err);
+        }
+      }
+    };
+
+    loadUserData();
   }, [dispatch, userId]);
 
   const handleCategoryPress = (category, index) => {
@@ -359,6 +382,7 @@ const Stories = () => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <Container>
+        {/* Segment Control */}
         <SegmentControl>
           <SegmentButton
             active={activeTab === "stories"}
@@ -373,6 +397,8 @@ const Stories = () => {
             <SegmentText active={activeTab === "exams"}>اختبارات</SegmentText>
           </SegmentButton>
         </SegmentControl>
+
+        {/* User Info Box */}
         <BoxCon>
           <TopCon>
             <TopText>نقاطي</TopText>
@@ -394,6 +420,7 @@ const Stories = () => {
           </BotCon>
         </BoxCon>
 
+        {/* Categories ScrollView */}
         <ScrollView>
           {data.map((category, index) => {
             const completedCount = activeTab === "stories" ? score : exercise;
