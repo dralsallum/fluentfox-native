@@ -5,7 +5,6 @@ import { Provider, useDispatch } from "react-redux";
 import { store } from "./redux/store";
 import { NotificationProvider } from "./redux/NotificationContext";
 
-import appsFlyer from "react-native-appsflyer";
 import * as Notifications from "expo-notifications";
 import * as SecureStore from "expo-secure-store";
 import { setUser } from "./redux/authSlice"; // <-- Import your setUser action
@@ -24,34 +23,6 @@ function RootProvider({ children }) {
   const [isRehydrating, setIsRehydrating] = useState(true);
   const dispatch = useDispatch();
   const router = useRouter();
-
-  useEffect(() => {
-    // Example: init AppsFlyer
-    appsFlyer.initSdk(
-      {
-        devKey: "qoAEWsD3N2Eb245wdusrJH",
-        isDebug: false,
-        appId: "6673901781",
-        onInstallConversionDataListener: true,
-        onDeepLinkListener: true,
-      },
-      (result) => {
-        console.log("AppsFlyer SDK initialized:", result);
-      },
-      (error) => {
-        console.error("AppsFlyer SDK initialization error:", error);
-      }
-    );
-
-    const onInstallConversionData = (data) => {
-      console.log("Attribution data:", data);
-    };
-    appsFlyer.onInstallConversionData(onInstallConversionData);
-
-    return () => {
-      appsFlyer.removeListener();
-    };
-  }, []);
 
   // RooyLayout.js
   useEffect(() => {

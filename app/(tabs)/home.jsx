@@ -14,6 +14,8 @@ import { useSelector, useDispatch } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import styled from "styled-components/native";
 import { Image as ExpoImage } from "expo-image";
+import { Share } from "react-native";
+import Clipboard from "@react-native-clipboard/clipboard";
 
 // Redux actions & selectors
 import { fetchUnlockedSets } from "../redux/lessonsSlice";
@@ -563,21 +565,109 @@ const CloseStreakButton = styled.TouchableOpacity`
   right: 15px;
   z-index: 1;
 `;
-const CloseStreakIcon = styled(ExpoImage)`
-  width: 24px;
-  height: 24px;
-`;
-const ToggleButton = styled.TouchableOpacity`
-  padding: 10px 20px;
-  background-color: #4c47e9;
-  margin: 10px 20px;
-  border-radius: 10px;
+const ShareFamilyModal = styled.Modal``;
+
+const ShareModalContent = styled.View`
+  background-color: #fffaed;
+  padding: 25px;
+  border-radius: 20px;
   align-items: center;
+  width: 90%;
+  max-height: 85%;
+  elevation: 5;
+  shadow-color: #000;
+  shadow-offset: 0px 2px;
+  shadow-opacity: 0.3;
+  shadow-radius: 4px;
+  border-width: 3px;
+  border-color: #4c47e9;
 `;
-const ToggleButtonText = styled.Text`
-  font-size: 16px;
-  color: #fff;
+
+const ShareModalTitle = styled.Text`
+  font-size: 24px;
   font-weight: bold;
+  color: #4c47e9;
+  margin-bottom: 15px;
+  text-align: center;
+`;
+
+const ShareModalText = styled.Text`
+  font-size: 16px;
+  line-height: 24px;
+  color: #4c4f69;
+  text-align: center;
+  margin-bottom: 20px;
+`;
+
+const ShareLinkContainer = styled.View`
+  background-color: #f0f0f0;
+  padding: 12px;
+  border-radius: 12px;
+  width: 100%;
+  margin-bottom: 20px;
+  border-width: 1px;
+  border-color: #ddd;
+`;
+
+const ShareLinkText = styled.Text`
+  font-size: 14px;
+  color: #333;
+  text-align: center;
+`;
+
+const ShareButtonsContainer = styled.View`
+  flex-direction: row;
+  justify-content: space-around;
+  width: 100%;
+`;
+
+const ShareButton = styled.TouchableOpacity`
+  padding: 12px 18px;
+  border-radius: 50px;
+  align-items: center;
+  justify-content: center;
+  margin: 0 5px;
+  flex-direction: row;
+  background-color: #4c47e9;
+  elevation: 3;
+  shadow-color: #000;
+  shadow-offset: 0px 1px;
+  shadow-opacity: 0.2;
+  shadow-radius: 2px;
+`;
+
+const ShareButtonText = styled.Text`
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+`;
+
+const ShareButtonIcon = styled(ExpoImage)`
+  width: 20px;
+  height: 20px;
+  margin-left: 8px;
+`;
+
+const FamilyImage = styled(ExpoImage)`
+  width: 180px;
+  height: 150px;
+  margin-bottom: 15px;
+`;
+
+const QuoteContainer = styled.View`
+  background-color: #e8f4ff;
+  padding: 15px;
+  border-radius: 15px;
+  margin: 15px 0;
+  border-left-width: 3px;
+  border-left-color: #4c47e9;
+`;
+
+const QuoteText = styled.Text`
+  font-style: italic;
+  font-size: 16px;
+  color: #333;
+  text-align: center;
 `;
 
 // -------- Helper to filter chapters by level --------
@@ -785,6 +875,65 @@ const Home = () => {
 
   // Pull-to-refresh
   const [refreshing, setRefreshing] = useState(false);
+  const [isShareModalVisible, setIsShareModalVisible] = useState(false);
+  const [shareKey, setShareKey] = useState(null);
+
+  // Add this useEffect to show the modal at XP 6 or 10
+  useEffect(() => {
+    const checkShareModal = async () => {
+      try {
+        // Use AsyncStorage to track if we've shown this modal before
+        const modalShownKey = `shareModal_xp_${userXp}`;
+        const modalShown = await AsyncStorage.getItem(modalShownKey);
+
+        // Only show if we haven't shown for this XP milestone
+        if ((userXp === 6 || userXp === 10) && !modalShown) {
+          setShareKey(modalShownKey);
+          setIsShareModalVisible(true);
+          // Mark as shown
+          await AsyncStorage.setItem(modalShownKey, "true");
+        }
+      } catch (error) {
+        console.error("Error checking share modal status:", error);
+      }
+    };
+
+    checkShareModal();
+  }, [userXp]);
+
+  // Add these handler functions
+  const handleCloseShareModal = () => {
+    setIsShareModalVisible(false);
+  };
+
+  const handleShare = async () => {
+    try {
+      const appUrl = "https://apps.apple.com/app/id6673901781";
+      const message =
+        "أنا أتعلم الإنجليزية مع هذا التطبيق الرائع! انضم إلي للتعلم معًا 🌟";
+
+      if (Platform.OS === "ios") {
+        await Share.share({
+          message: `${message} ${appUrl}`,
+          url: appUrl,
+        });
+      } else {
+        await Share.share({
+          message: `${message} ${appUrl}`,
+        });
+      }
+    } catch (error) {
+      console.error("Error sharing:", error);
+      Alert.alert("خطأ في المشاركة", "لم نتمكن من فتح نافذة المشاركة");
+    }
+
+    setIsShareModalVisible(false);
+  };
+
+  const handleCopyLink = () => {
+    Clipboard.setString("https://apps.apple.com/app/id6673901781");
+    Alert.alert("تم نسخ الرابط", "تم نسخ رابط التطبيق إلى الحافظة");
+  };
 
   // Group chapters by ID
   const filteredChapters = filterChaptersByLevel(selectedLevel);
@@ -1199,6 +1348,61 @@ const Home = () => {
           </ModalContent>
         </ModalSecContainer>
       </StyledSecModal>
+      <ShareFamilyModal
+        transparent={true}
+        visible={isShareModalVisible}
+        animationType="fade"
+        onRequestClose={handleCloseShareModal}
+      >
+        <ModalOverlay>
+          <ShareModalContent>
+            <CloseStreakButton onPress={handleCloseShareModal}>
+              <CloseIcon source={require("../../assets/icons/grayCross.png")} />
+            </CloseStreakButton>
+
+            <FamilyImage
+              source={require("../../assets/images/family-share.png")}
+              contentFit="contain"
+            />
+
+            <ShareModalTitle>التعلم مع العائلة أفضل! 👨‍👩‍👧‍👦</ShareModalTitle>
+
+            <ShareModalText>
+              هل تعلم؟ الدراسات تظهر أن الأشخاص الذين يتعلمون مع عائلاتهم يحققون
+              نتائج أفضل بنسبة 78٪ ويستمتعون أكثر بالتعلم!
+            </ShareModalText>
+
+            <QuoteContainer>
+              <QuoteText>
+                "المعرفة المشتركة تنمو... شارك تطبيقنا بقروب العائلة وخلك الفرد
+                المفضل بالقروب"
+              </QuoteText>
+            </QuoteContainer>
+
+            <ShareLinkContainer>
+              <ShareLinkText>
+                https://apps.apple.com/app/id6673901781
+              </ShareLinkText>
+            </ShareLinkContainer>
+
+            <ShareButtonsContainer>
+              <ShareButton onPress={handleCopyLink}>
+                <ShareButtonText>نسخ الرابط</ShareButtonText>
+                <ShareButtonIcon
+                  source={require("../../assets/icons/copy.png")}
+                />
+              </ShareButton>
+
+              <ShareButton onPress={handleShare}>
+                <ShareButtonText>مشاركة الآن</ShareButtonText>
+                <ShareButtonIcon
+                  source={require("../../assets/icons/share.png")}
+                />
+              </ShareButton>
+            </ShareButtonsContainer>
+          </ShareModalContent>
+        </ModalOverlay>
+      </ShareFamilyModal>
     </SafeArea>
   );
 };

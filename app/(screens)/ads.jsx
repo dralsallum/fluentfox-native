@@ -2,12 +2,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Dimensions,
-  ActivityIndicator,
   Alert,
   Image,
   TouchableOpacity,
   Linking,
-  Animated,
 } from "react-native";
 import { Video } from "expo-av";
 import { useRouter, useLocalSearchParams, Link } from "expo-router";
@@ -15,6 +13,7 @@ import styled from "styled-components/native";
 import { useDispatch, useSelector } from "react-redux";
 import { updateAds as updateAdsRedux, selectAds } from "../redux/adsSlice";
 import { createUserRequest } from "../../requestMethods"; // Adjust the path based on your project structure
+import CustomLoadingIndicator from "../components/LoadingIndicator"; // Import the custom loading component
 
 const Ads = () => {
   const dispatch = useDispatch();
@@ -33,7 +32,10 @@ const Ads = () => {
   // Component state
   const [countdown, setCountdown] = useState(15);
   const [showSubscription, setShowSubscription] = useState(false);
-  const [isVideoReady, setIsVideoReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Loading state for entire ad process
+  const [isVideoReady, setIsVideoReady] = useState(false); // Video loaded state
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false); // Video playing state
+  const [countdownStarted, setCountdownStarted] = useState(false); // Track if countdown has started
   const [videoUrl, setVideoUrl] = useState(null); // Video URL
   const [adDestination, setAdDestination] = useState(null); // Ad Destination
   const [subscriptionImage, setSubscriptionImage] = useState(null); // Subscription Image URL
@@ -44,43 +46,53 @@ const Ads = () => {
   // Create an instance of userRequest
   const userRequest = createUserRequest();
 
+  // Fetch ad data when component mounts
   useEffect(() => {
-    // Fetch the random ad data when the component mounts
-    const fetchAdData = async () => {
-      try {
-        const response = await userRequest.get("/ads/random");
-        const { videoUrl, destination, subscriptionImage, subscribeText } =
-          response.data;
-        setVideoUrl(videoUrl);
-        setAdDestination(destination);
-        setSubscriptionImage(subscriptionImage);
-        setSubscribeText(subscribeText); // Set the dynamic subscribe text
-
-        // Start preloading the subscription image in parallel
-        if (subscriptionImage) {
-          Image.prefetch(subscriptionImage)
-            .then(() => {
-              setIsImageLoaded(true);
-            })
-            .catch((error) => {
-              console.error("Error preloading subscription image:", error);
-              setImageLoadError(true);
-              // Optionally, set a fallback image or handle the error
-            });
-        }
-      } catch (error) {
-        console.error("Error fetching ad data:", error);
-        Alert.alert("خطأ", "حدث خطأ أثناء جلب الإعلان.");
-      }
-    };
-
     fetchAdData();
   }, []);
 
+  // Function to fetch ad data
+  const fetchAdData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await userRequest.get("/ads/random");
+      const { videoUrl, destination, subscriptionImage, subscribeText } =
+        response.data;
+
+      setVideoUrl(videoUrl);
+      setAdDestination(destination);
+      setSubscriptionImage(subscriptionImage);
+      setSubscribeText(subscribeText || "اشترك الآن"); // Set dynamic subscribe text with fallback
+
+      // Start preloading the subscription image in parallel
+      if (subscriptionImage) {
+        Image.prefetch(subscriptionImage)
+          .then(() => {
+            setIsImageLoaded(true);
+          })
+          .catch((error) => {
+            console.error("Error preloading subscription image:", error);
+            setImageLoadError(true);
+          });
+      }
+    } catch (error) {
+      console.error("Error fetching ad data:", error);
+      Alert.alert("خطأ", "حدث خطأ أثناء جلب الإعلان.");
+      // Consider adding a retry mechanism or fallback behavior
+    }
+  };
+
+  // Handle countdown timer - only start when video is playing
   useEffect(() => {
     let timer;
-    if (countdown > 0 && videoUrl) {
-      // Start the countdown immediately after video URL is set
+
+    // Only start countdown if video is playing and countdown hasn't already started
+    if (isVideoPlaying && !countdownStarted) {
+      setCountdownStarted(true);
+    }
+
+    // Run the countdown only when it has started
+    if (countdownStarted && countdown > 0) {
       timer = setTimeout(() => {
         setCountdown((prevCountdown) => prevCountdown - 1);
       }, 1000);
@@ -91,22 +103,31 @@ const Ads = () => {
         videoRef.current.pauseAsync();
       }
     }
+
     return () => clearTimeout(timer);
-  }, [countdown, videoUrl]);
+  }, [countdown, isVideoPlaying, countdownStarted]);
 
   // Handlers for Video events
   const handleVideoLoadStart = () => {
-    setIsVideoReady(false); // Video is loading
+    setIsVideoReady(false);
   };
 
   const handleVideoLoaded = () => {
-    setIsVideoReady(true); // Video has loaded and is ready to play
+    setIsVideoReady(true);
+    setIsLoading(false);
+  };
+
+  const handleVideoPlaybackStatusUpdate = (status) => {
+    if (status.isPlaying && !isVideoPlaying) {
+      setIsVideoPlaying(true);
+    }
   };
 
   const handleVideoError = (error) => {
     console.error("Video Error:", error);
     Alert.alert("خطأ", "حدث خطأ أثناء تحميل الفيديو.");
-    // Optionally, navigate away or retry
+    setIsLoading(false);
+    // Optionally, retry loading the video or provide a fallback
   };
 
   // Function to decrement ads count
@@ -158,12 +179,10 @@ const Ads = () => {
   return (
     <Container>
       {/* Video Player */}
-      {!showSubscription && videoUrl ? (
+      {videoUrl && !showSubscription ? (
         <StyledVideo
           ref={videoRef}
-          source={{
-            uri: videoUrl,
-          }}
+          source={{ uri: videoUrl }}
           rate={1.0}
           volume={1.0}
           isMuted={false}
@@ -172,27 +191,31 @@ const Ads = () => {
           isLooping={false}
           onLoadStart={handleVideoLoadStart}
           onLoad={handleVideoLoaded}
+          onPlaybackStatusUpdate={handleVideoPlaybackStatusUpdate}
           onError={handleVideoError}
         />
       ) : null}
 
-      {/* Loading Indicator */}
-      {!isVideoReady && videoUrl && !showSubscription && (
-        <LoadingOverlay>
-          <ActivityIndicator size="large" color="#ffffff" />
-        </LoadingOverlay>
+      {/* Loading Indicator - Replace with CustomLoadingIndicator */}
+      {(isLoading || (!isVideoReady && videoUrl && !showSubscription)) && (
+        <LoadingWrapper>
+          <CustomLoadingIndicator />
+        </LoadingWrapper>
       )}
 
-      {/* Countdown Timer or Subscription View */}
-      {!showSubscription ? (
+      {/* Countdown Timer - Only show when video is playing and not in subscription mode */}
+      {isVideoPlaying && !showSubscription && countdownStarted && (
         <CountdownContainer>
           <CountdownText>{countdown}</CountdownText>
         </CountdownContainer>
-      ) : (
+      )}
+
+      {/* Subscription View */}
+      {showSubscription && (
         <>
           {subscriptionImage && isImageLoaded && !imageLoadError ? (
             <SubscriptionImageBackground
-              source={{ uri: subscriptionImage }} // Use the URL directly
+              source={{ uri: subscriptionImage }}
               resizeMode="cover"
             >
               {/* Subscribe Button */}
@@ -203,7 +226,7 @@ const Ads = () => {
                 <SubscribeButtonText>{subscribeText}</SubscribeButtonText>
               </SubscribeButton>
 
-              {/* Close Button in the Same Position as Countdown */}
+              {/* Close Button */}
               <CloseButton
                 onPress={handleCloseAd}
                 accessibilityLabel="Close Ad"
@@ -242,9 +265,9 @@ const Ads = () => {
             </FallbackSubscription>
           ) : (
             // Show loading indicator if image is not yet loaded
-            <LoadingOverlay>
-              <ActivityIndicator size="large" color="#ffffff" />
-            </LoadingOverlay>
+            <LoadingWrapper>
+              <CustomLoadingIndicator />
+            </LoadingWrapper>
           )}
         </>
       )}
@@ -266,16 +289,14 @@ const StyledVideo = styled(Video)`
   height: ${Dimensions.get("window").height}px;
 `;
 
-const LoadingOverlay = styled.View`
+// Wrapper for the CustomLoadingIndicator
+const LoadingWrapper = styled.View`
   position: absolute;
   top: 0;
   left: 0;
   width: ${Dimensions.get("window").width}px;
   height: ${Dimensions.get("window").height}px;
-  background-color: rgba(0, 0, 0, 0.5);
-  justify-content: center;
-  align-items: center;
-  z-index: 1; /* Ensure it's above the video */
+  z-index: 2;
 `;
 
 const CountdownContainer = styled.View`
@@ -285,6 +306,7 @@ const CountdownContainer = styled.View`
   background-color: rgba(0, 0, 0, 0.5);
   padding: 10px 15px;
   border-radius: 20px;
+  z-index: 1;
 `;
 
 const CountdownText = styled.Text`

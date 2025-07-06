@@ -8,6 +8,7 @@ const ScreensLayout = () => {
     <>
       <Stack>
         <Stack.Screen name="lesson/lesson" options={{ headerShown: false }} />
+        <Stack.Screen name="words/words" options={{ headerShown: false }} />
         <Stack.Screen name="grammar" options={{ headerShown: false }} />
         <Stack.Screen name="ads" options={{ headerShown: false }} />
         <Stack.Screen name="notifications" options={{ headerShown: false }} />
@@ -20,6 +21,7 @@ const ScreensLayout = () => {
         <Stack.Screen name="terms" options={{ headerShown: false }} />
         <Stack.Screen name="setting" options={{ headerShown: false }} />
         <Stack.Screen name="test" options={{ headerShown: false }} />
+        <Stack.Screen name="new" options={{ headerShown: false }} />
 
         <Stack.Screen
           name="vocabulary/vocabulary"
