@@ -15,7 +15,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import styled from "styled-components/native";
 import { Image as ExpoImage } from "expo-image";
 import { Share } from "react-native";
-import Clipboard from "@react-native-clipboard/clipboard";
 
 // Redux actions & selectors
 import { fetchUnlockedSets } from "../redux/lessonsSlice";
@@ -930,11 +929,6 @@ const Home = () => {
     setIsShareModalVisible(false);
   };
 
-  const handleCopyLink = () => {
-    Clipboard.setString("https://apps.apple.com/app/id6673901781");
-    Alert.alert("تم نسخ الرابط", "تم نسخ رابط التطبيق إلى الحافظة");
-  };
-
   // Group chapters by ID
   const filteredChapters = filterChaptersByLevel(selectedLevel);
   const groupedChapters = filteredChapters.reduce((acc, item) => {
@@ -1386,7 +1380,7 @@ const Home = () => {
             </ShareLinkContainer>
 
             <ShareButtonsContainer>
-              <ShareButton onPress={handleCopyLink}>
+              <ShareButton>
                 <ShareButtonText>نسخ الرابط</ShareButtonText>
                 <ShareButtonIcon
                   source={require("../../assets/icons/copy.png")}

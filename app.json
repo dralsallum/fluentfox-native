@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "FluentFox",
+    "name": "Glivoo",
     "slug": "fluentfox",
-    "version": "4.8.2",
+    "version": "5.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "fluentfox",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dralsallum.fluentfox",
-      "buildNumber": "176",
+      "buildNumber": "126",
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -69,7 +69,7 @@
             "SKAdNetworkIdentifier": "yclnxrl5pm.skadnetwork"
           }
         ],
-        "NSPrivacyPolicyURL": "https://www.fluentfox.net/privacy-policy",
+        "NSPrivacyPolicyURL": "https://www.glivoo.com/privacy-policy",
         "LSMinimumSystemVersion": "12.0"
       },
       "notification": {
@@ -79,7 +79,7 @@
       }
     },
     "android": {
-      "versionCode": 17,
+      "versionCode": 16,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
@@ -93,8 +93,8 @@
       },
       "softwareKeyboardLayoutMode": "pan",
       "package": "com.dralsallum.fluentfox",
-      "privacyPolicyUrl": "https://www.fluentfox.net/privacy-policy",
-      "termsOfServiceUrl": "https://www.fluentfox.net/terms-of-use"
+      "privacyPolicyUrl": "https://www.glivoo.com/privacy-policy",
+      "termsOfServiceUrl": "https://www.glivoo.com/terms-of-use"
     },
     "web": {
       "favicon": "./assets/images/favicon.png",
@@ -111,8 +111,7 @@
           "appId": "6673901781"
         }
       ],
-      "react-native-video",
-      "expo-secure-store"
+      "react-native-video"
     ],
     "extra": {
       "router": {

@@ -66,6 +66,7 @@ const Subscription = () => {
 
   useEffect(() => {
     if (userIsPaid) {
+      Alert.alert("لديك الان عضوية مميزة");
       router.back();
     }
   }, [userIsPaid]);
